@@ -21,7 +21,20 @@
 
 #include <stddef.h>
 
+#include <string>
+
 namespace TOML {
+
+enum Type {
+    TOML_NULL,
+    TOML_BOOL,
+    TOML_NUMBER,
+    TOML_DOUBLE,
+    TOML_STRING,
+    TOML_OBJECT,
+    TOML_ARRAY,
+    TOML_TIME, // Time or Date or DateTime
+};
 
 class MemoryHook {
 
@@ -35,7 +48,14 @@ public:
     virtual void Delete(char *ptr) = 0;
 };
 
+// Supply new[bytes], new[aligned size] and delete functions to libtoml
 void InitMemoryHook(MemoryHook *hook);
+
+// Parsing TOML format data
+bool Parse(const char *data, size_t len, std::string *error);
+
+// Parsing TOML file
+bool ParseFromFile(const std::string &file_name, std::string *error);
 
 } // namespace TOML
 
