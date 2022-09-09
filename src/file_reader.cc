@@ -20,24 +20,37 @@
 
 namespace TOML {
 
-FileLineInfo::FileLineInfo(/* args */)
+ALineOfData::ALineOfData(/* args */)
     : line_(0) {}
 
-FileLineInfo::~FileLineInfo() {}
+ALineOfData::ALineOfData(uint32_t line, const std::string &data)
+    : line_(line)
+    , data_(data) {}
 
-uint32_t FileLineInfo::Line() const { return line_; }
+ALineOfData::~ALineOfData() {}
 
-const std::string &FileLineInfo::Data() const { return data_; }
+uint32_t ALineOfData::Line() const { return line_; }
+
+const std::string &ALineOfData::Data() const { return data_; }
 
 LineIterator::LineIterator(/* args */)
     : reader_(nullptr)
     , end_of_file_(true) {}
 
+LineIterator::LineIterator(ReaderService *reader, bool eof)
+    : reader_(reader)
+    , end_of_file_(eof) {}
+
+LineIterator::LineIterator(ReaderService *reader, const ALineOfData &data, bool eof)
+    : reader_(reader)
+    , end_of_file_(eof)
+    , one_line_data_(data) {}
+
 LineIterator::~LineIterator() {}
 
 bool LineIterator::operator==(const LineIterator &oth) {
     if (reader_ == oth.reader_ && end_of_file_ == oth.end_of_file_ &&
-        fline_.line_ == oth.fline_.line_) {
+        one_line_data_.line_ == oth.one_line_data_.line_) {
         return true;
     }
     return false;
@@ -45,7 +58,7 @@ bool LineIterator::operator==(const LineIterator &oth) {
 
 LineIterator &LineIterator::operator++() {
     if (reader_) {
-        end_of_file_ = !reader_->NextLine(fline_.data_, fline_.line_);
+        end_of_file_ = !reader_->NextLine(one_line_data_.data_, one_line_data_.line_);
     }
     return *this;
 }
@@ -53,35 +66,34 @@ LineIterator &LineIterator::operator++() {
 const LineIterator LineIterator::operator++(int) {
     LineIterator ret = *this;
     if (reader_) {
-        end_of_file_ = !reader_->NextLine(fline_.data_, fline_.line_);
+        end_of_file_ = !reader_->NextLine(one_line_data_.data_, one_line_data_.line_);
     }
     return ret;
 }
 
-FileLineInfo &LineIterator::operator*() { return fline_; }
+ALineOfData &LineIterator::operator*() { return one_line_data_; }
 
-FileLineInfo *LineIterator::operator->() { return &fline_; }
+ALineOfData *LineIterator::operator->() { return &one_line_data_; }
 
-FileReader::FileReader(const std::string &path)
-    : stream_(path) {}
+// ---------------------------------------------
 
-FileReader::~FileReader() {}
+bool FileReader::open(const std::string &path) {
+    stream_.open(path);
+    return stream_.is_open();
+}
 
 LineIterator FileReader::begin() {
-    LineIterator obj;
-    obj.reader_      = this;
-    obj.end_of_file_ = !NextLine(obj.fline_.data_, obj.fline_.line_);
-    return obj;
+    uint32_t line;
+    std::string data;
+    bool eof = !NextLine(data, line);
+    return LineIterator(this, ALineOfData(line, data), eof);
 }
 
-LineIterator FileReader::end() {
-    LineIterator obj;
-    obj.reader_ = this;
-    return obj;
-}
-bool FileReader::NextLine(std::string &content, uint32_t &number) {
+LineIterator FileReader::end() { return LineIterator(this); }
+
+bool FileReader::NextLine(std::string &data, uint32_t &number) {
     if (!stream_.is_open() || stream_.eof()) {
-        content.clear();
+        data.clear();
         number = 0;
         return false;
     }
@@ -90,7 +102,34 @@ bool FileReader::NextLine(std::string &content, uint32_t &number) {
 
     std::string line;
     std::getline(stream_, line);
-    std::swap(content, line);
+    std::swap(data, line);
+
+    return true;
+}
+
+DataReader::DataReader(const char *data, size_t len) { stream_ << std::string(data, len); }
+
+LineIterator DataReader::begin() {
+    uint32_t line;
+    std::string data;
+    bool eof = !NextLine(data, line);
+    return LineIterator(this, ALineOfData(line, data), eof);
+}
+
+LineIterator DataReader::end() { return LineIterator(this); }
+
+bool DataReader::NextLine(std::string &data, uint32_t &number) {
+    if (stream_.eof()) {
+        data.clear();
+        number = 0;
+        return false;
+    }
+
+    number++;
+
+    std::string line;
+    std::getline(stream_, line);
+    std::swap(data, line);
 
     return true;
 }

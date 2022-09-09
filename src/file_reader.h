@@ -19,22 +19,28 @@
 #ifndef TOML_SRC_FILE_READER_H_
 #define TOML_SRC_FILE_READER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <fstream>
+#include <sstream>
 #include <string>
 
 namespace TOML {
 
-class FileReader;
-class LineIterator;
+class ReaderService {
 
-class FileLineInfo final {
-    friend class FileReader;
+public:
+    virtual ~ReaderService() {}
+    virtual bool NextLine(std::string &data, uint32_t &line) = 0;
+};
+
+class ALineOfData final {
     friend class LineIterator;
 
 public:
-    FileLineInfo(/* args */);
-    ~FileLineInfo();
+    ALineOfData(/* args */);
+    ALineOfData(uint32_t line, const std::string &data);
+    ~ALineOfData();
 
     uint32_t Line() const;
     const std::string &Data() const;
@@ -45,10 +51,12 @@ private:
 };
 
 class LineIterator {
-    friend class FileReader;
 
 public:
     LineIterator(/* args */);
+    LineIterator(ReaderService *reader, bool eof = true);
+    LineIterator(ReaderService *reader, const ALineOfData &data, bool eof = true);
+
     ~LineIterator();
 
     bool operator==(const LineIterator &oth);
@@ -57,28 +65,51 @@ public:
     LineIterator &operator++();
     const LineIterator operator++(int);
 
-    FileLineInfo &operator*();
-    FileLineInfo *operator->();
+    ALineOfData &operator*();
+    ALineOfData *operator->();
 
 private:
-    FileReader *reader_;
+    ReaderService *reader_;
     bool end_of_file_;
-    FileLineInfo fline_;
+    ALineOfData one_line_data_;
 };
 
-class FileReader {
+class FileReader final : public ReaderService {
     friend class LineIterator;
 
 public:
-    explicit FileReader(const std::string &path);
-    ~FileReader();
+    FileReader()  = default;
+    ~FileReader() = default;
+
+    FileReader(const FileReader &) = delete;
+    FileReader &operator=(const FileReader &) = delete;
+
+    bool open(const std::string &path);
+    LineIterator begin();
+    LineIterator end();
+
+private:
+    bool NextLine(std::string &data, uint32_t &line) override;
+    std::ifstream stream_;
+};
+
+class DataReader final : public ReaderService {
+    friend class LineIterator;
+
+public:
+    DataReader(const char *data, size_t len);
+    ~DataReader() = default;
+
+    DataReader(const DataReader &) = delete;
+    DataReader &operator=(const DataReader &) = delete;
 
     LineIterator begin();
     LineIterator end();
 
 private:
-    bool NextLine(std::string &content, uint32_t &line);
-    std::ifstream stream_;
+    bool NextLine(std::string &data, uint32_t &line) override;
+    std::stringstream stream_;
 };
+
 } // namespace TOML
 #endif // TOML_SRC_FILE_READER_H_
