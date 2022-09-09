@@ -16,18 +16,27 @@
  *
  */
 
-#ifndef TOML_SRC_FIELD_H_
-#define TOML_SRC_FIELD_H_
+#ifndef TOML_IMPL_TYPES_H_
+#define TOML_IMPL_TYPES_H_
 
 #include <stdint.h>
-
+#include <atomic>
 #include <map>
 #include <string>
 #include <vector>
 
-#include "toml/toml.h"
-
 namespace TOML {
+
+enum Type {
+    TOML_NULL,
+    TOML_BOOL,
+    TOML_NUMBER,
+    TOML_DOUBLE,
+    TOML_STRING,
+    TOML_TIME, // Time or Date or DateTime
+    TOML_OBJECT,
+    TOML_ARRAY,
+};
 
 class Field {
 
@@ -123,6 +132,9 @@ public:
     void set_value(intptr_t) override;
     Type type() const override;
 
+    inline bool operator==(const ObjectField &rhs) const { return rhs.value_ == value_; }
+    inline bool operator!=(const ObjectField &rhs) const { return rhs.value_ != value_; }
+
 private:
     Object value_;
 };
@@ -137,6 +149,9 @@ public:
     intptr_t value() const override;
     void set_value(intptr_t) override;
     Type type() const override;
+
+    inline bool operator==(const ArrayField &rhs) const { return rhs.value_ == value_; }
+    inline bool operator!=(const ArrayField &rhs) const { return rhs.value_ != value_; }
 
 private:
     Array value_;
@@ -169,4 +184,4 @@ private:
 
 } // namespace TOML
 
-#endif // TOML_SRC_FIELD_H_
+#endif // TOML_IMPL_TYPES_H_

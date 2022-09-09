@@ -16,7 +16,7 @@
  *
  */
 
-#include "src/field.h"
+#include "toml/impl/types.h"
 
 #include <string.h>
 
