@@ -16,7 +16,7 @@
  *
  */
 
-#include "toml/impl/toml_reader.h"
+#include "toml/impl/reader.h"
 #include <string.h>
 
 #include <iostream>

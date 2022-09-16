@@ -20,6 +20,7 @@
 #define TOML_TOML_H_
 
 #include "toml/impl/node.h"
-#include "toml/impl/toml_reader.h"
+#include "toml/impl/node_impl.h"
+#include "toml/impl/reader.h"
 
 #endif // TOML_TOML_H_
