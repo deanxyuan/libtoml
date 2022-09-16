@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(LIBTOML_BUILD_TESTS "Build libtoml's unit tests" ON)
+option(LIBTOML_BUILD_TESTS "Build libtoml's unit tests" OFF)
 
 aux_source_directory(${PROJECT_SOURCE_DIR}/src TOML_IMPL_SRC)
 
@@ -35,11 +35,13 @@ PRIVATE
     -g
 )
 
-# using google test source library
-add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/googletest-1.10.0 googletest)
 
 # unit test
 if(LIBTOML_BUILD_TESTS)
+
+    # using google test source library
+    add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/googletest-1.10.0 googletest)
+
   enable_testing()
 
     function(libtoml_unit_test test_file)
