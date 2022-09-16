@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(LIBTOML_BUILD_TESTS "Build libtoml's unit tests" OFF)
+option(LIBTOML_BUILD_TESTS "Build libtoml's unit tests" ON)
 
 aux_source_directory(${PROJECT_SOURCE_DIR}/src TOML_IMPL_SRC)
 
@@ -42,7 +42,7 @@ if(LIBTOML_BUILD_TESTS)
     # using google test source library
     add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/googletest-1.10.0 googletest)
 
-  enable_testing()
+    enable_testing()
 
     function(libtoml_unit_test test_file)
     get_filename_component(test_target_name "${test_file}" NAME_WE)
@@ -60,15 +60,26 @@ if(LIBTOML_BUILD_TESTS)
         ${PROJECT_SOURCE_DIR}/third_party/googletest-1.10.0/googletest/include
     )
 
+    target_compile_options("${test_target_name}"
+    PRIVATE
+        -fno-access-control
+    )
+
     target_link_libraries("${test_target_name}"
     PRIVATE
         toml
         gtest
     )
 
-    add_test(NAME "${test_target_name}" COMMAND "${test_target_name}")
+    target_compile_definitions("${test_target_name}"
+    PRIVATE
+        TEST_CASE_DIR="${PROJECT_SOURCE_DIR}/etc"
+    )
+
+    add_test(NAME "${test_target_name}" COMMAND "${test_target_name}" "${PROJECT_SOURCE_DIR}")
     endfunction(libtoml_unit_test)
 
+    libtoml_unit_test("${PROJECT_SOURCE_DIR}/test/string_test.cc")
     libtoml_unit_test("${PROJECT_SOURCE_DIR}/test/array_test.cc")
 
 endif(LIBTOML_BUILD_TESTS)

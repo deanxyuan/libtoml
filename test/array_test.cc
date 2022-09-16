@@ -1,7 +1,10 @@
+#include "gtest/gtest.h"
 
-#include <iostream>
+#ifndef TEST_CASE_DIR
+#error "Missing TEST_CASE_DIR"
+#endif
 
-int main(int argc, char *[]) {
-    std::cout << "Hello World" << std::endl;
-    return 0;
+int main(int argc, char *argv[]) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

@@ -330,7 +330,7 @@ std::string Reader::Parse(const char *data, size_t len, Node *node) {
     Reader reader(data, len);
     reader.Run();
     if (reader.Result() == PARSE_STATUS_SUCCESS) {
-        return std::string("No Error");
+        return std::string();
     }
 
     std::swap(*node, reader.root_);
