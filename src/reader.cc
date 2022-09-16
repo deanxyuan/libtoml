@@ -16,7 +16,7 @@
  *
  */
 
-#include "toml/impl/reader.h"
+#include "src/reader.h"
 #include <string.h>
 
 #include <iostream>
@@ -25,29 +25,31 @@
 #include <memory>
 
 #include "src/common.h"
-#include "toml/impl/node_impl.h"
+#include "toml/impl/reader.h"
 
 namespace TOML {
-TOMLReader::TOMLReader(const char *data, size_t len)
+namespace internal {
+
+Reader::Reader(const char *data, size_t len)
     : original_input_(reinterpret_cast<const uint8_t *>(data))
     , input_(original_input_)
     , remaining_input_(len)
     , state_(TOML::PARSE_STATUS_NULL) {}
 
-TOMLReader::~TOMLReader() {}
+Reader::~Reader() {}
 
-void TOMLReader::SetKey() {
+void Reader::SetKey() {
     key_ = std::move(strings_);
     strings_.clear();
 }
 
-void TOMLReader::StringAddChar(uint32_t c) { strings_.push_back(static_cast<uint8_t>(c)); }
-void TOMLReader::StringAddChar(const char *ptr) { strings_.append(ptr); }
-void TOMLReader::StringAddChar(const char *ptr, int count) { strings_.append(ptr, count); }
-void TOMLReader::StringAddChar(int count, char ch) { strings_.append(count, ch); }
-void TOMLReader::StringAddChar(const std::string &s) { strings_.append(s); }
+void Reader::StringAddChar(uint32_t c) { strings_.push_back(static_cast<uint8_t>(c)); }
+void Reader::StringAddChar(const char *ptr) { strings_.append(ptr); }
+void Reader::StringAddChar(const char *ptr, int count) { strings_.append(ptr, count); }
+void Reader::StringAddChar(int count, char ch) { strings_.append(count, ch); }
+void Reader::StringAddChar(const std::string &s) { strings_.append(s); }
 
-bool TOMLReader::IsValidCharForRawKey(uint32_t c) {
+bool Reader::IsValidCharForRawKey(uint32_t c) {
     if (c == '-' || c == '_' || (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') ||
         (c >= 'a' && c <= 'z')) {
         return true;
@@ -55,17 +57,17 @@ bool TOMLReader::IsValidCharForRawKey(uint32_t c) {
     return false;
 }
 
-bool TOMLReader::StartsWith(const char *prefix) {
+bool Reader::StartsWith(const char *prefix) {
     size_t prefix_len = strlen(prefix);
     return remaining_input_ >= prefix_len && (memcmp(input_, prefix, prefix_len) == 0);
 }
 
-void TOMLReader::MoveForward(int offset) {
+void Reader::MoveForward(int offset) {
     input_ += offset;
     remaining_input_ -= offset;
 }
 
-void TOMLReader::Run() {
+void Reader::Run() {
 
     root_ = Node::CreateObject();
     stack_.push(root_);
@@ -139,11 +141,11 @@ void TOMLReader::Run() {
     }
 __exit:
     if (state_ != PARSE_STATUS_SUCCESS) {
-        errors_ = std::string("TOML parse error at index ") + std::to_string(CurrentIndex());
+        error_ = std::string("TOML parse error at index ") + std::to_string(CurrentIndex());
     }
 }
 
-bool TOMLReader::GetKeyImpl(uint8_t flag) {
+bool Reader::GetKeyImpl(uint8_t flag) {
     if (remaining_input_ == 1) {
         state_ = PARSE_STATUS_ERROR;
         return false;
@@ -167,7 +169,7 @@ bool TOMLReader::GetKeyImpl(uint8_t flag) {
     return false;
 }
 
-bool TOMLReader::GetRawKeyImpl() {
+bool Reader::GetRawKeyImpl() {
 
     state_ = PARSE_STATUS_ERROR;
 
@@ -200,7 +202,7 @@ bool TOMLReader::GetRawKeyImpl() {
     return false;
 }
 
-bool TOMLReader::CheckSeparator() {
+bool Reader::CheckSeparator() {
 
     state_ = PARSE_STATUS_ERROR;
 
@@ -231,7 +233,7 @@ bool TOMLReader::CheckSeparator() {
     return (state_ == PARSE_STATUS_SUCCESS);
 }
 
-bool TOMLReader::GetValueImpl() {
+bool Reader::GetValueImpl() {
 
     state_ = PARSE_STATUS_ERROR;
 
@@ -302,19 +304,19 @@ bool TOMLReader::GetValueImpl() {
     return state_ == PARSE_STATUS_SUCCESS;
 }
 
-void TOMLReader::ShowKey() {
+void Reader::ShowKey() {
     std::stringstream ss;
     ss << "key:[" << key_ << "]";
     std::cout << ss.str() << std::endl;
 }
 
-void TOMLReader::ShowValue() {
+void Reader::ShowValue() {
     std::stringstream ss;
     ss << "value:[" << strings_ << "]";
     std::cout << ss.str() << std::endl;
 }
 
-void TOMLReader::UpdateKeyValue() {
+void Reader::UpdateKeyValue() {
     Node value = Node::CreateString(strings_);
 
     Node &node = stack_.top();
@@ -324,29 +326,51 @@ void TOMLReader::UpdateKeyValue() {
     strings_.clear();
 }
 
-void TOMLReader::LoadFromFile(const std::string &path) {
+std::string Reader::Parse(const char *data, size_t len, Node *node) {
+    Reader reader(data, len);
+    reader.Run();
+    if (reader.Result() == PARSE_STATUS_SUCCESS) {
+        return std::string("No Error");
+    }
+
+    std::swap(*node, reader.root_);
+    return reader.error_;
+}
+} // namespace internal
+
+Node LoadFromFile(const std::string &path, std::string *error) {
     std::ifstream file(path, std::ios_base::in);
     if (!file.is_open()) {
-        std::cout << "Failed to open " << path << std::endl;
-        return;
+        if (error) *error = "Failed to open " + path;
+        return Node();
     }
 
     file.seekg(0, std::ios_base::end);
     std::streamoff file_size = file.tellg();
     file.seekg(0, std::ios_base::beg);
     if (file_size < 0) {
-        std::cout << "Can't get file size" << std::endl;
-        return;
+        if (error) *error = std::string("Failed to get file size");
+        return Node();
     } else if (file_size == 0) {
-        std::cout << "Skip empty file" << std::endl;
-        return;
+        if (error) *error = std::string("It's a empty file");
+        return Node();
     }
 
     std::unique_ptr<char[]> buff(new char[file_size]);
     file.read(buff.get(), file_size);
+    if (!file.good()) {
+        if (error) *error = std::string("Failed to read file data");
+        file.close();
+        return Node();
+    }
     file.close();
+    return LoadFromData(buff.get(), file_size, error);
+}
 
-    TOMLReader reader(buff.get(), file_size);
-    reader.Run();
+Node LoadFromData(const char *data, size_t len, std::string *error) {
+    Node node;
+    std::string desc = internal::Reader::Parse(data, len, &node);
+    if (error) *error = desc;
+    return node;
 }
 } // namespace TOML

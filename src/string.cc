@@ -1,10 +1,11 @@
-#include "toml/impl/reader.h"
+#include "src/reader.h"
 #include "src/common.h"
 
 namespace TOML {
+namespace internal {
 
 // 调用此函数前，需要将state设置为ERROR
-bool TOMLReader::GetStringValueImpl() {
+bool Reader::GetStringValueImpl() {
     uint8_t c = *input_;
     if (c == '\'') {
         if (StartsWith("\'\'\'")) {
@@ -31,7 +32,7 @@ bool TOMLReader::GetStringValueImpl() {
 }
 
 // 单行字面量字符串解析
-void TOMLReader::GetLiteralString() {
+void Reader::GetLiteralString() {
 
     uint8_t c;
 
@@ -62,7 +63,7 @@ void TOMLReader::GetLiteralString() {
 
 // 多行字面量字符串两侧各有三个单引号来包裹，允许换行。
 // 类似于字面量字符串，无论任何转义都不存在。
-void TOMLReader::GetMultiLineLiteralString() {
+void Reader::GetMultiLineLiteralString() {
     // 至少包含 '''
     if (remaining_input_ < 3) {
         return;
@@ -113,7 +114,7 @@ void TOMLReader::GetMultiLineLiteralString() {
     }
 }
 
-void TOMLReader::GetMultiLineBasicString() {
+void Reader::GetMultiLineBasicString() {
     bool transferred = false, foldup = false;
     int nhex = 0, i = 0, value = 0;
     uint8_t c = 0, ch = 0;
@@ -306,7 +307,7 @@ __exit:
     }
 }
 
-void TOMLReader::GetBasicString() {
+void Reader::GetBasicString() {
     bool transferred = false;
     int nhex = 0, i = 0, value = 0;
     uint8_t c = 0, ch = 0;
@@ -440,7 +441,7 @@ __exit:
 // 因此字面量终止符范围3-5个'
 // 多行基本字符串内的任何地方写一个引号或两个毗连的引号
 // 基本字符串终止符范围3-5个"
-int TOMLReader::TestSameCharCount(uint8_t ch) {
+int Reader::TestSameCharCount(uint8_t ch) {
     int count = 0;
     for (size_t i = 0; i < remaining_input_; i++) {
         if (input_[i] == ch) {
@@ -452,4 +453,5 @@ int TOMLReader::TestSameCharCount(uint8_t ch) {
 
     return count;
 }
+} // namespace internal
 } // namespace TOML

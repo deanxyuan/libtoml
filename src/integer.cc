@@ -1,9 +1,11 @@
-#include "toml/impl/reader.h"
+#include "src/reader.h"
 #include <cmath>
 #include "src/common.h"
 
 namespace TOML {
-void TOMLReader::GetNumberWithPrefix() {
+namespace internal {
+
+void Reader::GetNumberWithPrefix() {
     bool negative = (*input_++ == '-');
     if (--remaining_input_ == 0) return;
 
@@ -51,7 +53,7 @@ __exit:
     }
 }
 
-void TOMLReader::GetDecimalNumber(bool negative) {
+void Reader::GetDecimalNumber(bool negative) {
     bool next_must_be_num = true;
 
     char *endptr = nullptr;
@@ -112,7 +114,7 @@ __exit:
     }
 }
 
-void TOMLReader::GetFloatNumber(bool negative) {
+void Reader::GetFloatNumber(bool negative) {
     bool next_must_be_num = true;
 
     bool found_dot = false;
@@ -192,7 +194,7 @@ __exit:
     }
 }
 
-bool TOMLReader::TestNumberIsFloat() {
+bool Reader::TestNumberIsFloat() {
     const uint8_t *backup = input_;
     size_t backup_size    = remaining_input_;
 
@@ -209,7 +211,7 @@ bool TOMLReader::TestNumberIsFloat() {
     }
     return false;
 }
-int TOMLReader::TestSameCharCountEx(uint8_t ch, uint8_t skip) {
+int Reader::TestSameCharCountEx(uint8_t ch, uint8_t skip) {
     int count = 0;
     for (size_t i = 0; i < remaining_input_; i++) {
         if (input_[i] == ch) {
@@ -223,4 +225,5 @@ int TOMLReader::TestSameCharCountEx(uint8_t ch, uint8_t skip) {
     }
     return count;
 }
+} // namespace internal
 }; // namespace TOML

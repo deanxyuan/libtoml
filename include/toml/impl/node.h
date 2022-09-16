@@ -24,7 +24,7 @@
 
 #include <string>
 
-#include "types.h"
+#include "toml/impl/types.h"
 
 namespace TOML {
 

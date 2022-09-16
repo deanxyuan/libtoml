@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-#include "node.h"
+#include "toml/impl/node.h"
 
 namespace TOML {
 
