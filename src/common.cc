@@ -2,7 +2,14 @@
 #include <string.h>
 
 namespace TOML {
-int toml_ucs_to_utf8(int64_t code, char buf[6]) {
+
+namespace internal {
+/**
+ *	Convert a UCS char to utf8 code, and return it in buf.
+ *	Return #bytes used in buf to encode the char, or
+ *	-1 on error.
+ */
+static int ucs_to_utf8(int64_t code, char buf[6]) {
     /* http://stackoverflow.com/questions/6240055/manually-converting-unicode-codepoints-into-utf-8-and-utf-16
      */
     /* The UCS code values 0xd800–0xdfff (UTF-16 surrogates) as well
@@ -78,19 +85,30 @@ int toml_ucs_to_utf8(int64_t code, char buf[6]) {
 
     return -1;
 }
+} // namespace internal
+bool UCSToUTF8(int64_t code, std::string *output) {
+    char buff[8] = {0};
 
-bool toml_is_valid_char(bool multi_line, uint8_t ch) {
+    output->clear();
+
+    int n = internal::ucs_to_utf8(code, buff);
+    if (n != -1) {
+        *output = std::string(buff, n);
+        return true;
+    }
+    return false;
+}
+
+bool IsValidCharForString(bool multiline, uint8_t ch) {
     if ((0 <= ch && ch <= 0x08) || (0x0a <= ch && ch <= 0x1f) || (ch == 0x7f)) {
-        if (!(multi_line && (ch == '\r' || ch == '\n'))) {
+        if (!(multiline && (ch == '\r' || ch == '\n'))) {
             return false;
         }
     }
     return true;
 }
 
-// 判断字节 cc 是否在 target 中存在
-// 存在返回true, 不存在返回 false
-bool IsByteExists(const char *target, uint8_t cc) {
+bool IsByteExistsInTarget(const char *target, uint8_t cc) {
     for (; *target != '\0'; ++target) {
         if (cc == static_cast<uint8_t>(*target)) {
             return true;
@@ -99,13 +117,6 @@ bool IsByteExists(const char *target, uint8_t cc) {
     return false;
 };
 
-/**
- * @brief 相关搜索函数
- * @param buff 待搜索的地址
- * @param ch 字符
- * @param count 待搜索的空间长度
- * @return 返回与初始位置的偏移，找不到则返回-1
- */
 int FindNextChar(const uint8_t *buff, int ch, size_t count) {
     auto ptr = reinterpret_cast<const uint8_t *>(memchr(buff, ch, count));
     if (ptr == NULL) return -1;

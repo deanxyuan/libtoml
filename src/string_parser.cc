@@ -38,7 +38,7 @@ void TOMLReader::GetLiteralString() {
     while (remaining_input_ > 0) {
         c = *input_;
 
-        if (!toml_is_valid_char(false, c)) {
+        if (!IsValidCharForString(false, c)) {
             break;
         }
         // 单行字面量不允许换行
@@ -82,7 +82,7 @@ void TOMLReader::GetMultiLineLiteralString() {
     while (remaining_input_ > 0) {
         c = *input_;
 
-        if (!toml_is_valid_char(true, c)) {
+        if (!IsValidCharForString(true, c)) {
             break;
         }
 
@@ -117,9 +117,9 @@ void TOMLReader::GetMultiLineBasicString() {
     bool transferred = false, foldup = false;
     int nhex = 0, i = 0, value = 0;
     uint8_t c = 0, ch = 0;
-    int64_t ucs  = 0;
-    char buff[8] = {0};
-    int count    = 0;
+    int64_t ucs = 0;
+    int count   = 0;
+    std::string utf8;
 
     const uint8_t *backup = nullptr;
     size_t backup_size    = 0;
@@ -142,7 +142,7 @@ void TOMLReader::GetMultiLineBasicString() {
     while (remaining_input_ > 0) {
         c = *input_;
 
-        if (!toml_is_valid_char(true, c)) {
+        if (!IsValidCharForString(true, c)) {
             break;
         }
 
@@ -220,7 +220,7 @@ void TOMLReader::GetMultiLineBasicString() {
                 while (static_cast<int>(backup_size) - 1 > 0) {
                     ch = *(backup + 1);
 
-                    if (!toml_is_valid_char(true, ch)) {
+                    if (!IsValidCharForString(true, ch)) {
                         goto __exit;
                     }
                     if (ch == '\t' || ch == ' ') {
@@ -278,12 +278,11 @@ void TOMLReader::GetMultiLineBasicString() {
                 remaining_input_--;
             }
 
-            nhex = toml_ucs_to_utf8(ucs, buff);
-            if (-1 == nhex) {
+            if (!UCSToUTF8(ucs, &utf8)) {
                 // 无效 UNICODE
                 goto __exit;
             }
-            StringAddChar(buff, nhex);
+            StringAddChar(utf8);
             transferred = false;
             break;
         }
@@ -311,13 +310,13 @@ void TOMLReader::GetBasicString() {
     bool transferred = false;
     int nhex = 0, i = 0, value = 0;
     uint8_t c = 0, ch = 0;
-    int64_t ucs  = 0;
-    char buff[8] = {0};
+    int64_t ucs = 0;
+    std::string utf8;
 
     while (remaining_input_ > 0) {
         c = *input_;
 
-        if (!toml_is_valid_char(false, c)) {
+        if (!IsValidCharForString(false, c)) {
             break;
         }
 
@@ -409,12 +408,11 @@ void TOMLReader::GetBasicString() {
                 remaining_input_--;
             }
 
-            nhex = toml_ucs_to_utf8(ucs, buff);
-            if (-1 == nhex) {
+            if (!UCSToUTF8(ucs, &utf8)) {
                 // 无效 UNICODE
                 goto __exit;
             }
-            StringAddChar(buff, nhex);
+            StringAddChar(utf8);
             transferred = false;
             break;
         }

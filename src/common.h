@@ -22,30 +22,42 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <string>
+
 namespace TOML {
 
 /**
- *	Convert a UCS char to utf8 code, and return it in buf.
- *	Return #bytes used in buf to encode the char, or
- *	-1 on error.
+ * @brief Convert a UCS char to utf8 string
+ * @param code The ucs code
+ * @param output The result string
+ * @return Return operation result
  */
-int toml_ucs_to_utf8(int64_t code, char buf[6]);
+bool UCSToUTF8(int64_t code, std::string *output);
 
 /**
- * U+0000 to U+0008, U+000A to U+001F, U+007F must be escaped
+ * @brief Determine if the byte is a valid TOML STRING
+ * @param multiline is it multi-line text ?
+ * @param ch Byte to be judged
+ * @return Return TRUE if allowed, otherwise return FALSE
+ * @Note: U+0000 to U+0008, U+000A to U+001F, U+007F must be escaped
  */
-bool toml_is_valid_char(bool multi_line, uint8_t ch);
-
-// 判断字节 cc 是否在 target 中存在
-// 存在返回true, 不存在返回 false
-bool IsByteExists(const char *target, uint8_t cc);
+bool IsValidCharForString(bool multiline, uint8_t ch);
 
 /**
- * @brief 相关搜索函数
- * @param buff 待搜索的地址
- * @param ch 字符
- * @param count 待搜索的空间长度
- * @return 返回与初始位置的偏移，找不到则返回-1
+ * @brief Whether CC exists in Target String
+ * @param target The target string to be searched
+ * @param cc The byte for comparison
+ * @return Exists returns TRUE, otherwise returns FALSE
+ */
+bool IsByteExistsInTarget(const char *target, uint8_t cc);
+
+/**
+ * @brief Search for the next specified character
+ * @param buff Starting address of the memory to be searched
+ * @param ch The byte for comparison
+ * @param count Range of maximum search (bytes)
+ * @return If found, return the offset from the starting position,
+ *         otherwise return -1
  */
 int FindNextChar(const uint8_t *buff, int ch, size_t count);
 } // namespace TOML

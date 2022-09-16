@@ -45,6 +45,7 @@ void TOMLReader::StringAddChar(uint32_t c) { strings_.push_back(static_cast<uint
 void TOMLReader::StringAddChar(const char *ptr) { strings_.append(ptr); }
 void TOMLReader::StringAddChar(const char *ptr, int count) { strings_.append(ptr, count); }
 void TOMLReader::StringAddChar(int count, char ch) { strings_.append(count, ch); }
+void TOMLReader::StringAddChar(const std::string &s) { strings_.append(s); }
 
 bool TOMLReader::IsValidCharForRawKey(uint32_t c) {
     if (c == '-' || c == '_' || (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') ||
@@ -179,7 +180,7 @@ bool TOMLReader::GetRawKeyImpl() {
         if (c == '\r' || c == '\n') {
             break;
         }
-        if (IsByteExists(target, c)) {
+        if (IsByteExistsInTarget(target, c)) {
             state_ = PARSE_STATUS_SUCCESS;
             break;
         }
