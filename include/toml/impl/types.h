@@ -37,14 +37,14 @@ enum class Types : int {
     TOML_OBJECT,
     TOML_ARRAY,
 };
-constexpr Types kTomlNull     = Types::TOML_NULL;
-constexpr Types kTomlBoolean  = Types::TOML_BOOLEAN;
-constexpr Types kTomlString   = Types::TOML_STRING;
-constexpr Types kTomlInteger  = Types::TOML_INTEGER;
-constexpr Types kTomlDouble   = Types::TOML_DOUBLE;
-constexpr Types kTomlDateTime = Types::TOML_DATETIME;
-constexpr Types kTomlObject   = Types::TOML_OBJECT;
-constexpr Types kTomlArray    = Types::TOML_ARRAY;
+constexpr Types kNull     = Types::TOML_NULL;
+constexpr Types kBoolean  = Types::TOML_BOOLEAN;
+constexpr Types kString   = Types::TOML_STRING;
+constexpr Types kInteger  = Types::TOML_INTEGER;
+constexpr Types kDouble   = Types::TOML_DOUBLE;
+constexpr Types kDateTime = Types::TOML_DATETIME;
+constexpr Types kObject   = Types::TOML_OBJECT;
+constexpr Types kArray    = Types::TOML_ARRAY;
 
 } // namespace TOML
 

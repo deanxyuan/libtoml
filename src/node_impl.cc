@@ -167,7 +167,8 @@ void Object::Replace(const std::string &key, const Node &value) {
 }
 Node &Object::operator[](std::string &&key) { return obj_[key]; }
 Node &Object::operator[](const std::string &key) { return obj_[key]; }
-
+Node &Object::Get(const std::string &key) { return obj_[key]; }
+Node &Object::Get(std::string &&key) { return obj_[key]; }
 // ------------------------------
 Array::Array()
     : NodeImpl() {}
@@ -188,4 +189,6 @@ void Array::Insert(size_t index, const Node &value) {
 void Array::PushBack(const Node &value) { array_.push_back(value); }
 const Node &Array::operator[](size_t pos) const { return array_[pos]; }
 Node &Array::operator[](size_t pos) { return array_[pos]; }
+const Node &Array::At(size_t pos) const { return array_[pos]; }
+Node &Array::At(size_t pos) { return array_[pos]; }
 } // namespace TOML

@@ -43,31 +43,31 @@ struct ToNodeImpl {
     using type = void;
 };
 template <>
-struct ToNodeImpl<kTomlBoolean> {
+struct ToNodeImpl<Types::TOML_BOOLEAN> {
     using type = TOML::Boolean;
 };
 template <>
-struct ToNodeImpl<kTomlString> {
+struct ToNodeImpl<Types::TOML_STRING> {
     using type = TOML::String;
 };
 template <>
-struct ToNodeImpl<kTomlInteger> {
+struct ToNodeImpl<Types::TOML_INTEGER> {
     using type = TOML::Integer;
 };
 template <>
-struct ToNodeImpl<kTomlDouble> {
+struct ToNodeImpl<Types::TOML_DOUBLE> {
     using type = TOML::Double;
 };
 template <>
-struct ToNodeImpl<kTomlDateTime> {
+struct ToNodeImpl<Types::TOML_DATETIME> {
     using type = TOML::DateTime;
 };
 template <>
-struct ToNodeImpl<kTomlObject> {
+struct ToNodeImpl<Types::TOML_OBJECT> {
     using type = TOML::Object;
 };
 template <>
-struct ToNodeImpl<kTomlArray> {
+struct ToNodeImpl<Types::TOML_ARRAY> {
     using type = TOML::Array;
 };
 

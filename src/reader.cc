@@ -320,7 +320,7 @@ void Reader::UpdateKeyValue() {
     Node value = Node::CreateString(strings_);
 
     Node &node = stack_.top();
-    node.As<kTomlObject>()->Insert(key_, value);
+    node.As<kObject>()->Insert(key_, value);
 
     key_.clear();
     strings_.clear();
@@ -329,7 +329,7 @@ void Reader::UpdateKeyValue() {
 std::string Reader::Parse(const char *data, size_t len, Node *node) {
     Reader reader(data, len);
     reader.Run();
-    if (reader.Result() == PARSE_STATUS_SUCCESS) {
+    if (reader.Result() != PARSE_STATUS_SUCCESS) {
         return std::string();
     }
 

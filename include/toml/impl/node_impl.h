@@ -204,6 +204,8 @@ public:
 
     Node &operator[](std::string &&key);
     Node &operator[](const std::string &key);
+    Node &Get(const std::string &key);
+    Node &Get(std::string &&key);
 
 private:
     Object();
@@ -229,6 +231,8 @@ public:
 
     const Node &operator[](size_t pos) const;
     Node &operator[](size_t pos);
+    const Node &At(size_t pos) const;
+    Node &At(size_t pos);
 
 private:
     Array();
