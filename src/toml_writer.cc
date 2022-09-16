@@ -16,18 +16,21 @@
  *
  */
 
-#ifndef TOML_ALLOCATOR_H_
-#define TOML_ALLOCATOR_H_
+#include "toml/toml.h"
 
 namespace TOML {
+class TomlWriter {
 
-class MemoryHook;
+public:
+    TomlWriter(/* args */);
+    ~TomlWriter();
 
-namespace internal {
+private:
+    /* data */
+};
 
-// Return the current memory hook
-MemoryHook *GetMemoryHook();
+TomlWriter::TomlWriter(/* args */) {}
 
-} // namespace internal
+TomlWriter::~TomlWriter() {}
+
 } // namespace TOML
-#endif // TOML_ALLOCATOR_H_
