@@ -22,7 +22,7 @@ void Reader::GetNumberWithPrefix() {
         break;
     case 'n': //+nan -nan
         if (StartsWith("nan")) {
-            node   = Node::CreateDouble(NAN);
+            node   = Node::CreateDouble(negative ? (NAN * (-1)) : NAN);
             state_ = PARSE_STATUS_SUCCESS;
             input_ += 3;
             remaining_input_ -= 3;
@@ -160,6 +160,8 @@ bool Reader::GetFloatNumber() {
     bool found_E   = false; // e E
     bool found_pm  = false; // + -
 
+    uint32_t prev_char = 0;
+
     uint8_t c = 0;
 
     while (remaining_input_ > 0) {
@@ -210,9 +212,6 @@ bool Reader::GetFloatNumber() {
                 goto __exit;
             }
             StringAddChar(c);
-            StringAddChar(input_[1]);
-            input_++;
-            remaining_input_--;
             found_E = true;
             break;
         case '\t':
@@ -229,8 +228,8 @@ bool Reader::GetFloatNumber() {
             if (found_pm || next_must_be_num) {
                 goto __exit;
             }
-            if (strings_.empty() ||
-                (strings_[strings_.size() - 1] != 'e' && strings_[strings_.size() - 1] != 'E')) {
+            prev_char = LastInsertChar();
+            if (prev_char == READ_CHAR_EOF || (prev_char != 'e' && prev_char != 'E')) {
                 goto __exit;
             }
             next_must_be_num = true;

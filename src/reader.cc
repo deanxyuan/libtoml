@@ -48,6 +48,10 @@ void Reader::StringAddChar(const char *ptr) { strings_.append(ptr); }
 void Reader::StringAddChar(const char *ptr, int count) { strings_.append(ptr, count); }
 void Reader::StringAddChar(int count, char ch) { strings_.append(count, ch); }
 void Reader::StringAddChar(const std::string &s) { strings_.append(s); }
+uint32_t Reader::LastInsertChar() {
+    size_t count = strings_.size();
+    return count == 0 ? READ_CHAR_EOF : strings_[count - 1];
+}
 
 bool Reader::IsValidCharForRawKey(uint32_t c) {
     if (c == '-' || c == '_' || (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') ||
@@ -294,27 +298,35 @@ bool Reader::GetValueImpl() {
         // 整数、浮点、或时间
         GetNumberValueImpl();
         break;
-    case 'a': // ana
-        if (StartsWith("ana")) {
+    case 'n': // nan
+        if (StartsWith("nan")) {
             node   = Node::CreateDouble(NAN);
             state_ = PARSE_STATUS_SUCCESS;
+            input_ += 3;
+            remaining_input_ -= 3;
         }
     case 'i': // inf
         if (StartsWith("inf")) {
             node   = Node::CreateDouble(INFINITY);
             state_ = PARSE_STATUS_SUCCESS;
+            input_ += 3;
+            remaining_input_ -= 3;
         }
         break;
     case 't': // true
         if (StartsWith("true")) {
             node   = Node::CreateBoolean(true);
             state_ = PARSE_STATUS_SUCCESS;
+            input_ += 4;
+            remaining_input_ -= 4;
         }
         break;
     case 'f': // false
         if (StartsWith("false")) {
             node   = Node::CreateBoolean(false);
             state_ = PARSE_STATUS_SUCCESS;
+            input_ += 5;
+            remaining_input_ -= 5;
         }
         break;
     case '[':
@@ -348,11 +360,11 @@ std::string Reader::Parse(const char *data, size_t len, Node *node) {
     Reader reader(data, len);
     reader.Run();
     if (reader.Result() != PARSE_STATUS_SUCCESS) {
-        return std::string();
+        return reader.error_;
     }
 
     std::swap(*node, reader.root_);
-    return reader.error_;
+    return std::string();
 }
 } // namespace internal
 

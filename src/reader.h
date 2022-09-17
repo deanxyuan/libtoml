@@ -33,6 +33,7 @@ namespace internal {
 class Reader {
 public:
     static std::string Parse(const char *data, size_t len, Node *node);
+    static constexpr uint32_t READ_CHAR_EOF = 0x7ffffff0;
 
     ~Reader();
 
@@ -83,6 +84,7 @@ private:
     void StringAddChar(const char *ptr, int count);
     void StringAddChar(int count, char ch);
     void StringAddChar(const std::string &s);
+    uint32_t LastInsertChar();
 
     void MoveForward(int offset);
 

@@ -68,18 +68,25 @@ TEST(Float, InfAndNan) {
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
     TOML::Node n1 = node.As<TOML::kObject>()->Get("sf1");
+    ASSERT_TRUE(std::isinf(n1.As<TOML::kDouble>()->Value()));
     ASSERT_EQ(n1.As<TOML::kDouble>()->Value(), INFINITY);
+
     TOML::Node n2 = node.As<TOML::kObject>()->Get("sf2");
+    ASSERT_TRUE(std::isinf(n2.As<TOML::kDouble>()->Value()));
     ASSERT_EQ(n2.As<TOML::kDouble>()->Value(), INFINITY);
+
     TOML::Node n3 = node.As<TOML::kObject>()->Get("sf3");
+    ASSERT_TRUE(std::isinf(n3.As<TOML::kDouble>()->Value()));
     ASSERT_EQ(n3.As<TOML::kDouble>()->Value(), INFINITY * -1);
 
     TOML::Node n4 = node.As<TOML::kObject>()->Get("sf4");
-    ASSERT_EQ(n4.As<TOML::kDouble>()->Value(), NAN);
+    ASSERT_TRUE(std::isnan(n4.As<TOML::kDouble>()->Value()));
+
     TOML::Node n5 = node.As<TOML::kObject>()->Get("sf5");
-    ASSERT_EQ(n5.As<TOML::kDouble>()->Value(), NAN);
+    ASSERT_TRUE(std::isnan(n5.As<TOML::kDouble>()->Value()));
+
     TOML::Node n6 = node.As<TOML::kObject>()->Get("sf6");
-    ASSERT_EQ(n6.As<TOML::kDouble>()->Value(), NAN);
+    ASSERT_TRUE(std::isnan(n6.As<TOML::kDouble>()->Value()));
 }
 
 int main(int argc, char *argv[]) {
