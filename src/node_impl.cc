@@ -73,16 +73,16 @@ void Integer::SetValue(uint64_t value) { *reinterpret_cast<uint64_t *>(value_) =
 Types Integer::Type() const { return Types::TOML_INTEGER; }
 
 // ------------------------------
-Double::Double()
+Float::Float()
     : NodeImpl()
     , value_(0) {}
-Double::Double(double d)
+Float::Float(double d)
     : NodeImpl()
     , value_(d) {}
-Double::~Double() {}
-double Double::Value() const { return value_; }
-void Double::SetValue(double value) { value_ = value; }
-Types Double::Type() const { return Types::TOML_DOUBLE; }
+Float::~Float() {}
+double Float::Value() const { return value_; }
+void Float::SetValue(double value) { value_ = value; }
+Types Float::Type() const { return Types::TOML_FLOAT; }
 
 // ------------------------------
 

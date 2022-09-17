@@ -86,8 +86,8 @@ Node Node::CreateNode(Types type) {
     case Types::TOML_INTEGER:
         impl = new Integer();
         break;
-    case Types::TOML_DOUBLE:
-        impl = new Double();
+    case Types::TOML_FLOAT:
+        impl = new Float();
         break;
     case Types::TOML_DATETIME:
         impl = new DateTime();
@@ -130,7 +130,7 @@ Node Node::CreateInteger(uint64_t n) {
 }
 
 Node Node::CreateDouble(double d) {
-    auto impl = new Double(d);
+    auto impl = new Float(d);
     impl->Ref();
     return Node(impl);
 }

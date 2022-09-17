@@ -120,19 +120,19 @@ struct Integer::RealType<false> {
     using type = uint64_t;
 };
 
-class Double : public NodeImpl {
+class Float : public NodeImpl {
     friend class Node;
 
 public:
-    ~Double();
+    ~Float();
 
     double Value() const;
     void SetValue(double);
     Types Type() const override;
 
 private:
-    Double();
-    Double(double d);
+    Float();
+    Float(double d);
 
     double value_;
 };

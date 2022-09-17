@@ -33,7 +33,7 @@ class NodeImpl;
 class Boolean;
 class String;
 class Integer;
-class Double;
+class Float;
 class DateTime;
 class Object;
 class Array;
@@ -55,8 +55,8 @@ struct ToNodeImpl<Types::TOML_INTEGER> {
     using type = TOML::Integer;
 };
 template <>
-struct ToNodeImpl<Types::TOML_DOUBLE> {
-    using type = TOML::Double;
+struct ToNodeImpl<Types::TOML_FLOAT> {
+    using type = TOML::Float;
 };
 template <>
 struct ToNodeImpl<Types::TOML_DATETIME> {

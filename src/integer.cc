@@ -73,7 +73,7 @@ void Reader::GetNumberValueImpl() {
                 node = Node::CreateInteger(StringToUInt());
             }
             break;
-        case TOML::Types::TOML_DOUBLE:
+        case TOML::Types::TOML_FLOAT:
             if (GetFloatNumber()) {
                 node = Node::CreateDouble(StringToDouble());
             }
@@ -463,7 +463,7 @@ Types Reader::TestPossibleType() {
         case 'E':
         case 'e':
         case '.':
-            type = Types::TOML_DOUBLE;
+            type = Types::TOML_FLOAT;
             goto __exit;
         case 'T':
         case '-':
