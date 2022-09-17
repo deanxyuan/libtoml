@@ -129,7 +129,7 @@ Node Node::CreateInteger(uint64_t n) {
     return Node(impl);
 }
 
-Node Node::CreateDouble(double d) {
+Node Node::CreateFloat(double d) {
     auto impl = new Float(d);
     impl->Ref();
     return Node(impl);

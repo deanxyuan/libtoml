@@ -14,7 +14,7 @@ void Reader::GetNumberWithPrefix() {
     switch (c) {
     case 'i': //+inf -inf
         if (StartsWith("inf")) {
-            node   = Node::CreateDouble(negative ? (INFINITY * (-1)) : INFINITY);
+            node   = Node::CreateFloat(negative ? (INFINITY * (-1)) : INFINITY);
             state_ = PARSE_STATUS_SUCCESS;
             input_ += 3;
             remaining_input_ -= 3;
@@ -22,7 +22,7 @@ void Reader::GetNumberWithPrefix() {
         break;
     case 'n': //+nan -nan
         if (StartsWith("nan")) {
-            node   = Node::CreateDouble(negative ? (NAN * (-1)) : NAN);
+            node   = Node::CreateFloat(NAN);
             state_ = PARSE_STATUS_SUCCESS;
             input_ += 3;
             remaining_input_ -= 3;
@@ -34,7 +34,7 @@ void Reader::GetNumberWithPrefix() {
             if (GetFloatNumber()) {
                 auto value = StringToDouble();
                 // 正负处理
-                node   = Node::CreateDouble(negative ? (value * (-1)) : value);
+                node   = Node::CreateFloat(negative ? (value * (-1)) : value);
                 state_ = PARSE_STATUS_SUCCESS;
             }
         } else {
@@ -75,7 +75,7 @@ void Reader::GetNumberValueImpl() {
             break;
         case TOML::Types::TOML_FLOAT:
             if (GetFloatNumber()) {
-                node = Node::CreateDouble(StringToDouble());
+                node = Node::CreateFloat(StringToDouble());
             }
             break;
         default:

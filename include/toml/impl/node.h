@@ -79,7 +79,7 @@ public:
     static Node CreateString(const std::string &s);
     static Node CreateInteger(int64_t n);
     static Node CreateInteger(uint64_t n);
-    static Node CreateDouble(double d);
+    static Node CreateFloat(double d);
     static Node CreateDateTime(const std::string &s);
     static Node CreateObject();
     static Node CreateArray();

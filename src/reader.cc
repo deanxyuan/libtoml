@@ -300,14 +300,14 @@ bool Reader::GetValueImpl() {
         break;
     case 'n': // nan
         if (StartsWith("nan")) {
-            node   = Node::CreateDouble(NAN);
+            node   = Node::CreateFloat(NAN);
             state_ = PARSE_STATUS_SUCCESS;
             input_ += 3;
             remaining_input_ -= 3;
         }
     case 'i': // inf
         if (StartsWith("inf")) {
-            node   = Node::CreateDouble(INFINITY);
+            node   = Node::CreateFloat(INFINITY);
             state_ = PARSE_STATUS_SUCCESS;
             input_ += 3;
             remaining_input_ -= 3;

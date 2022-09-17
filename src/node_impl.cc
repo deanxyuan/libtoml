@@ -103,7 +103,7 @@ void DateTime::SetRawString(const std::string &s) { raw_ = s; }
 const DateTime::Detail &DateTime::Value() const { return value_; }
 void DateTime::SetValue(DateTime::Detail *value) { value_ = *value; }
 Types DateTime::Type() const { return Types::TOML_DATETIME; }
-
+void DateTime::InitDetail(DateTime::Detail *detail) { memset(detail, 0, sizeof(*detail)); }
 void DateTime::Detail::SetYear(uint16_t y) {
     buffer.tm_year = y;
     year           = &buffer.tm_year;

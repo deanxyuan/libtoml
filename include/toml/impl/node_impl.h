@@ -168,7 +168,7 @@ public:
         void SetUTCOffset(uint32_t off);
         void SetTimeZone(const char *z);
     };
-
+    static void InitDetail(DateTime::Detail *detail);
     ~DateTime();
 
     const std::string &RawString() const;

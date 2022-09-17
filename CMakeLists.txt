@@ -79,6 +79,7 @@ if(LIBTOML_BUILD_TESTS)
     add_test(NAME "${test_target_name}" COMMAND "${test_target_name}" "${PROJECT_SOURCE_DIR}")
     endfunction(libtoml_unit_test)
 
+    libtoml_unit_test("${PROJECT_SOURCE_DIR}/test/boolean_test.cc")
     libtoml_unit_test("${PROJECT_SOURCE_DIR}/test/comment_test.cc")
     libtoml_unit_test("${PROJECT_SOURCE_DIR}/test/string_test.cc")
     libtoml_unit_test("${PROJECT_SOURCE_DIR}/test/integer_test.cc")
