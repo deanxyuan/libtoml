@@ -27,6 +27,7 @@
 #include <stack>
 
 #include "toml/impl/node.h"
+#include "toml/impl/node_impl.h"
 
 namespace TOML {
 namespace internal {
@@ -72,6 +73,11 @@ private:
 
     // 获取日期时间
     bool GetDateTimeImpl();
+    bool GetTimeImpl();
+    bool GetDateImpl();
+    bool ReadTimeString();
+    bool ReadDateString();
+    bool ReadUTCOffsetString();
 
     bool IsValidCharForRawKey(uint32_t c);
     bool IsValidCharForHex(uint32_t c);
@@ -103,6 +109,9 @@ private:
     double StringToDouble();
     int64_t StringToInt(int radix = 10);
     uint64_t StringToUInt(int radix = 10);
+    uint32_t StringToInt(const std::string &str);
+    uint32_t StringToInt(const char *buff);
+    int BufferToInt(const uint8_t *buff, size_t len);
 
 private:
     const uint8_t *original_input_;
@@ -110,6 +119,7 @@ private:
     size_t remaining_input_;
 
     Status state_;
+    DateTime::Detail dt_;
 
     std::string key_;
     std::string strings_;

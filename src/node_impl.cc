@@ -134,8 +134,12 @@ void DateTime::Detail::SetMicroSecond(uint32_t us) {
     buffer.tm_usec = us;
     microsecond    = &buffer.tm_usec;
 }
-void DateTime::Detail::SetUTCOffset(uint32_t off) {
-    buffer.tm_gmtoff = off / (60 * 60);
+void DateTime::Detail::SetGMTOffset(uint8_t h, uint8_t m) {
+    buffer.tm_gmtoff = static_cast<int>(h) * 3600 + static_cast<int>(m) * 60;
+    gmtoff           = &buffer.tm_gmtoff;
+}
+void DateTime::Detail::SetGMTOffset(uint32_t off) {
+    buffer.tm_gmtoff = off;
     gmtoff           = &buffer.tm_gmtoff;
 }
 void DateTime::Detail::SetTimeZone(const char *z) {

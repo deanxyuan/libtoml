@@ -165,7 +165,8 @@ public:
         void SetMinute(uint8_t m);
         void SetSecond(uint16_t s);
         void SetMicroSecond(uint32_t us);
-        void SetUTCOffset(uint32_t off);
+        void SetGMTOffset(uint8_t h, uint8_t m);
+        void SetGMTOffset(uint32_t off);
         void SetTimeZone(const char *z);
     };
     static void InitDetail(DateTime::Detail *detail);

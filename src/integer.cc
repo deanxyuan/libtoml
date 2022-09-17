@@ -81,6 +81,7 @@ void Reader::GetNumberValueImpl() {
         default:
             if (GetDateTimeImpl()) {
                 node = Node::CreateDateTime(strings_);
+                node.As<kDateTime>()->SetValue(&dt_);
             }
             break;
         }
@@ -451,6 +452,14 @@ int64_t Reader::StringToInt(int radix) {
 uint64_t Reader::StringToUInt(int radix) {
     char *endptr = nullptr;
     return std::strtoull(strings_.data(), &endptr, radix);
+}
+uint32_t Reader::StringToInt(const std::string &str) {
+    char *endptr = nullptr;
+    return std::strtoul(str.data(), &endptr, 10);
+}
+uint32_t Reader::StringToInt(const char *buff) {
+    char *endptr = nullptr;
+    return std::strtoul(buff, &endptr, 10);
 }
 Types Reader::TestPossibleType() {
 
