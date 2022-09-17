@@ -18,7 +18,7 @@
 
 #include "src/reader.h"
 #include <string.h>
-
+#include <math.h>
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -52,6 +52,19 @@ void Reader::StringAddChar(const std::string &s) { strings_.append(s); }
 bool Reader::IsValidCharForRawKey(uint32_t c) {
     if (c == '-' || c == '_' || (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') ||
         (c >= 'a' && c <= 'z')) {
+        return true;
+    }
+    return false;
+}
+bool Reader::IsValidCharForHex(uint32_t c) {
+    if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')) {
+        return true;
+    }
+    return false;
+}
+
+bool Reader::IsSpaceOrNextLine(uint32_t c) {
+    if (c == ' ' || c == '\t' || c == '\r' || c == '\n') {
         return true;
     }
     return false;
@@ -118,9 +131,6 @@ void Reader::Run() {
             if (!GetKeyImpl(c) || !CheckSeparator() || !GetValueImpl()) {
                 goto __exit;
             }
-            ShowKey();
-            ShowValue();
-            UpdateKeyValue();
             break;
         case '[':
             // 找 table 的结束符 [table]
@@ -133,9 +143,6 @@ void Reader::Run() {
             if (!GetRawKeyImpl() || !CheckSeparator() || !GetValueImpl()) {
                 goto __exit;
             }
-            ShowKey();
-            ShowValue();
-            UpdateKeyValue();
             break;
         }
     }
@@ -238,6 +245,7 @@ bool Reader::GetValueImpl() {
     state_ = PARSE_STATUS_ERROR;
 
     uint8_t c;
+    Node node;
 
     while (remaining_input_ > 0) {
         c = *input_;
@@ -271,6 +279,7 @@ bool Reader::GetValueImpl() {
         break;
     case '+':
     case '-':
+        GetNumberWithPrefix();
         break;
     case '0':
     case '1':
@@ -283,13 +292,30 @@ bool Reader::GetValueImpl() {
     case '8':
     case '9':
         // 整数、浮点、或时间
+        GetNumberValueImpl();
         break;
     case 'a': // ana
+        if (StartsWith("ana")) {
+            node   = Node::CreateDouble(NAN);
+            state_ = PARSE_STATUS_SUCCESS;
+        }
     case 'i': // inf
+        if (StartsWith("inf")) {
+            node   = Node::CreateDouble(INFINITY);
+            state_ = PARSE_STATUS_SUCCESS;
+        }
         break;
-    case 't':
-    case 'f':
-        // 布尔值
+    case 't': // true
+        if (StartsWith("true")) {
+            node   = Node::CreateBoolean(true);
+            state_ = PARSE_STATUS_SUCCESS;
+        }
+        break;
+    case 'f': // false
+        if (StartsWith("false")) {
+            node   = Node::CreateBoolean(false);
+            state_ = PARSE_STATUS_SUCCESS;
+        }
         break;
     case '[':
         // 数组
@@ -301,27 +327,19 @@ bool Reader::GetValueImpl() {
         break;
     }
 
+    if (node) UpdateNode(node);
     return state_ == PARSE_STATUS_SUCCESS;
 }
 
-void Reader::ShowKey() {
-    std::stringstream ss;
-    ss << "key:[" << key_ << "]";
-    std::cout << ss.str() << std::endl;
-}
+void Reader::UpdateKeyValue() { UpdateNode(Node::CreateString(strings_)); }
 
-void Reader::ShowValue() {
-    std::stringstream ss;
-    ss << "value:[" << strings_ << "]";
-    std::cout << ss.str() << std::endl;
-}
-
-void Reader::UpdateKeyValue() {
-    Node value = Node::CreateString(strings_);
-
-    Node &node = stack_.top();
-    node.As<kObject>()->Insert(key_, value);
-
+void Reader::UpdateNode(Node node) {
+    Node &parent = stack_.top();
+    if (parent.Type() == Types::TOML_ARRAY) {
+        parent.As<kArray>()->PushBack(node);
+    } else {
+        parent.As<kObject>()->Insert(key_, node);
+    }
     key_.clear();
     strings_.clear();
 }

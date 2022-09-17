@@ -28,7 +28,11 @@ bool Reader::GetStringValueImpl() {
             GetBasicString();
         }
     }
-    return state_ == PARSE_STATUS_SUCCESS;
+    if (state_ == PARSE_STATUS_SUCCESS) {
+        UpdateKeyValue();
+        return true;
+    }
+    return false;
 }
 
 // 单行字面量字符串解析
@@ -122,9 +126,6 @@ void Reader::GetMultiLineBasicString() {
     int count   = 0;
     std::string utf8;
 
-    const uint8_t *backup = nullptr;
-    size_t backup_size    = 0;
-
     // 至少应该包含 """
     if (remaining_input_ < 3) {
         return;
@@ -214,27 +215,18 @@ void Reader::GetMultiLineBasicString() {
             } else {
                 // 当一行的最后一个非空白字符是未被转义的 \ 时，它会连同它后面的所
                 // 有空白（包括换行）一起被去除，直到下一个非空白字符或结束引号为止
-                backup_size = remaining_input_;
-                backup      = input_;
-                count       = 0;
 
-                while (static_cast<int>(backup_size) - 1 > 0) {
-                    ch = *(backup + 1);
+                for (i = 0; i < static_cast<int>(remaining_input_) - 1; i++) {
+                    ch = input_[i + 1];
 
                     if (!IsValidCharForString(true, ch)) {
                         goto __exit;
                     }
                     if (ch == '\t' || ch == ' ') {
-                        count++;
-                        backup++;
-                        backup_size--;
                         continue;
                     }
                     if (ch == '\r' || ch == '\n') {
                         foldup = true;
-                        count++;
-                        backup++;
-                        backup_size--;
                         continue;
                     }
 
@@ -242,8 +234,8 @@ void Reader::GetMultiLineBasicString() {
                     break;
                 }
                 if (foldup) {
-                    input_ += count;
-                    remaining_input_ -= count;
+                    input_ += i;
+                    remaining_input_ -= i;
                 } else {
                     transferred = true;
                 }

@@ -61,10 +61,20 @@ private:
 
     // 获取带正负号value（有正负数）
     void GetNumberWithPrefix();
-    void GetDecimalNumber(bool negative);
-    void GetFloatNumber(bool negative);
+    void GetNumberValueImpl();
+    bool GetDecimalNumber();
+    bool GetFloatNumber();
+    bool GetHexNumber();
+    bool GetBinaryNumber();
+    bool GetOctNumber();
+    //--------------------------------
+
+    // 获取日期时间
+    bool GetDateTimeImpl();
 
     bool IsValidCharForRawKey(uint32_t c);
+    bool IsValidCharForHex(uint32_t c);
+    bool IsSpaceOrNextLine(uint32_t c);
 
     bool StartsWith(const char *prefix);
     void SetKey();
@@ -78,14 +88,19 @@ private:
 
     // 从当前位置开始，测试连续有多少个相同的字符
     int TestSameCharCount(uint8_t ch);
-    int TestSameCharCountEx(uint8_t ch, uint8_t skip);
+
+    // 浮点，十进制，日期时间
+    Types TestPossibleType();
 
     // 当前数据可能是浮点数，返回true
     bool TestNumberIsFloat();
 
-    void ShowKey();
-    void ShowValue();
     void UpdateKeyValue();
+    void UpdateNode(Node node);
+
+    double StringToDouble();
+    int64_t StringToInt(int radix = 10);
+    uint64_t StringToUInt(int radix = 10);
 
 private:
     const uint8_t *original_input_;
@@ -97,10 +112,6 @@ private:
     std::string key_;
     std::string strings_;
     std::string error_;
-
-    double d_value_;
-    int64_t i_value_;
-    uint64_t u_value_;
 
     Node root_;
     std::stack<Node> stack_;

@@ -6,18 +6,6 @@
 #error "Missing Macro Definition: TEST_CASE_DIR, please check the CMakeLists.txt"
 #endif
 
-TEST(String, Comment) {
-    std::string path = TEST_CASE_DIR "/comment.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kObject>()->Get("key");
-    ASSERT_EQ(n1.As<TOML::kString>()->Value(), std::string("value"));
-    TOML::Node n2 = node.As<TOML::kObject>()->Get("another");
-    ASSERT_EQ(n2.As<TOML::kString>()->Value(), std::string("# This is not a comment"));
-}
-
 TEST(String, EscapedCharacters) {
     std::string path = TEST_CASE_DIR "/string0.toml";
     std::string error;
