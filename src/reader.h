@@ -86,13 +86,11 @@ private:
     bool StartsWith(const char *prefix);
     void SetKey();
     void StringAddChar(uint32_t c);
-    void StringAddChar(const char *ptr);
-    void StringAddChar(const char *ptr, int count);
-    void StringAddChar(int count, char ch);
-    void StringAddChar(const std::string &s);
+    void StringAddPtr(const char *ptr);
+    void StringAddPtr(const char *ptr, size_t count);
+    void StringAddCharEx(int count, char ch);
+    void StringAddString(const std::string &s);
     uint32_t LastInsertChar();
-
-    void MoveForward(int offset);
 
     // 从当前位置开始，测试连续有多少个相同的字符
     int TestSameCharCount(uint8_t ch);
@@ -112,6 +110,7 @@ private:
     uint32_t StringToInt(const std::string &str);
     uint32_t StringToInt(const char *buff);
     int BufferToInt(const uint8_t *buff, size_t len);
+    int BufferToInt(const char *buff, int len);
 
 private:
     const uint8_t *original_input_;

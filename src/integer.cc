@@ -104,11 +104,9 @@ bool Reader::GetDecimalNumber() {
             next_must_be_num = true;
             break;
         case '0':
-            if (strings_.empty()) {
-                // 前导零是不允许的，判断是否为一个单独的 "0"
-                if (remaining_input_ > 1 && !IsSpaceOrNextLine(input_[1]) && input_[1] != '#') {
-                    goto __exit;
-                }
+            if (strings_.size() == 1 && strings_[0] == '0') {
+                // 前导零是不允许的，判断是否出现重复的前导 "0"
+                goto __exit;
             }
         case '1':
         case '2':
@@ -141,17 +139,7 @@ bool Reader::GetDecimalNumber() {
         remaining_input_--;
     }
 __exit:
-    if (state_ == PARSE_STATUS_SUCCESS) {
-        // 判断数据格式是否正确
-        if (strings_.size() > 1 && strings_[0] == '0') {
-            state_ = PARSE_STATUS_ERROR;
-            input_ -= strings_.size();
-            remaining_input_ += strings_.size();
-            return false;
-        }
-        return true;
-    }
-    return false;
+    return (state_ == PARSE_STATUS_SUCCESS);
 }
 
 bool Reader::GetFloatNumber() {
@@ -161,9 +149,9 @@ bool Reader::GetFloatNumber() {
     bool found_E   = false; // e E
     bool found_pm  = false; // + -
 
-    uint32_t prev_char = 0;
-
     uint8_t c = 0;
+
+    uint32_t prev_char = 0;
 
     while (remaining_input_ > 0) {
         c = *input_;
@@ -185,6 +173,10 @@ bool Reader::GetFloatNumber() {
             break;
 
         case '0':
+            if (strings_.size() == 1 && strings_[0] == '0') {
+                // 前导零是不允许的，判断是否出现重复的前导 "0"
+                goto __exit;
+            }
         case '1':
         case '2':
         case '3':
@@ -206,12 +198,7 @@ bool Reader::GetFloatNumber() {
                 goto __exit;
             }
             // E后面不能有空格，只能为数字或+-
-            if (remaining_input_ <= 1) {
-                goto __exit;
-            }
-            if (input_[1] != '+' && input_[1] != '-' && (input_[1] < '0' || input_[1] > '9')) {
-                goto __exit;
-            }
+            next_must_be_num = true;
             StringAddChar(c);
             found_E = true;
             break;
@@ -226,14 +213,19 @@ bool Reader::GetFloatNumber() {
             goto __exit;
         case '+':
         case '-':
-            if (found_pm || next_must_be_num) {
+            if (found_pm) {
                 goto __exit;
             }
-            prev_char = LastInsertChar();
-            if (prev_char == READ_CHAR_EOF || (prev_char != 'e' && prev_char != 'E')) {
-                goto __exit;
+            if (next_must_be_num) {
+                prev_char = LastInsertChar();
+                if (prev_char == 'e' || prev_char == 'E') {
+                    // E后面允许出现 +/-
+                } else {
+                    goto __exit;
+                }
+            } else {
+                next_must_be_num = true;
             }
-            next_must_be_num = true;
             StringAddChar(c);
             found_pm = true;
             break;
@@ -245,19 +237,7 @@ bool Reader::GetFloatNumber() {
         remaining_input_--;
     }
 __exit:
-    if (state_ == PARSE_STATUS_SUCCESS) {
-        // 判断小数点之前(已添加的)数据格式是否正确
-        if (strings_.size() > 1) {
-            if (strings_[0] == '0' && strings_[1] != '.') {
-                state_ = PARSE_STATUS_ERROR;
-                input_ -= strings_.size();
-                remaining_input_ += strings_.size();
-                return false;
-            }
-        }
-        return true;
-    }
-    return false;
+    return (state_ == PARSE_STATUS_SUCCESS);
 }
 
 bool Reader::GetHexNumber() {
@@ -427,12 +407,10 @@ bool Reader::TestNumberIsFloat() {
     for (size_t i = 0; i < remaining_input_; i++) {
         uint8_t c = input_[i];
 
-        if (IsSpaceOrNextLine(c)) {
+        if (IsSpaceOrNextLine(c) || c == '#') {
             break;
         }
-        if (c == '#') {
-            break;
-        }
+
         if (c == '.' || c == 'e' || c == 'E') {
             return true;
         }
@@ -483,6 +461,7 @@ Types Reader::TestPossibleType() {
         case '\r':
         case '\n':
         case ' ':
+        case '#':
             goto __exit;
         default:
             break;

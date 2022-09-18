@@ -117,9 +117,4 @@ bool IsByteExistsInTarget(const char *target, uint8_t cc) {
     return false;
 };
 
-int FindNextChar(const uint8_t *buff, int ch, size_t count) {
-    auto ptr = reinterpret_cast<const uint8_t *>(memchr(buff, ch, count));
-    if (ptr == NULL) return -1;
-    return static_cast<int>(ptr - buff);
-}
 } // namespace TOML

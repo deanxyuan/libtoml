@@ -100,7 +100,7 @@ void Reader::GetMultiLineLiteralString() {
                 state_ = PARSE_STATUS_SUCCESS;
                 break;
             } else {
-                StringAddChar(count - 3, '\'');
+                StringAddCharEx(count - 3, '\'');
                 state_ = PARSE_STATUS_SUCCESS;
                 break;
             }
@@ -202,7 +202,7 @@ void Reader::GetMultiLineBasicString() {
                     state_ = PARSE_STATUS_SUCCESS;
                     goto __exit;
                 } else {
-                    StringAddChar(count - 3, '\"');
+                    StringAddCharEx(count - 3, '\"');
                     state_ = PARSE_STATUS_SUCCESS;
                     goto __exit;
                 }
@@ -275,7 +275,7 @@ void Reader::GetMultiLineBasicString() {
                 // 无效 UNICODE
                 goto __exit;
             }
-            StringAddChar(utf8);
+            StringAddString(utf8);
             transferred = false;
             break;
         }
@@ -405,7 +405,7 @@ void Reader::GetBasicString() {
                 // 无效 UNICODE
                 goto __exit;
             }
-            StringAddChar(utf8);
+            StringAddString(utf8);
             transferred = false;
             break;
         }

@@ -1,5 +1,5 @@
 #include "src/reader.h"
-#include <time.h>
+#include <string.h>
 #include "src/common.h"
 
 namespace TOML {
@@ -39,9 +39,6 @@ bool Reader::GetTimeImpl() {
 
     if (c == 'Z') {
         StringAddChar(c);
-        if (IsReachTheEnd() || IsSpaceOrNextLine(*input_) || *input_ == '#') {
-            return true;
-        }
         return true;
     }
 
@@ -49,9 +46,10 @@ bool Reader::GetTimeImpl() {
         // read microseconds
         StringAddChar(c);
 
-        char buff[10] = {0};
-        size_t i      = 0;
+        char buff[12];
+        memset(buff, '0', sizeof(buff));
 
+        size_t i = 0;
         for (; i < remaining_input_ && i < 9; i++) {
             uint8_t ch = input_[i];
             if (isdigit(ch)) {
@@ -65,20 +63,20 @@ bool Reader::GetTimeImpl() {
         }
         if (i <= 3) {
             // milliseconds
-            dt_.SetMicroSecond(StringToInt(buff) * 1000);
+            dt_.SetMicroSecond(BufferToInt(buff, 3) * 1000);
         } else if (i <= 6) {
             // microseconds
-            dt_.SetMicroSecond(StringToInt(buff));
+            dt_.SetMicroSecond(BufferToInt(buff, 6));
         } else {
             // nanoseconds
-            dt_.SetMicroSecond(StringToInt(buff) / 1000);
+            dt_.SetMicroSecond(BufferToInt(buff, 9) / 1000);
         }
 
-        StringAddChar(buff, i);
+        StringAddPtr(buff, i);
         input_ += i;
         remaining_input_ -= i;
 
-        if (IsReachTheEnd() || IsSpaceOrNextLine(*input_) || *input_ == '#') {
+        if (IsReachTheEnd()) {
             return true;
         }
         c = *input_++;
@@ -98,11 +96,21 @@ bool Reader::GetDateImpl() {
             return true;
         }
 
-        if (*input_ == 'T' || *input_ == ' ') {
+        if (*input_ == 'T') {
             StringAddChar(*input_);
             input_++;
             remaining_input_--;
             return GetTimeImpl();
+        }
+        if (*input_ == ' ') {
+            // 尝试加载时间
+            if (remaining_input_ > 1 && input_[1] >= '0' && input_[1] >= '9') {
+                StringAddChar(*input_);
+                input_++;
+                remaining_input_--;
+                return GetTimeImpl();
+            }
+            return true;
         }
     }
     return false;
@@ -113,7 +121,7 @@ bool Reader::ReadUTCOffsetString() {
     if (remaining_input_ < 5) return false;
     if (input_[2] == ':') {
         if (isdigit(input_[0]) && isdigit(input_[1]) && isdigit(input_[3]) && isdigit(input_[4])) {
-            StringAddChar(reinterpret_cast<const char *>(input_), 5);
+            StringAddPtr(reinterpret_cast<const char *>(input_), 5);
             int hh = BufferToInt(&input_[0], 2);
             int mm = BufferToInt(&input_[3], 2);
             dt_.SetGMTOffset(hh, mm);
@@ -131,7 +139,7 @@ bool Reader::ReadTimeString() {
     if (input_[2] == ':' && input_[5] == ':') {
         if (isdigit(input_[0]) && isdigit(input_[1]) && isdigit(input_[3]) && isdigit(input_[4]) &&
             isdigit(input_[6]) && isdigit(input_[7])) {
-            StringAddChar(reinterpret_cast<const char *>(input_), 8);
+            StringAddPtr(reinterpret_cast<const char *>(input_), 8);
             dt_.SetHour(BufferToInt(&input_[0], 2));
             dt_.SetMinute(BufferToInt(&input_[3], 2));
             dt_.SetSecond(BufferToInt(&input_[6], 2));
@@ -149,7 +157,7 @@ bool Reader::ReadDateString() {
     if (input_[4] == '-' && input_[7] == '-') {
         if (isdigit(input_[0]) && isdigit(input_[1]) && isdigit(input_[2]) && isdigit(input_[3]) &&
             isdigit(input_[5]) && isdigit(input_[6]) && isdigit(input_[8]) && isdigit(input_[9])) {
-            StringAddChar(reinterpret_cast<const char *>(input_), 10);
+            StringAddPtr(reinterpret_cast<const char *>(input_), 10);
             dt_.SetYear(BufferToInt(&input_[0], 4));
             dt_.SetMonth(BufferToInt(&input_[5], 2));
             dt_.SetDay(BufferToInt(&input_[8], 2));
@@ -163,6 +171,10 @@ bool Reader::ReadDateString() {
 
 int Reader::BufferToInt(const uint8_t *buff, size_t len) {
     std::string str(reinterpret_cast<const char *>(buff), len);
+    return atoi(str.c_str());
+}
+int Reader::BufferToInt(const char *buff, int len) {
+    std::string str(buff, len);
     return atoi(str.c_str());
 }
 } // namespace internal

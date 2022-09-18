@@ -51,14 +51,5 @@ bool IsValidCharForString(bool multiline, uint8_t ch);
  */
 bool IsByteExistsInTarget(const char *target, uint8_t cc);
 
-/**
- * @brief Search for the next specified character
- * @param buff Starting address of the memory to be searched
- * @param ch The byte for comparison
- * @param count Range of maximum search (bytes)
- * @return If found, return the offset from the starting position,
- *         otherwise return -1
- */
-int FindNextChar(const uint8_t *buff, int ch, size_t count);
 } // namespace TOML
 #endif // TOML_SRC_COMMON_H_

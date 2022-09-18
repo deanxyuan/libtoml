@@ -44,15 +44,14 @@ void Reader::SetKey() {
 }
 
 void Reader::StringAddChar(uint32_t c) { strings_.push_back(static_cast<uint8_t>(c)); }
-void Reader::StringAddChar(const char *ptr) { strings_.append(ptr); }
-void Reader::StringAddChar(const char *ptr, int count) { strings_.append(ptr, count); }
-void Reader::StringAddChar(int count, char ch) { strings_.append(count, ch); }
-void Reader::StringAddChar(const std::string &s) { strings_.append(s); }
+void Reader::StringAddPtr(const char *ptr) { strings_.append(ptr); }
+void Reader::StringAddPtr(const char *ptr, size_t count) { strings_.append(ptr, count); }
+void Reader::StringAddCharEx(int count, char ch) { strings_.append(count, ch); }
+void Reader::StringAddString(const std::string &s) { strings_.append(s); }
 uint32_t Reader::LastInsertChar() {
     size_t count = strings_.size();
     return count == 0 ? READ_CHAR_EOF : strings_[count - 1];
 }
-
 bool Reader::IsValidCharForRawKey(uint32_t c) {
     if (c == '-' || c == '_' || (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') ||
         (c >= 'a' && c <= 'z')) {
@@ -79,18 +78,12 @@ bool Reader::StartsWith(const char *prefix) {
     return remaining_input_ >= prefix_len && (memcmp(input_, prefix, prefix_len) == 0);
 }
 
-void Reader::MoveForward(int offset) {
-    input_ += offset;
-    remaining_input_ -= offset;
-}
-
 void Reader::Run() {
 
     root_ = Node::CreateObject();
     stack_.push(root_);
 
-    int offset = 0;
-    uint8_t c  = 0;
+    uint8_t c = 0;
 
     while (remaining_input_ > 0) {
 
@@ -101,7 +94,7 @@ void Reader::Run() {
         // 3. array = []
         // 4. object = {} 内联对象
     __re_search:
-        // step 1 : skip space chars
+        // step 1 : 跳过前缀空格
         while (remaining_input_ > 0) {
             c = *input_;
 
@@ -118,16 +111,23 @@ void Reader::Run() {
             goto __exit;
         }
 
+        // step 2 : 解析一组有效数据 (一行或多行)
         switch (c) {
         case '#':
             // 当前注释，找下一个换行
-            offset = FindNextChar(input_, '\n', remaining_input_);
-            if (offset == -1) {
-                // 找不到新行，表示到结尾，解析结束
-                state_ = PARSE_STATUS_SUCCESS;
-                goto __exit;
-            }
-            MoveForward(offset + 1);
+            do {
+                c = *++input_;
+                remaining_input_--;
+                if (c == '\r' || c == '\n') {
+                    break;
+                }
+
+                // 除制表符以外的控制字符（U+0000 至 U+0008，U+000A 至
+                // U+001F，U+007F）不允许出现在注释中
+                if ((0 <= c && c <= 0x08) || (0x0a <= c && c <= 0x1f) || (c == 0x7f)) {
+                    goto __exit;
+                }
+            } while (remaining_input_ > 0);
             goto __re_search;
         case '\'':
         case '\"':
@@ -148,6 +148,21 @@ void Reader::Run() {
                 goto __exit;
             }
             break;
+        }
+
+        // step 3 : 验证该组有效数据后缀
+        while (remaining_input_ > 0) {
+            c = *input_;
+            if (c == ' ' || c == '\t' || c == '\r') {
+                input_++;
+                remaining_input_--;
+                continue;
+            }
+            if (c == '\n' || c == '#') {
+                break;
+            }
+            state_ = PARSE_STATUS_ERROR;
+            goto __exit;
         }
     }
 __exit:
