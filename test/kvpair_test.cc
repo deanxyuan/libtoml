@@ -15,7 +15,7 @@ TEST(KVPair, Basic) {
     ASSERT_EQ(n1.As<TOML::kString>()->Value(), std::string("value"));
 }
 
-TEST(KVPair, Basic) {
+TEST(KVPair, Inlvaid1) {
     std::string path = TEST_CASE_DIR "/kvpair1.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -23,7 +23,7 @@ TEST(KVPair, Basic) {
     ASSERT_FALSE(node);
 }
 
-TEST(KVPair, Basic) {
+TEST(KVPair, Inlvaid2) {
     std::string path = TEST_CASE_DIR "/kvpair2.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);

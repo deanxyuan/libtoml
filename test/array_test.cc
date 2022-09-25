@@ -88,12 +88,18 @@ TEST(Array, BasicTest) {
 
     TOML::Node numbers = node.As<TOML::kObject>()->Get("numbers");
     ASSERT_EQ(numbers.As<TOML::kArray>()->size(), 6);
-    ASSERT_TRUE(CheckArrayFloatValue(string_array, 0, 0.1));
-    ASSERT_TRUE(CheckArrayFloatValue(string_array, 1, 0.2));
-    ASSERT_TRUE(CheckArrayFloatValue(string_array, 2, 0.5));
-    ASSERT_TRUE(CheckArrayIntValue(string_array, 3, 1));
-    ASSERT_TRUE(CheckArrayIntValue(string_array, 4, 2));
-    ASSERT_TRUE(CheckArrayIntValue(string_array, 5, 5));
+    TOML::Node f1 = numbers.As<TOML::kArray>()->At(0);
+    ASSERT_FLOAT_EQ(f1.As<TOML::kFloat>()->Value(), 0.1);
+
+    TOML::Node f2 = numbers.As<TOML::kArray>()->At(1);
+    ASSERT_FLOAT_EQ(f2.As<TOML::kFloat>()->Value(), 0.2);
+
+    TOML::Node f3 = numbers.As<TOML::kArray>()->At(2);
+    ASSERT_FLOAT_EQ(f3.As<TOML::kFloat>()->Value(), 0.5);
+
+    ASSERT_TRUE(CheckArrayIntValue(numbers, 3, 1));
+    ASSERT_TRUE(CheckArrayIntValue(numbers, 4, 2));
+    ASSERT_TRUE(CheckArrayIntValue(numbers, 5, 5));
 
     TOML::Node contributors = node.As<TOML::kObject>()->Get("contributors");
     ASSERT_EQ(contributors.As<TOML::kArray>()->size(), 2);
