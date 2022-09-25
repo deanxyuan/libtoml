@@ -29,7 +29,7 @@ namespace internal {
 // 最后一对键值对后不允许终逗号（也称为尾逗号）
 // 不允许花括号中出现任何换行，除非在值中它们合法
 bool Reader::GetInlineTableImpl() {
-    const int depth = StackDepth();
+    int depth = StackDepth();
 
     state_ = PARSE_STATUS_ERROR;
 
@@ -166,7 +166,11 @@ bool Reader::GetInlineTableImpl() {
                 input_++;
                 remaining_input_--;
             } else if (c == '\'' || c == '\"' || IsValidCharForRawKey(c)) {
-                if (!ParseComplexKey() || !UsingComplexKey() || !CheckSeparator()) {
+                if (!ParseComplexKey()) {
+                    goto __exit;
+                }
+                depth += static_cast<int>(path_.size() - 1);
+                if (!UsingComplexKey() || !CheckSeparator()) {
                     goto __exit;
                 }
                 need_value_or_key = true;
