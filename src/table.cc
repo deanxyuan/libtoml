@@ -145,7 +145,7 @@ bool Reader::GetInlineTableImpl() {
                 find_a_separator = false;
                 break;
             case '}':
-                if (find_a_separator || !PopStack(Types::TOML_OBJECT)) {
+                if (find_a_separator || !InlinedTablePop()) {
                     goto __exit;
                 }
                 input_++;

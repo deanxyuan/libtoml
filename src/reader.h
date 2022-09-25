@@ -122,6 +122,8 @@ private:
     void UpdateNode(const Node &node);
     void PushStack(const Node &node);
     bool PopStack(Types type);
+    bool InlinedTablePop();
+
     Node PushEmptyObject();
     Node PushEmptyArray();
     void PrintNode(const Node &node);

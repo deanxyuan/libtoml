@@ -129,6 +129,7 @@ TEST(Table, RedefineTest1) {
     ASSERT_FALSE(error.empty());
     ASSERT_FALSE(node);
 }
+
 TEST(Table, RedefineTest2) {
     std::string path = TEST_CASE_DIR "/tab06.toml";
     std::string error;

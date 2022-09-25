@@ -106,6 +106,10 @@ bool Reader::UsingComplexKey() {
                 desc_ = "\"" + key + "\" already exists and it is not an object";
                 return false;
             }
+            if (obj.As<kObject>()->Inlined()) {
+                desc_ = "\"" + key + "\" is an inline table and cannot be modified";
+                return false;
+            }
         } else {
             obj = Node::CreateObject();
             parent.As<kObject>()->Insert(key, obj);
@@ -116,6 +120,10 @@ bool Reader::UsingComplexKey() {
     }
 
     auto key = path_[count - 1];
+    if (!parent || parent.Type() != Types::TOML_OBJECT) {
+        desc_ = "internal error";
+        return false;
+    }
     if (parent.As<kObject>()->Exists(key)) {
         desc_ = "\"" + key + "\" already exists";
         return false;
@@ -173,7 +181,7 @@ bool Reader::GetTitleOfTableImpl() {
                 }
             }
             find_a_separator = false;
-            break;
+            continue;
         case ' ':
         case '\t':
             break;
@@ -228,6 +236,10 @@ bool Reader::UsingTableTitleImpl() {
             Node node = it->second;
             int count = static_cast<int>(path_.size());
             for (int i = 1; i < count; i++) {
+                if (!node || node.Type() != Types::TOML_OBJECT) {
+                    desc_ = "internal error";
+                    return false;
+                }
                 if (node.As<kObject>()->Exists(path_[i])) {
                     node = node.As<kObject>()->Get(path_[i]);
                 } else {
@@ -251,17 +263,31 @@ bool Reader::UsingTableTitleImpl() {
 
     Node parent = stack_.top();
     int count   = static_cast<int>(path_.size());
-    for (int i = 0; i < count; i++) {
-        assert(parent.Type() == Types::TOML_OBJECT);
+    for (int i = 0; i < count - 1; i++) {
         auto key = path_[i];
         Node obj = parent.As<kObject>()->Get(key);
         if (!obj) {
             obj = Node::CreateObject();
             parent.As<kObject>()->Insert(key, obj);
+        } else if (obj.Type() != Types::TOML_OBJECT) {
+            desc_ = "\"" + key + "\" redefine";
+            return false;
+        } else if (obj.As<kObject>()->Inlined()) {
+            desc_ = "\"" + key + "\" is an inline table and cannot be modified";
+            return false;
         }
         parent = obj;
         PushStack(obj);
     }
+
+    auto key = path_[path_.size() - 1];
+    if (parent.As<kObject>()->Exists(key)) {
+        desc_ = "\"" + key + "\" redefine";
+        return false;
+    }
+    Node obj = Node::CreateObject();
+    parent.As<kObject>()->Insert(key, obj);
+    PushStack(obj);
     table_depth_ = count;
     return true;
 }
@@ -271,6 +297,10 @@ bool Reader::UsingArrayOfTableTitleImpl() {
         // 表数组元素定义
         std::string key = path_[0];
         Node sub_array, parent = stack_.top();
+        if (parent.Type() != Types::TOML_OBJECT) {
+            desc_ = "internal error";
+            return false;
+        }
         if (!parent.As<kObject>()->Exists(key)) {
             // 首次出现
             sub_array = Node::CreateArray();

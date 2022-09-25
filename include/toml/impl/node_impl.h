@@ -224,11 +224,14 @@ public:
     ~Object();
 
     Types Type() const override;
-    void Insert(const std::string &key, const Node &value);
+    bool Insert(const std::string &key, const Node &value);
 
     inline Iterator begin() { return obj_.begin(); }
     inline Iterator end() { return obj_.end(); }
     inline size_t size() const { return obj_.size(); }
+
+    inline bool Inlined() const { return inlined_; }
+    inline void SetInlined() { inlined_ = true; }
 
     // If the key does not exist,
     // a empty node will be inserted
@@ -243,7 +246,7 @@ public:
 
 private:
     Object();
-
+    bool inlined_;
     Object::RealType obj_;
 };
 

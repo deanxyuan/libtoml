@@ -239,12 +239,17 @@ void DateTime::Detail::Reset() { memset(&data_, 0, sizeof(data_)); }
 // ------------------------------
 
 Object::Object()
-    : NodeImpl() {}
+    : NodeImpl()
+    , inlined_(false) {}
 
 Object::~Object() {}
 
 Types Object::Type() const { return Types::TOML_OBJECT; }
-void Object::Insert(const std::string &key, const Node &value) { obj_[key] = value; }
+bool Object::Insert(const std::string &key, const Node &value) {
+    if (inlined_) return false;
+    obj_[key] = value;
+    return true;
+}
 Node &Object::operator[](std::string &&key) { return obj_[key]; }
 Node &Object::operator[](const std::string &key) { return obj_[key]; }
 Node Object::Get(const std::string &key) {

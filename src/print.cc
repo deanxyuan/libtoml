@@ -45,6 +45,15 @@ bool Reader::PopStack(Types type) {
     }
     return false;
 }
+bool Reader::InlinedTablePop() {
+    Node &parent = stack_.top();
+    if (parent.Type() == Types::TOML_OBJECT) {
+        parent.As<kObject>()->SetInlined();
+        stack_.pop();
+        return true;
+    }
+    return false;
+}
 void Reader::PrintNode(const Node &node) { std::cout << "Node:" << node.ToString() << std::endl; }
 } // namespace internal
 } // namespace TOML
