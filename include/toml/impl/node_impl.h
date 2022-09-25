@@ -146,33 +146,54 @@ class DateTime : public NodeImpl {
     friend class Node;
 
 public:
-    struct Detail {
-        struct {
-            uint32_t tm_usec;                                /* Microseconds. [0-999999] */
-            uint16_t tm_sec;                                 /* Seconds.	   [0-60] */
-            uint8_t tm_min;                                  /* Minutes.	   [0-59] */
-            uint8_t tm_hour;                                 /* Hours.	       [0-23] */
-            uint8_t tm_day;                                  /* Day.		   [1-31] */
-            uint8_t tm_mon;                                  /* Month.	       [0-11] */
-            uint16_t tm_year;                                /* Year.	       [0-65535] */
-            uint32_t tm_gmtoff; /* Seconds offset for UTC */ // %z +08:00 +0800
-            char tm_zone[12]; /* TimeZone */                 //  %Z CST
-        } buffer;
-        uint32_t *gmtoff, *microsecond;
-        uint16_t *year, *second;
-        uint8_t *month, *day, *hour, *minute;
-        char *zone;
+    class Detail {
+    public:
+        Detail();
+        Detail(const Detail &oth);
+        Detail &operator=(const Detail &oth);
 
         void SetYear(uint16_t y);
         void SetMonth(uint8_t m);
         void SetDay(uint8_t d);
         void SetHour(uint8_t h);
         void SetMinute(uint8_t m);
-        void SetSecond(uint16_t s);
+        void SetSecond(uint8_t s);
         void SetMicroSecond(uint32_t us);
         void SetGMTOffset(uint8_t h, uint8_t m);
         void SetGMTOffset(uint32_t off);
-        void SetTimeZone(const char *z);
+        void SetSpecific(bool b);
+
+        // If the data does not exist, return -1
+        int Year();
+        int Month();
+        int Day();
+        int Hour();
+        int Minute();
+        int Second();
+        int MicroSecond();
+        int GMTOffset();
+
+        // Is a specific instant in time ?
+        bool Specific();
+        void Reset();
+
+    private:
+        struct {
+            struct {
+                uint16_t tm_year;    /* Year.	       [0-65535] */
+                uint8_t tm_mon;      /* Month.	       [0-11] */
+                uint8_t tm_day;      /* Day.		   [1-31] */
+                uint8_t tm_hour;     /* Hours.	       [0-23] */
+                uint8_t tm_min;      /* Minutes.	   [0-59] */
+                uint8_t tm_sec;      /* Seconds.	   [0-60] */
+                uint8_t tm_specific; /* 0: Local time, 1: Specific instant in time */
+                uint32_t tm_usec;    /* Microseconds. [0-999999] */
+                uint32_t tm_gmtoff;  /* Seconds offset of GMT */
+            } buffer;
+            uint32_t *gmtoff, *microsecond;
+            uint16_t *year;
+            uint8_t *month, *day, *hour, *minute, *second;
+        } data_;
     };
     static void InitDetail(DateTime::Detail *detail);
     ~DateTime();

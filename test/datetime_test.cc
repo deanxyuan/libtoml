@@ -5,19 +5,20 @@
 #error "Missing Macro Definition: TEST_CASE_DIR, please check the CMakeLists.txt"
 #endif
 
-bool CheckDateYear(TOML::DateTime::Detail &dt, int year) { return *dt.year == year; }
-bool CheckDateMonth(TOML::DateTime::Detail &dt, int month) { return *dt.month == month; }
-bool CheckDateDay(TOML::DateTime::Detail &dt, int day) { return *dt.day == day; }
+bool CheckDateYear(TOML::DateTime::Detail &dt, int year) { return dt.Year() == year; }
+bool CheckDateMonth(TOML::DateTime::Detail &dt, int month) { return dt.Month() == month; }
+bool CheckDateDay(TOML::DateTime::Detail &dt, int day) { return dt.Day() == day; }
 
-bool CheckTimeHour(TOML::DateTime::Detail &dt, int hour) { return *dt.hour == hour; }
-bool CheckTimeMinute(TOML::DateTime::Detail &dt, int minute) { return *dt.minute == minute; }
-bool CheckTimeSecond(TOML::DateTime::Detail &dt, int second) { return *dt.second == second; }
+bool CheckTimeHour(TOML::DateTime::Detail &dt, int hour) { return dt.Hour() == hour; }
+bool CheckTimeMinute(TOML::DateTime::Detail &dt, int minute) { return dt.Minute() == minute; }
+bool CheckTimeSecond(TOML::DateTime::Detail &dt, int second) { return dt.Second() == second; }
 bool CheckTimeMicroSecond(TOML::DateTime::Detail &dt, int usecond) {
-    return *dt.microsecond == usecond;
+    return dt.MicroSecond() == usecond;
 }
 
-bool CheckGMTOffsetSecond(TOML::DateTime::Detail &dt, int second) { return *dt.gmtoff == second; }
-
+bool CheckGMTOffsetSecond(TOML::DateTime::Detail &dt, int second) {
+    return dt.GMTOffset() == second;
+}
 TEST(DateTime, RFC3339Format) {
     std::string path = TEST_CASE_DIR "/ts1.toml";
     std::string error;
@@ -100,7 +101,7 @@ TEST(DateTime, NoTimeZone) {
     ASSERT_TRUE(CheckDateYear(dt1, 1979));
     ASSERT_TRUE(CheckDateMonth(dt1, 5));
     ASSERT_TRUE(CheckDateDay(dt1, 27));
-    ASSERT_TRUE(CheckTimeHour(dt1, 0));
+    ASSERT_TRUE(CheckTimeHour(dt1, 7));
     ASSERT_TRUE(CheckTimeMinute(dt1, 32));
     ASSERT_TRUE(CheckTimeSecond(dt1, 0));
 

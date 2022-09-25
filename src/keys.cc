@@ -32,8 +32,6 @@ bool Reader::ParseComplexKey() {
 
     bool result = false;
 
-    int depth = 0;
-
     while (remaining_input_ > 0) {
         uint8_t c = *input_;
         switch (c) {

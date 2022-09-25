@@ -115,57 +115,127 @@ void DateTime::SetValue(DateTime::Detail *value) { value_ = *value; }
 Types DateTime::Type() const { return Types::TOML_DATETIME; }
 std::string DateTime::ToString() const { return RawString(); }
 
-void DateTime::InitDetail(DateTime::Detail *detail) { memset(detail, 0, sizeof(*detail)); }
+void DateTime::InitDetail(DateTime::Detail *dt) { dt->Reset(); }
+DateTime::Detail::Detail() { memset(&data_, 0, sizeof(data_)); }
+DateTime::Detail::Detail(const DateTime::Detail &oth) {
+    memset(&data_, 0, sizeof(data_));
+    memcpy(&data_.buffer, &oth.data_.buffer, sizeof(data_.buffer));
+    if (oth.data_.gmtoff) {
+        data_.gmtoff = &data_.buffer.tm_gmtoff;
+    }
+    if (oth.data_.microsecond) {
+        data_.microsecond = &data_.buffer.tm_usec;
+    }
+    if (oth.data_.year) {
+        data_.year = &data_.buffer.tm_year;
+    }
+    if (oth.data_.month) {
+        data_.month = &data_.buffer.tm_mon;
+    }
+    if (oth.data_.day) {
+        data_.day = &data_.buffer.tm_day;
+    }
+    if (oth.data_.hour) {
+        data_.hour = &data_.buffer.tm_hour;
+    }
+    if (oth.data_.minute) {
+        data_.minute = &data_.buffer.tm_min;
+    }
+    if (oth.data_.second) {
+        data_.second = &data_.buffer.tm_sec;
+    }
+}
+DateTime::Detail &DateTime::Detail::operator=(const DateTime::Detail &oth) {
+    if (this != &oth) {
+        memset(&data_, 0, sizeof(data_));
+        memcpy(&data_.buffer, &oth.data_.buffer, sizeof(data_.buffer));
+        if (oth.data_.gmtoff) {
+            data_.gmtoff = &data_.buffer.tm_gmtoff;
+        }
+        if (oth.data_.microsecond) {
+            data_.microsecond = &data_.buffer.tm_usec;
+        }
+        if (oth.data_.year) {
+            data_.year = &data_.buffer.tm_year;
+        }
+        if (oth.data_.month) {
+            data_.month = &data_.buffer.tm_mon;
+        }
+        if (oth.data_.day) {
+            data_.day = &data_.buffer.tm_day;
+        }
+        if (oth.data_.hour) {
+            data_.hour = &data_.buffer.tm_hour;
+        }
+        if (oth.data_.minute) {
+            data_.minute = &data_.buffer.tm_min;
+        }
+        if (oth.data_.second) {
+            data_.second = &data_.buffer.tm_sec;
+        }
+    }
+    return *this;
+}
+
 void DateTime::Detail::SetYear(uint16_t y) {
-    buffer.tm_year = y;
-    year           = &buffer.tm_year;
+    data_.buffer.tm_year = y;
+    // set pointer
+    data_.year = &data_.buffer.tm_year;
 }
 void DateTime::Detail::SetMonth(uint8_t m) {
-    buffer.tm_mon = m;
-    month         = &buffer.tm_mon;
+    data_.buffer.tm_mon = m;
+    // set pointer
+    data_.month = &data_.buffer.tm_mon;
 }
 void DateTime::Detail::SetDay(uint8_t d) {
-    buffer.tm_day = d;
-    day           = &buffer.tm_day;
+    data_.buffer.tm_day = d;
+    // set pointer
+    data_.day = &data_.buffer.tm_day;
 }
 void DateTime::Detail::SetHour(uint8_t h) {
-    buffer.tm_hour = h;
-    hour           = &buffer.tm_hour;
+    data_.buffer.tm_hour = h;
+    // set pointer
+    data_.hour = &data_.buffer.tm_hour;
 }
 
 void DateTime::Detail::SetMinute(uint8_t m) {
-    buffer.tm_min = m;
-    minute        = &buffer.tm_min;
+    data_.buffer.tm_min = m;
+    // set pointer
+    data_.minute = &data_.buffer.tm_min;
 }
 
-void DateTime::Detail::SetSecond(uint16_t s) {
-    buffer.tm_sec = s;
-    second        = &buffer.tm_sec;
+void DateTime::Detail::SetSecond(uint8_t s) {
+    data_.buffer.tm_sec = s;
+    // set pointer
+    data_.second = &data_.buffer.tm_sec;
 }
 void DateTime::Detail::SetMicroSecond(uint32_t us) {
-    buffer.tm_usec = us;
-    microsecond    = &buffer.tm_usec;
+    data_.buffer.tm_usec = us;
+    // set pointer
+    data_.microsecond = &data_.buffer.tm_usec;
 }
 void DateTime::Detail::SetGMTOffset(uint8_t h, uint8_t m) {
-    buffer.tm_gmtoff = static_cast<int>(h) * 3600 + static_cast<int>(m) * 60;
-    gmtoff           = &buffer.tm_gmtoff;
+    data_.buffer.tm_gmtoff = static_cast<int>(h) * 3600 + static_cast<int>(m) * 60;
+    // set pointer
+    data_.gmtoff = &data_.buffer.tm_gmtoff;
 }
+
 void DateTime::Detail::SetGMTOffset(uint32_t off) {
-    buffer.tm_gmtoff = off;
-    gmtoff           = &buffer.tm_gmtoff;
+    data_.buffer.tm_gmtoff = off;
+    // set pointer
+    data_.gmtoff = &data_.buffer.tm_gmtoff;
 }
-void DateTime::Detail::SetTimeZone(const char *z) {
-    size_t len = strlen(z);
-    if (len == 0) {
-        return;
-    }
-    if (len > sizeof(buffer.tm_zone) - 1) {
-        len = sizeof(buffer.tm_zone) - 1;
-    }
-    memcpy(buffer.tm_zone, z, len);
-    buffer.tm_zone[len] = '\0';
-    zone                = &buffer.tm_zone[0];
-}
+void DateTime::Detail::SetSpecific(bool b) { data_.buffer.tm_specific = b ? 1 : 0; }
+int DateTime::Detail::Year() { return data_.year ? *data_.year : -1; }
+int DateTime::Detail::Month() { return data_.month ? *data_.month : -1; }
+int DateTime::Detail::Day() { return data_.day ? *data_.day : -1; }
+int DateTime::Detail::Hour() { return data_.hour ? *data_.hour : -1; }
+int DateTime::Detail::Minute() { return data_.minute ? *data_.minute : -1; }
+int DateTime::Detail::Second() { return data_.second ? *data_.second : -1; }
+int DateTime::Detail::MicroSecond() { return data_.microsecond ? *data_.microsecond : -1; }
+int DateTime::Detail::GMTOffset() { return data_.gmtoff ? *data_.gmtoff : -1; }
+bool DateTime::Detail::Specific() { return data_.buffer.tm_specific != 0; }
+void DateTime::Detail::Reset() { memset(&data_, 0, sizeof(data_)); }
 // ------------------------------
 
 Object::Object()

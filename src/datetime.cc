@@ -53,6 +53,7 @@ bool Reader::GetTimeImpl() {
 
     if (c == 'Z') {
         StringAddChar(c);
+        dt_.SetSpecific(true);
         return true;
     }
 
@@ -101,12 +102,11 @@ bool Reader::GetTimeImpl() {
         StringAddChar(c);
         return ReadUTCOffsetString();
     }
-    return false;
+    return true;
 }
 bool Reader::GetDateImpl() {
     if (ReadDateString()) {
-        if (IsReachTheEnd() || *input_ == '\t' || *input_ == '\r' || *input_ == '\n' ||
-            *input_ == '#') {
+        if (IsReachTheEnd()) {
             return true;
         }
 
@@ -118,14 +118,14 @@ bool Reader::GetDateImpl() {
         }
         if (*input_ == ' ') {
             // 尝试加载时间
-            if (remaining_input_ > 1 && input_[1] >= '0' && input_[1] >= '9') {
+            if (remaining_input_ > 1 && input_[1] >= '0' && input_[1] <= '9') {
                 StringAddChar(*input_);
                 input_++;
                 remaining_input_--;
                 return GetTimeImpl();
             }
-            return true;
         }
+        return true;
     }
     return false;
 }
@@ -139,6 +139,7 @@ bool Reader::ReadUTCOffsetString() {
             int hh = BufferToInt(&input_[0], 2);
             int mm = BufferToInt(&input_[3], 2);
             dt_.SetGMTOffset(hh, mm);
+            dt_.SetSpecific(true);
             input_ += 5;
             remaining_input_ -= 5;
             return true;

@@ -173,9 +173,9 @@ TEST(Table, TopLevelTable) {
     ASSERT_EQ(dt.Type(), TOML::kDateTime);
     ASSERT_EQ(dt.As<TOML::kDateTime>()->RawString(), "1999-08-04");
     auto detail = dt.As<TOML::kDateTime>()->Value();
-    ASSERT_EQ(*detail.year, 1999);
-    ASSERT_EQ(*detail.month, 8);
-    ASSERT_EQ(*detail.day, 4);
+    ASSERT_EQ(detail.Year(), 1999);
+    ASSERT_EQ(detail.Month(), 8);
+    ASSERT_EQ(detail.Day(), 4);
 }
 
 TEST(Table, ComplexTitleMultiPointAdd2) {
