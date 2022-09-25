@@ -1,3 +1,21 @@
+/*
+ *
+ * Copyright 2022-2023 libtoml authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 #include "src/reader.h"
 #include "src/common.h"
 
@@ -5,40 +23,41 @@ namespace TOML {
 namespace internal {
 
 // 调用此函数前，需要将state设置为ERROR
+bool Reader::GetStringValue() {
+    if (GetStringValueImpl()) {
+        Node node = Node::CreateString(strings_);
+        UpdateNode(node);
+        return true;
+    }
+    return false;
+}
+
 bool Reader::GetStringValueImpl() {
     uint8_t c = *input_;
     if (c == '\'') {
         if (StartsWith("\'\'\'")) {
             input_ += 3;
             remaining_input_ -= 3;
-            GetMultiLineLiteralString();
-        } else {
-            input_ += 1;
-            remaining_input_ -= 1;
-            GetLiteralString();
+            return GetMultiLineLiteralString();
         }
-    } else {
-        if (StartsWith("\"\"\"")) {
-            input_ += 3;
-            remaining_input_ -= 3;
-            GetMultiLineBasicString();
-        } else {
-            input_ += 1;
-            remaining_input_ -= 1;
-            GetBasicString();
-        }
+        input_ += 1;
+        remaining_input_ -= 1;
+        return GetLiteralString();
     }
-    if (state_ == PARSE_STATUS_SUCCESS) {
-        UpdateKeyValue();
-        return true;
+    if (StartsWith("\"\"\"")) {
+        input_ += 3;
+        remaining_input_ -= 3;
+        return GetMultiLineBasicString();
     }
-    return false;
+    input_ += 1;
+    remaining_input_ -= 1;
+    return GetBasicString();
 }
 
 // 单行字面量字符串解析
-void Reader::GetLiteralString() {
-
-    uint8_t c;
+bool Reader::GetLiteralString() {
+    bool result = false;
+    uint8_t c   = 0;
 
     while (remaining_input_ > 0) {
         c = *input_;
@@ -51,7 +70,9 @@ void Reader::GetLiteralString() {
             break;
         }
         if (c == '\'') {
-            state_ = PARSE_STATUS_SUCCESS;
+            input_++;
+            remaining_input_--;
+            result = true;
             break;
         }
         input_++;
@@ -59,18 +80,15 @@ void Reader::GetLiteralString() {
         StringAddChar(c);
     }
 
-    if (state_ == PARSE_STATUS_SUCCESS) {
-        input_++;
-        remaining_input_--;
-    }
+    return result;
 }
 
 // 多行字面量字符串两侧各有三个单引号来包裹，允许换行。
 // 类似于字面量字符串，无论任何转义都不存在。
-void Reader::GetMultiLineLiteralString() {
+bool Reader::GetMultiLineLiteralString() {
     // 至少包含 '''
     if (remaining_input_ < 3) {
-        return;
+        return false;
     }
 
     // 紧随开始标记的那个换行会被剔除。 开始结束标记之间的所有其它内容会原样对待。
@@ -81,9 +99,9 @@ void Reader::GetMultiLineLiteralString() {
         input_ += 2;
         remaining_input_ -= 2;
     }
-
-    uint8_t c = 0;
-    int count = 0;
+    bool result = false;
+    uint8_t c   = 0;
+    int count   = 0;
     while (remaining_input_ > 0) {
         c = *input_;
 
@@ -97,11 +115,11 @@ void Reader::GetMultiLineLiteralString() {
             if (count < 3) {
                 StringAddChar(c);
             } else if (count == 3) {
-                state_ = PARSE_STATUS_SUCCESS;
+                result = true;
                 break;
             } else {
                 StringAddCharEx(count - 3, '\'');
-                state_ = PARSE_STATUS_SUCCESS;
+                result = true;
                 break;
             }
         } else {
@@ -112,14 +130,15 @@ void Reader::GetMultiLineLiteralString() {
     }
 
     // 只允许单行，必须出现结束符
-    if (state_ == PARSE_STATUS_SUCCESS) {
+    if (result) {
         input_ += count;
         remaining_input_ -= count;
     }
+    return result;
 }
 
-void Reader::GetMultiLineBasicString() {
-    bool transferred = false, foldup = false;
+bool Reader::GetMultiLineBasicString() {
+    bool transferred = false, foldup = false, result = false;
     int nhex = 0, i = 0, value = 0;
     uint8_t c = 0, ch = 0;
     int64_t ucs = 0;
@@ -128,7 +147,7 @@ void Reader::GetMultiLineBasicString() {
 
     // 至少应该包含 """
     if (remaining_input_ < 3) {
-        return;
+        return false;
     }
 
     // 多行基本字符串由三个引号包裹，允许折行。
@@ -199,11 +218,11 @@ void Reader::GetMultiLineBasicString() {
                 if (count < 3) {
                     StringAddChar(c);
                 } else if (count == 3) {
-                    state_ = PARSE_STATUS_SUCCESS;
+                    result = true;
                     goto __exit;
                 } else {
                     StringAddCharEx(count - 3, '\"');
-                    state_ = PARSE_STATUS_SUCCESS;
+                    result = true;
                     goto __exit;
                 }
             }
@@ -293,14 +312,15 @@ void Reader::GetMultiLineBasicString() {
 
 __exit:
 
-    if (state_ == PARSE_STATUS_SUCCESS) {
+    if (result) {
         input_ += count;
         remaining_input_ -= count;
     }
+    return result;
 }
 
-void Reader::GetBasicString() {
-    bool transferred = false;
+bool Reader::GetBasicString() {
+    bool transferred = false, result = false;
     int nhex = 0, i = 0, value = 0;
     uint8_t c = 0, ch = 0;
     int64_t ucs = 0;
@@ -359,7 +379,9 @@ void Reader::GetBasicString() {
                 StringAddChar('\"');
                 transferred = false;
             } else {
-                state_ = PARSE_STATUS_SUCCESS;
+                input_++;
+                remaining_input_--;
+                result = true;
                 goto __exit;
             }
             break;
@@ -423,10 +445,7 @@ void Reader::GetBasicString() {
 
 __exit:
 
-    if (state_ == PARSE_STATUS_SUCCESS) {
-        input_++;
-        --remaining_input_;
-    }
+    return result;
 }
 
 // 多行字面量字符串中的任何位置写一个或两个单引号

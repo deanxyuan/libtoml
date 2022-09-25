@@ -51,5 +51,9 @@ bool IsValidCharForString(bool multiline, uint8_t ch);
  */
 bool IsByteExistsInTarget(const char *target, uint8_t cc);
 
+uint32_t StringToInt(const std::string &str, int radix = 10);
+uint32_t StringToInt(const char *str, int radix = 10);
+int BufferToInt(const uint8_t *buff, size_t len);
+int BufferToInt(const char *buff, int len);
 } // namespace TOML
 #endif // TOML_SRC_COMMON_H_

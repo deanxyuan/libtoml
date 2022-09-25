@@ -1,12 +1,30 @@
+/*
+ *
+ * Copyright 2022-2023 libtoml authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 #include "src/reader.h"
-#include <cmath>
+#include <math.h>
 #include "src/common.h"
 
 namespace TOML {
 namespace internal {
-void Reader::GetNumberWithPrefix() {
+bool Reader::GetNumberWithPrefix() {
     bool negative = (*input_++ == '-');
-    if (--remaining_input_ == 0) return;
+    if (--remaining_input_ == 0) return false;
 
     uint8_t c = *input_;
 
@@ -14,16 +32,14 @@ void Reader::GetNumberWithPrefix() {
     switch (c) {
     case 'i': //+inf -inf
         if (StartsWith("inf")) {
-            node   = Node::CreateFloat(negative ? (INFINITY * (-1)) : INFINITY);
-            state_ = PARSE_STATUS_SUCCESS;
+            node = Node::CreateFloat(negative ? (INFINITY * (-1)) : INFINITY);
             input_ += 3;
             remaining_input_ -= 3;
         }
         break;
     case 'n': //+nan -nan
         if (StartsWith("nan")) {
-            node   = Node::CreateFloat(NAN);
-            state_ = PARSE_STATUS_SUCCESS;
+            node = Node::CreateFloat(NAN);
             input_ += 3;
             remaining_input_ -= 3;
         }
@@ -34,23 +50,25 @@ void Reader::GetNumberWithPrefix() {
             if (GetFloatNumber()) {
                 auto value = StringToDouble();
                 // 正负处理
-                node   = Node::CreateFloat(negative ? (value * (-1)) : value);
-                state_ = PARSE_STATUS_SUCCESS;
+                node = Node::CreateFloat(negative ? (value * (-1)) : value);
             }
         } else {
             if (GetDecimalNumber()) {
-                node   = negative ? Node::CreateInteger(StringToInt() * (-1))
-                                  : Node::CreateInteger(StringToUInt());
-                state_ = PARSE_STATUS_SUCCESS;
+                node = negative ? Node::CreateInteger(StringToInt() * (-1))
+                                : Node::CreateInteger(StringToUInt());
             }
         }
         break;
     }
 
-    if (node) UpdateNode(node);
+    if (node) {
+        UpdateNode(node);
+        return true;
+    }
+    return false;
 }
 
-void Reader::GetNumberValueImpl() {
+bool Reader::GetNumberNoPrefix() {
     Node node;
     if (StartsWith("0x")) { // hex
         if (GetHexNumber()) {
@@ -79,19 +97,24 @@ void Reader::GetNumberValueImpl() {
             }
             break;
         default:
-            if (GetDateTimeImpl()) {
+            if (GetDateTime()) {
                 node = Node::CreateDateTime(strings_);
                 node.As<kDateTime>()->SetValue(&dt_);
             }
             break;
         }
     }
-    if (node) UpdateNode(node);
+    if (node) {
+        UpdateNode(node);
+        return true;
+    }
+    return false;
 }
 bool Reader::GetDecimalNumber() {
     bool next_must_be_num = true;
 
-    uint8_t c = 0;
+    bool result = false;
+    uint8_t c   = 0;
 
     while (remaining_input_ > 0) {
         c = *input_;
@@ -127,8 +150,11 @@ bool Reader::GetDecimalNumber() {
         case '\n':
         case ' ':
         case '#': // 开始注释
+        case ',':
+        case ']':
+        case '}':
             if (!next_must_be_num) {
-                state_ = PARSE_STATUS_SUCCESS;
+                result = true;
             }
             goto __exit;
         default:
@@ -139,7 +165,7 @@ bool Reader::GetDecimalNumber() {
         remaining_input_--;
     }
 __exit:
-    return (state_ == PARSE_STATUS_SUCCESS);
+    return result;
 }
 
 bool Reader::GetFloatNumber() {
@@ -148,8 +174,8 @@ bool Reader::GetFloatNumber() {
     bool found_dot = false; // .
     bool found_E   = false; // e E
     bool found_pm  = false; // + -
-
-    uint8_t c = 0;
+    bool result    = false;
+    uint8_t c      = 0;
 
     uint32_t prev_char = 0;
 
@@ -207,8 +233,11 @@ bool Reader::GetFloatNumber() {
         case '\n':
         case ' ':
         case '#': // 开始注释
+        case ',':
+        case ']':
+        case '}':
             if (!next_must_be_num) {
-                state_ = PARSE_STATUS_SUCCESS;
+                result = true;
             }
             goto __exit;
         case '+':
@@ -237,10 +266,12 @@ bool Reader::GetFloatNumber() {
         remaining_input_--;
     }
 __exit:
-    return (state_ == PARSE_STATUS_SUCCESS);
+    return result;
 }
 
 bool Reader::GetHexNumber() {
+    bool result = false;
+
     // skip prefix 0x
     input_ += 2;
     remaining_input_ -= 2;
@@ -291,8 +322,11 @@ bool Reader::GetHexNumber() {
         case '\n':
         case ' ':
         case '#': // 开始注释
+        case ',':
+        case ']':
+        case '}':
             if (!next_must_be_num) {
-                state_ = PARSE_STATUS_SUCCESS;
+                result = true;
             }
             goto __exit;
         default:
@@ -303,10 +337,12 @@ bool Reader::GetHexNumber() {
         remaining_input_--;
     }
 __exit:
-    return state_ == PARSE_STATUS_SUCCESS;
+    return result;
 }
 
 bool Reader::GetBinaryNumber() {
+    bool result = false;
+
     // skip prefix 0b
     input_ += 2;
     remaining_input_ -= 2;
@@ -337,8 +373,11 @@ bool Reader::GetBinaryNumber() {
         case '\n':
         case ' ':
         case '#': // 开始注释
+        case ',':
+        case ']':
+        case '}':
             if (!next_must_be_num) {
-                state_ = PARSE_STATUS_SUCCESS;
+                result = true;
             }
             goto __exit;
         default:
@@ -349,9 +388,10 @@ bool Reader::GetBinaryNumber() {
         remaining_input_--;
     }
 __exit:
-    return state_ == PARSE_STATUS_SUCCESS;
+    return result;
 }
 bool Reader::GetOctNumber() {
+    bool result = false;
     // skip prefix 0x
     input_ += 2;
     remaining_input_ -= 2;
@@ -388,8 +428,11 @@ bool Reader::GetOctNumber() {
         case '\n':
         case ' ':
         case '#': // 开始注释
+        case ',':
+        case ']':
+        case '}':
             if (!next_must_be_num) {
-                state_ = PARSE_STATUS_SUCCESS;
+                result = true;
             }
             goto __exit;
         default:
@@ -400,7 +443,7 @@ bool Reader::GetOctNumber() {
         remaining_input_--;
     }
 __exit:
-    return state_ == PARSE_STATUS_SUCCESS;
+    return result;
 }
 
 bool Reader::TestNumberIsFloat() {
@@ -410,7 +453,9 @@ bool Reader::TestNumberIsFloat() {
         if (IsSpaceOrNextLine(c) || c == '#') {
             break;
         }
-
+        if (c == ',' || c == ']' || c == '}') {
+            break;
+        }
         if (c == '.' || c == 'e' || c == 'E') {
             return true;
         }
@@ -422,7 +467,6 @@ double Reader::StringToDouble() {
     char *endptr = nullptr;
     return std::strtod(strings_.data(), &endptr);
 }
-
 int64_t Reader::StringToInt(int radix) {
     char *endptr = nullptr;
     return std::strtoll(strings_.data(), &endptr, radix);
@@ -431,18 +475,11 @@ uint64_t Reader::StringToUInt(int radix) {
     char *endptr = nullptr;
     return std::strtoull(strings_.data(), &endptr, radix);
 }
-uint32_t Reader::StringToInt(const std::string &str) {
-    char *endptr = nullptr;
-    return std::strtoul(str.data(), &endptr, 10);
-}
-uint32_t Reader::StringToInt(const char *buff) {
-    char *endptr = nullptr;
-    return std::strtoul(buff, &endptr, 10);
-}
+
 Types Reader::TestPossibleType() {
 
     Types type = Types::TOML_INTEGER;
-
+    int count  = 0;
     for (size_t i = 0; i < remaining_input_; i++) {
         uint8_t c = input_[i];
 
@@ -453,18 +490,31 @@ Types Reader::TestPossibleType() {
             type = Types::TOML_FLOAT;
             goto __exit;
         case 'T':
-        case '-':
         case ':':
             type = Types::TOML_DATETIME;
             goto __exit;
-        case '\t':
-        case '\r':
-        case '\n':
-        case ' ':
-        case '#':
-            goto __exit;
-        default:
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+        case '+':
+        case '_':
             break;
+        case '-':
+            // 时间和日期都需要
+            if (++count > 1) {
+                type = Types::TOML_DATETIME;
+                goto __exit;
+            }
+            break;
+        default:
+            goto __exit;
         }
     }
 __exit:

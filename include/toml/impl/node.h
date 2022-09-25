@@ -71,6 +71,8 @@ struct ToNodeImpl<Types::TOML_ARRAY> {
     using type = TOML::Array;
 };
 
+std::string TypeString(Types type);
+
 class Node final {
 
 public:
@@ -94,12 +96,16 @@ public:
     Node &operator=(Node &&oth);
 
     Types Type() const;
+    std::string TypeString() const;
+
     operator bool() const { return impl_ != nullptr; }
 
     template <Types T>
     typename ToNodeImpl<T>::type *As() {
         return dynamic_cast<typename ToNodeImpl<T>::type *>(impl_);
     }
+
+    std::string ToString() const;
 
 private:
     Node(NodeImpl *impl)

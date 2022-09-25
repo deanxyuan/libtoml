@@ -18,6 +18,7 @@
 
 #include "toml/impl/node_impl.h"
 #include <string.h>
+#include <sstream>
 
 namespace TOML {
 
@@ -27,6 +28,7 @@ NodeImpl::~NodeImpl() {}
 Types NodeImpl::Type() const { return Types::TOML_NULL; }
 void NodeImpl::Ref() { ref_count_.fetch_add(1, std::memory_order_relaxed); }
 int32_t NodeImpl::Unref() { return ref_count_.fetch_sub(1, std::memory_order_acq_rel); }
+std::string NodeImpl::ToString() const { return std::string("null"); }
 
 // ------------------------------
 
@@ -40,6 +42,11 @@ const std::string &String::Value() const { return value_; }
 void String::SetValue(const std::string &value) { value_ = value; }
 void String::SetValue(const char *value) { value_ = std::string(value); }
 Types String::Type() const { return Types::TOML_STRING; }
+std::string String::ToString() const {
+    std::stringstream ss;
+    ss << "\"" << value_ << "\"";
+    return ss.str();
+}
 
 // ------------------------------
 Boolean::Boolean()
@@ -52,6 +59,7 @@ Boolean::~Boolean() {}
 bool Boolean::Value() const { return value_; }
 void Boolean::SetValue(bool value) { value_ = value; }
 Types Boolean::Type() const { return Types::TOML_BOOLEAN; }
+std::string Boolean::ToString() const { return value_ ? "true" : "false"; }
 
 // ------------------------------
 Integer::Integer()
@@ -71,6 +79,7 @@ Integer::~Integer() {}
 void Integer::SetValue(int64_t value) { *reinterpret_cast<int64_t *>(value_) = value; }
 void Integer::SetValue(uint64_t value) { *reinterpret_cast<uint64_t *>(value_) = value; }
 Types Integer::Type() const { return Types::TOML_INTEGER; }
+std::string Integer::ToString() const { return std::to_string(Value<true>()); }
 
 // ------------------------------
 Float::Float()
@@ -83,6 +92,7 @@ Float::~Float() {}
 double Float::Value() const { return value_; }
 void Float::SetValue(double value) { value_ = value; }
 Types Float::Type() const { return Types::TOML_FLOAT; }
+std::string Float::ToString() const { return std::to_string(value_); }
 
 // ------------------------------
 
@@ -103,6 +113,8 @@ void DateTime::SetRawString(const std::string &s) { raw_ = s; }
 const DateTime::Detail &DateTime::Value() const { return value_; }
 void DateTime::SetValue(DateTime::Detail *value) { value_ = *value; }
 Types DateTime::Type() const { return Types::TOML_DATETIME; }
+std::string DateTime::ToString() const { return RawString(); }
+
 void DateTime::InitDetail(DateTime::Detail *detail) { memset(detail, 0, sizeof(*detail)); }
 void DateTime::Detail::SetYear(uint16_t y) {
     buffer.tm_year = y;
@@ -162,17 +174,48 @@ Object::Object()
 Object::~Object() {}
 
 Types Object::Type() const { return Types::TOML_OBJECT; }
-void Object::Insert(const std::string &key, const Node &value) { obj_.insert({key, value}); }
-void Object::Replace(const std::string &key, const Node &value) {
-    auto res = obj_.insert({key, value});
-    if (!res.second) {
-        res.first->second = value;
-    }
-}
+void Object::Insert(const std::string &key, const Node &value) { obj_[key] = value; }
 Node &Object::operator[](std::string &&key) { return obj_[key]; }
 Node &Object::operator[](const std::string &key) { return obj_[key]; }
-Node &Object::Get(const std::string &key) { return obj_[key]; }
-Node &Object::Get(std::string &&key) { return obj_[key]; }
+Node Object::Get(const std::string &key) {
+    auto it = obj_.find(key);
+    if (it != obj_.end()) {
+        return it->second;
+    }
+    return Node();
+}
+
+Node Object::Get(std::string &&key) {
+    auto it = obj_.find(key);
+    if (it != obj_.end()) {
+        return it->second;
+    }
+    return Node();
+}
+
+std::string Object::ToString() const {
+    if (obj_.empty()) return std::string("{}");
+
+    std::stringstream ss;
+    ss << "{";
+
+    auto it = obj_.begin();
+
+    int i = 0;
+    for (; i < static_cast<int>(obj_.size()) - 1; i++) {
+        ss << "\"" << it->first << "\" = ";
+        ss << it->second.ToString() << ",";
+        it++;
+    }
+    ss << "\"" << it->first << "\" = ";
+    ss << it->second.ToString() << "}";
+    return ss.str();
+}
+bool Object::Exists(const std::string &key) const {
+    auto it = obj_.find(key);
+    return (it != obj_.end());
+}
+
 // ------------------------------
 Array::Array()
     : NodeImpl() {}
@@ -195,4 +238,18 @@ const Node &Array::operator[](size_t pos) const { return array_[pos]; }
 Node &Array::operator[](size_t pos) { return array_[pos]; }
 const Node &Array::At(size_t pos) const { return array_[pos]; }
 Node &Array::At(size_t pos) { return array_[pos]; }
+std::string Array::ToString() const {
+    if (array_.empty()) return std::string("[]");
+
+    std::stringstream ss;
+    ss << "[";
+
+    int i = 0;
+    for (; i < static_cast<int>(array_.size()) - 1; i++) {
+        ss << array_[i].ToString() << ",";
+    }
+    ss << array_[i].ToString() << "]";
+    return ss.str();
+}
+
 } // namespace TOML

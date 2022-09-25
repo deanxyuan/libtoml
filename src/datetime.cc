@@ -1,23 +1,37 @@
+/*
+ *
+ * Copyright 2022-2023 libtoml authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 #include "src/reader.h"
 #include <string.h>
 #include "src/common.h"
 
 namespace TOML {
 namespace internal {
-bool Reader::GetDateTimeImpl() {
+bool Reader::GetDateTime() {
     // YYYY-MM-DD or HH:MM:SS
     if (remaining_input_ < 8) return false;
     DateTime::InitDetail(&dt_);
     if (input_[2] == ':') {
-        if (GetTimeImpl()) {
-            state_ = PARSE_STATUS_SUCCESS;
-        }
+        return GetTimeImpl();
     } else if (input_[4] == '-') {
-        if (GetDateImpl()) {
-            state_ = PARSE_STATUS_SUCCESS;
-        }
+        return GetDateImpl();
     }
-    return state_ == PARSE_STATUS_SUCCESS;
+    return false;
 }
 
 bool Reader::GetTimeImpl() {
@@ -169,13 +183,5 @@ bool Reader::ReadDateString() {
     return false;
 }
 
-int Reader::BufferToInt(const uint8_t *buff, size_t len) {
-    std::string str(reinterpret_cast<const char *>(buff), len);
-    return atoi(str.c_str());
-}
-int Reader::BufferToInt(const char *buff, int len) {
-    std::string str(buff, len);
-    return atoi(str.c_str());
-}
 } // namespace internal
 } // namespace TOML

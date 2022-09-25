@@ -74,6 +74,20 @@ Types Node::Type() const {
     return Types::TOML_NULL;
 }
 
+std::string Node::ToString() const {
+    if (impl_) {
+        return impl_->ToString();
+    }
+    return std::string("null");
+}
+
+std::string Node::TypeString() const {
+    if (impl_) {
+        return TOML::TypeString(impl_->Type());
+    }
+    return std::string();
+}
+
 Node Node::CreateNode(Types type) {
     NodeImpl *impl = nullptr;
     switch (type) {
@@ -151,4 +165,38 @@ Node Node::CreateArray() {
     impl->Ref();
     return Node(impl);
 }
+
+std::string TypeString(Types type) {
+    std::string str;
+    switch (type) {
+    case TOML::Types::TOML_NULL:
+        str = "Null";
+        break;
+    case TOML::Types::TOML_BOOLEAN:
+        str = "Boolean";
+        break;
+    case TOML::Types::TOML_STRING:
+        str = "String";
+        break;
+    case TOML::Types::TOML_INTEGER:
+        str = "Integer";
+        break;
+    case TOML::Types::TOML_FLOAT:
+        str = "Float";
+        break;
+    case TOML::Types::TOML_DATETIME:
+        str = "Datetime";
+        break;
+    case TOML::Types::TOML_OBJECT:
+        str = "Object";
+        break;
+    case TOML::Types::TOML_ARRAY:
+        str = "Array";
+        break;
+    default:
+        break;
+    }
+    return str;
+}
+
 } // namespace TOML

@@ -17,6 +17,7 @@
  */
 
 #include "src/reader.h"
+#include <assert.h>
 #include <string.h>
 #include <math.h>
 #include <iostream>
@@ -34,6 +35,9 @@ Reader::Reader(const char *data, size_t len)
     : original_input_(reinterpret_cast<const uint8_t *>(data))
     , input_(original_input_)
     , remaining_input_(len)
+    , table_depth_(0)
+    , complex_key_depth_(0)
+    , is_table_title_(true)
     , state_(TOML::PARSE_STATUS_NULL) {}
 
 Reader::~Reader() {}
@@ -78,75 +82,104 @@ bool Reader::StartsWith(const char *prefix) {
     return remaining_input_ >= prefix_len && (memcmp(input_, prefix, prefix_len) == 0);
 }
 
+bool Reader::SkipComment() {
+    bool res  = false;
+    uint8_t c = 0;
+
+    do {
+        c = *++input_;
+        remaining_input_--;
+        if (c == '\r' || c == '\n') {
+            res = true;
+            break;
+        }
+
+        // 除制表符以外的控制字符（U+0000 至 U+0008，U+000A 至 U+001F，U+007F）不允许出现在注释中
+        if ((0 <= c && c <= 0x08) || (0x0a <= c && c <= 0x1f) || (c == 0x7f)) {
+            break;
+        }
+    } while (remaining_input_ > 0);
+    return res;
+}
+
+uint32_t Reader::SkipFrontSpace() {
+    uint32_t c = 0;
+    while (remaining_input_ > 0) {
+        c = *input_;
+
+        if (c == ' ' || c == '\t' || c == '\r' || c == '\n') {
+            input_++;
+            remaining_input_--;
+            continue;
+        }
+        break;
+    }
+    return (remaining_input_ == 0) ? READ_CHAR_EOF : c;
+}
+
 void Reader::Run() {
 
     root_ = Node::CreateObject();
-    stack_.push(root_);
+    PushStack(root_);
 
-    uint8_t c = 0;
+    uint32_t c = 0;
 
     while (remaining_input_ > 0) {
 
-        // 应当认为，每次循环都要获取一条有效数据,
-        // 有效数据有三种情况：
+        // 每次循环都获取一组有效数据,
+        // 有效数据有如下六种情况：
         // 1. key=value
         // 2. [table]
         // 3. array = []
-        // 4. object = {} 内联对象
+        // 4. object = {}
+        // 5. [[table]]
+        // 6. # comment
     __re_search:
-        // step 1 : 跳过前缀空格
-        while (remaining_input_ > 0) {
-            c = *input_;
+        // step 1 : 跳过空格前缀
+        c = SkipFrontSpace();
 
-            if (c == ' ' || c == '\t' || c == '\r' || c == '\n') {
-                input_++;
-                remaining_input_--;
-                continue;
-            }
+        if (c == READ_CHAR_EOF) {
+            state_ = PARSE_STATUS_SUCCESS;
             break;
         }
 
-        if (remaining_input_ == 0) {
-            state_ = PARSE_STATUS_SUCCESS;
-            goto __exit;
-        }
+        state_ = PARSE_STATUS_ERROR;
 
         // step 2 : 解析一组有效数据 (一行或多行)
-        switch (c) {
-        case '#':
-            // 当前注释，找下一个换行
-            do {
-                c = *++input_;
-                remaining_input_--;
-                if (c == '\r' || c == '\n') {
-                    break;
-                }
-
-                // 除制表符以外的控制字符（U+0000 至 U+0008，U+000A 至
-                // U+001F，U+007F）不允许出现在注释中
-                if ((0 <= c && c <= 0x08) || (0x0a <= c && c <= 0x1f) || (c == 0x7f)) {
-                    goto __exit;
-                }
-            } while (remaining_input_ > 0);
-            goto __re_search;
-        case '\'':
-        case '\"':
-            // 找 key 的结束符 key=value
-            if (!GetKeyImpl(c) || !CheckSeparator() || !GetValueImpl()) {
-                goto __exit;
+        if (c == '#') {
+            // 注释，找下一个换行
+            if (SkipComment()) {
+                goto __re_search;
             }
             break;
-        case '[':
-            // 找 table 的结束符 [table]
-            break;
-        default:
+        } else if (c == '\'' || c == '\"' || IsValidCharForRawKey(c)) {
             // 三种情况：
-            // 1.raw-key = value
+            // 1.key = value
             // 2.array = []
             // 3.object = {}
-            if (!GetRawKeyImpl() || !CheckSeparator() || !GetValueImpl()) {
-                goto __exit;
+            if (!ParseComplexKey() || !UsingComplexKey()) {
+                break;
             }
+            if (!CheckSeparator() || !ParseComplexValue()) {
+                break;
+            }
+            if (!RestoreStack(complex_key_depth_)) {
+                break;
+            }
+            state_ = PARSE_STATUS_SUCCESS;
+        } else if (c == '[') {
+
+            // 表数组的两种：1. [table] 2. [[table]]
+            //
+            if (!ForceRestoreStack(table_depth_)) {
+                break;
+            }
+            if (!GetTitleOfTable() || !UsingTableTitle()) {
+                break;
+            }
+            state_ = PARSE_STATUS_SUCCESS;
+        } else {
+            // state_ = PARSE_STATUS_ERROR;
             break;
         }
 
@@ -168,79 +201,21 @@ void Reader::Run() {
 __exit:
     if (state_ != PARSE_STATUS_SUCCESS) {
         error_ = std::string("TOML parse error at index ") + std::to_string(CurrentIndex());
-    }
-}
-
-bool Reader::GetKeyImpl(uint8_t flag) {
-    if (remaining_input_ == 1) {
-        state_ = PARSE_STATUS_ERROR;
-        return false;
-    }
-
-    input_++;
-    remaining_input_--;
-
-    state_ = PARSE_STATUS_ERROR;
-
-    if (flag == '\'') {
-        GetLiteralString();
     } else {
-        GetBasicString();
+        PrintNode(root_);
     }
-
-    if (state_ == PARSE_STATUS_SUCCESS) {
-        SetKey();
-        return true;
-    }
-    return false;
-}
-
-bool Reader::GetRawKeyImpl() {
-
-    state_ = PARSE_STATUS_ERROR;
-
-    uint8_t c;
-    const char target[] = " =\t";
-
-    while (remaining_input_ > 0) {
-        c = *input_;
-
-        if (c == '\r' || c == '\n') {
-            break;
-        }
-        if (IsByteExistsInTarget(target, c)) {
-            state_ = PARSE_STATUS_SUCCESS;
-            break;
-        }
-
-        if (!IsValidCharForRawKey(c)) {
-            break;
-        }
-        StringAddChar(c);
-        input_++;
-        remaining_input_--;
-    }
-
-    if (state_ == PARSE_STATUS_SUCCESS) {
-        SetKey();
-        return true;
-    }
-    return false;
 }
 
 bool Reader::CheckSeparator() {
 
-    state_ = PARSE_STATUS_ERROR;
-
-    uint8_t c = 0;
+    bool result = false;
+    uint8_t c   = 0;
 
     while (remaining_input_ > 0) {
         c = *input_;
 
         // 键值对要求等号和键必须在同一行
-        if (c == '\r' || c == '\n') {
-            break;
-        }
+
         if (c == ' ' || c == '\t') {
             input_++;
             remaining_input_--;
@@ -250,20 +225,19 @@ bool Reader::CheckSeparator() {
         if (c == '=') {
             input_++;
             remaining_input_--;
-            state_ = PARSE_STATUS_SUCCESS;
+            result = true;
             break;
         }
+
         break;
     }
 
-    return (state_ == PARSE_STATUS_SUCCESS);
+    return result;
 }
 
-bool Reader::GetValueImpl() {
+bool Reader::ParseComplexValue() {
 
-    state_ = PARSE_STATUS_ERROR;
-
-    uint8_t c;
+    uint8_t c = 0;
     Node node;
 
     while (remaining_input_ > 0) {
@@ -294,11 +268,15 @@ bool Reader::GetValueImpl() {
     case '\'':
     case '\"':
         // 字符串或多行字符串
-        GetStringValueImpl();
+        if (GetStringValue()) {
+            state_ = PARSE_STATUS_SUCCESS;
+        }
         break;
     case '+':
     case '-':
-        GetNumberWithPrefix();
+        if (GetNumberWithPrefix()) {
+            state_ = PARSE_STATUS_SUCCESS;
+        }
         break;
     case '0':
     case '1':
@@ -311,7 +289,9 @@ bool Reader::GetValueImpl() {
     case '8':
     case '9':
         // 整数、浮点、或时间
-        GetNumberValueImpl();
+        if (GetNumberNoPrefix()) {
+            state_ = PARSE_STATUS_SUCCESS;
+        }
         break;
     case 'n': // nan
         if (StartsWith("nan")) {
@@ -320,6 +300,7 @@ bool Reader::GetValueImpl() {
             input_ += 3;
             remaining_input_ -= 3;
         }
+        break;
     case 'i': // inf
         if (StartsWith("inf")) {
             node   = Node::CreateFloat(INFINITY);
@@ -346,21 +327,25 @@ bool Reader::GetValueImpl() {
         break;
     case '[':
         // 数组
+        if (GetArrayImpl()) {
+            state_ = PARSE_STATUS_SUCCESS;
+        }
         break;
     case '{':
         // 对象
+        if (GetInlineTableImpl()) {
+            state_ = PARSE_STATUS_SUCCESS;
+        }
         break;
     default:
         break;
     }
 
     if (node) UpdateNode(node);
-    return state_ == PARSE_STATUS_SUCCESS;
+    return (state_ == PARSE_STATUS_SUCCESS);
 }
 
-void Reader::UpdateKeyValue() { UpdateNode(Node::CreateString(strings_)); }
-
-void Reader::UpdateNode(Node node) {
+void Reader::UpdateNodeImpl(const Node &node) {
     Node &parent = stack_.top();
     if (parent.Type() == Types::TOML_ARRAY) {
         parent.As<kArray>()->PushBack(node);
@@ -370,7 +355,47 @@ void Reader::UpdateNode(Node node) {
     key_.clear();
     strings_.clear();
 }
-
+void Reader::PushStackImpl(const Node &node) { stack_.push(node); }
+bool Reader::PopStackImpl(Types type) {
+    if (stack_.size() == 1) {
+        return false;
+    }
+    Node &parent = stack_.top();
+    if (parent.Type() == type) {
+        stack_.pop();
+        return true;
+    }
+    return false;
+}
+int Reader::StackDepth() { return static_cast<int>(stack_.size()); }
+bool Reader::RestoreStack(int depth) {
+    while (depth > 0) {
+        if (!PopStack(Types::TOML_OBJECT)) {
+            return false;
+        }
+        depth--;
+    }
+    return true;
+}
+bool Reader::ForceRestoreStack(int depth) {
+    while (depth > 0 && !stack_.empty()) {
+        stack_.pop();
+        depth--;
+    }
+    return (depth == 0);
+}
+Node Reader::PushEmptyObject() {
+    auto node = Node::CreateObject();
+    UpdateNodeImpl(node);
+    PushStack(node);
+    return node;
+}
+Node Reader::PushEmptyArray() {
+    auto node = Node::CreateArray();
+    UpdateNodeImpl(node);
+    PushStack(node);
+    return node;
+}
 std::string Reader::Parse(const char *data, size_t len, Node *node) {
     Reader reader(data, len);
     reader.Run();

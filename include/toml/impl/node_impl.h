@@ -23,7 +23,7 @@
 #include <map>
 #include <string>
 #include <vector>
-
+#include <unordered_map>
 #include "toml/impl/node.h"
 
 namespace TOML {
@@ -35,6 +35,7 @@ public:
     NodeImpl(/* args */);
     virtual ~NodeImpl();
     virtual Types Type() const;
+    virtual std::string ToString() const;
 
 private:
     void Ref();
@@ -53,6 +54,7 @@ public:
     const std::string &Value() const;
     void SetValue(const std::string &value);
     void SetValue(const char *value);
+    std::string ToString() const override;
 
 private:
     String();
@@ -70,6 +72,7 @@ public:
     Types Type() const override;
     bool Value() const;
     void SetValue(bool value);
+    std::string ToString() const override;
 
 private:
     Boolean();
@@ -95,13 +98,14 @@ public:
     void SetValue(uint64_t value);
 
     template <bool SIGNED = true>
-    typename RealType<SIGNED>::type Value() {
+    typename RealType<SIGNED>::type Value() const {
         if (SIGNED) {
-            return *reinterpret_cast<int64_t *>(value_);
+            return *reinterpret_cast<const int64_t *>(&value_[0]);
         } else {
-            return *reinterpret_cast<int64_t *>(value_);
+            return *reinterpret_cast<const int64_t *>(&value_[0]);
         }
     }
+    std::string ToString() const override;
 
 private:
     Integer();
@@ -129,6 +133,7 @@ public:
     double Value() const;
     void SetValue(double);
     Types Type() const override;
+    std::string ToString() const override;
 
 private:
     Float();
@@ -177,6 +182,7 @@ public:
     const DateTime::Detail &Value() const;
     void SetValue(DateTime::Detail *detail);
     Types Type() const override;
+    std::string ToString() const override;
 
 private:
     DateTime();
@@ -198,15 +204,20 @@ public:
 
     Types Type() const override;
     void Insert(const std::string &key, const Node &value);
-    void Replace(const std::string &key, const Node &value);
 
     inline Iterator begin() { return obj_.begin(); }
     inline Iterator end() { return obj_.end(); }
 
+    // If the key does not exist,
+    // a empty node will be inserted
+    // Just like Object[key]=Node();
     Node &operator[](std::string &&key);
     Node &operator[](const std::string &key);
-    Node &Get(const std::string &key);
-    Node &Get(std::string &&key);
+
+    Node Get(const std::string &key);
+    Node Get(std::string &&key);
+    std::string ToString() const override;
+    bool Exists(const std::string &key) const;
 
 private:
     Object();
@@ -234,6 +245,7 @@ public:
     Node &operator[](size_t pos);
     const Node &At(size_t pos) const;
     Node &At(size_t pos);
+    std::string ToString() const override;
 
 private:
     Array();
