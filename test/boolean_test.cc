@@ -5,7 +5,7 @@
 #error "Missing Macro Definition: TEST_CASE_DIR, please check the CMakeLists.txt"
 #endif
 
-TEST(Boolean, Basic) {
+TEST(Boolean, BasicTest) {
     std::string path = TEST_CASE_DIR "/bool1.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
