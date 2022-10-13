@@ -105,8 +105,10 @@ bool Reader::UsingComplexKey() {
             prefix.push_back('.');
             prefix.append(ComplexPathPrefix(current_.key_path));
         }
-        auto iter = table_map_.find(prefix);
-        if (iter != table_map_.end()) {
+        auto it = table_map_.find(prefix);
+        if (it == table_map_.end()) {
+            table_map_[prefix] = ALLOWED_REPEATED;
+        } else if (it->second == DISABLE_REPEATED) {
             desc_ = "object \"" + prefix + "\" redefine";
             return false;
         }
@@ -138,11 +140,6 @@ bool Reader::UsingComplexKey() {
         complex_key_depth_++;
         PushStack(obj);
         parent = obj;
-    }
-
-    // 保存记录
-    if (!prefix.empty()) {
-        table_map_[prefix] = parent;
     }
 
     assert(parent.Type() == Types::TOML_OBJECT);
@@ -315,7 +312,7 @@ bool Reader::UsingTableTitleImpl() {
         desc_ = "object [" + current_.title + "] is an inline table and cannot be modified";
         return false;
     }
-    table_map_[current_.title] = obj; // 记录该对象的路径，用于检测重定义
+    table_map_[current_.title] = DISABLE_REPEATED; // 记录该对象的路径，用于检测重定义
     PushStack(obj);
     table_depth_ = count;
     return true;
@@ -412,6 +409,13 @@ std::string Reader::ComplexPathPrefix(const std::vector<std::string> &vec) {
 std::string Reader::GetVectorLastElement(const std::vector<std::string> &vec) {
     if (vec.empty()) return std::string();
     return vec[vec.size() - 1];
+}
+void Reader::DisablePrevTable() {
+    for (auto it = table_map_.begin(); it != table_map_.end(); ++it) {
+        if (it->second == ALLOWED_REPEATED) {
+            it->second = DISABLE_REPEATED;
+        }
+    }
 }
 } // namespace internal
 } // namespace TOML

@@ -231,7 +231,7 @@ public:
     inline Iterator end() { return obj_.end(); }
     inline bool Inlined() const { return inlined_; }
     inline void SetInlined() { inlined_ = true; }
-
+    inline size_t size() const { return obj_.size(); }
     // If the key does not exist,
     // a empty node will be inserted
     // Just like Object[key]=Node();
@@ -264,6 +264,7 @@ public:
 
     inline Iterator begin() { return array_.begin(); }
     inline Iterator end() { return array_.end(); }
+    inline size_t size() const { return array_.size(); }
 
     const Node &operator[](size_t pos) const;
     Node &operator[](size_t pos);

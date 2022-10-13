@@ -171,6 +171,9 @@ void Reader::Run() {
             state_         = PARSE_STATUS_SUCCESS;
         } else if (c == '[') {
 
+            // 将上一个表中定义的可用子表全部禁用
+            DisablePrevTable();
+
             // 两种：1. 表 [table] 2. 表数组 [[table]]
             //
             if (!ForceRestoreStack(table_depth_)) {
@@ -205,8 +208,9 @@ void Reader::Run() {
 __exit:
     if (state_ != PARSE_STATUS_SUCCESS) {
         error_ = std::string("TOML parse error at index ") + std::to_string(CurrentIndex());
-    } else {
-        PrintNode(root_);
+        if (!desc_.empty()) {
+            error_ += ", " + desc_;
+        }
     }
 }
 void Reader::SwapPathRecord() { std::swap(prev_, current_); }

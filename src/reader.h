@@ -33,18 +33,23 @@
 namespace TOML {
 namespace internal {
 struct ComplexPathRecord {
-    std::string title; // 去掉空格后的表头，形如 A.B.C
-    std::vector<std::string>
-        title_path; // 表头路径 title_path[0]=A, title_path[1]=B, title_path[2]=C
+    // 去掉空格后的表头，形如 A.B.C
+    std::string title;
+    // 表头路径 title_path[0]=A, title_path[1]=B, title_path[2]=C
+    std::vector<std::string> title_path;
 
-    std::string key;                   // 去掉空格后的复合键，形如 A.B.C
-    std::vector<std::string> key_path; // 表头路径 key_path[0]=A, key_path[1]=B, key_path[2]=C
+    // 去掉空格后的复合键，形如 A.B.C
+    std::string key;
+    // 表头路径 key_path[0]=A, key_path[1]=B, key_path[2]=C
+    std::vector<std::string> key_path;
 };
 
 class Reader {
 public:
     static std::string Parse(const char *data, size_t len, Node *node);
     static constexpr uint32_t READ_CHAR_EOF = 0x7ffffff0;
+    static constexpr int ALLOWED_REPEATED   = 1;
+    static constexpr int DISABLE_REPEATED   = 2;
 
     ~Reader();
 
@@ -119,6 +124,7 @@ private:
     bool GetInlineTableImpl();
     bool GetTitleOfTable();
     bool GetTitleOfTableImpl();
+    void DisablePrevTable();
 
 private:
     // 栈操作
@@ -181,9 +187,6 @@ private:
     std::string error_;
     std::string desc_;
 
-    // 当前路径前缀
-    std::string path_prefix_;
-
     ComplexPathRecord prev_;
     ComplexPathRecord current_;
 
@@ -192,9 +195,10 @@ private:
 
     Node root_;
     std::stack<Node> stack_;
-    // key:full-path, value: object
-    // 所有 object 的全局路径表
-    std::map<std::string, Node> table_map_;
+    // key:full-path, value: flag
+    // 除表数组之外的全部 table 的全局路径表
+    // flag:0 表示允许重复, 为1表示不允许重复
+    std::map<std::string, int> table_map_;
 };
 } // namespace internal
 } // namespace TOML
