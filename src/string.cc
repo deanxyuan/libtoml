@@ -22,7 +22,6 @@
 namespace TOML {
 namespace internal {
 
-// 调用此函数前，需要将state设置为ERROR
 bool Reader::GetStringValue() {
     if (GetStringValueImpl()) {
         Node node = Node::CreateString(strings_);

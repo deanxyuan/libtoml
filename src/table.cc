@@ -25,9 +25,7 @@
 
 namespace TOML {
 namespace internal {
-// 内联表得出现在同一行内
-// 最后一对键值对后不允许终逗号（也称为尾逗号）
-// 不允许花括号中出现任何换行，除非在值中它们合法
+
 bool Reader::GetInlineTableImpl() {
     int depth = StackDepth();
 
@@ -60,7 +58,7 @@ bool Reader::GetInlineTableImpl() {
                 break;
             case '\'':
             case '\"':
-                // 字符串或多行字符串
+                // string
                 if (!GetStringValue()) {
                     goto __exit;
                 }
@@ -83,7 +81,7 @@ bool Reader::GetInlineTableImpl() {
             case '7':
             case '8':
             case '9':
-                // 整数、浮点、或时间
+                // integer float datetime
                 if (!GetNumberNoPrefix()) {
                     goto __exit;
                 }
@@ -130,7 +128,6 @@ bool Reader::GetInlineTableImpl() {
                 }
                 goto __exit;
             case '{':
-                // 对象
                 PushEmptyObject();
                 input_++;
                 remaining_input_--;
@@ -138,7 +135,6 @@ bool Reader::GetInlineTableImpl() {
                 need_value_or_key = false;
                 break;
             case '[':
-                // 数组
                 if (!GetArrayImpl()) {
                     goto __exit;
                 }

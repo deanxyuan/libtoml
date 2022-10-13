@@ -45,11 +45,11 @@ bool Reader::GetNumberWithPrefix() {
         }
         break;
     default:
-        // 有+-号前缀，因此只能为十进制整数或浮点数
+        // has a '+-' prefix, so it can only be a decimal integer or float
         if (TestNumberIsFloat()) {
             if (GetFloatNumber()) {
                 auto value = StringToDouble();
-                // 正负处理
+                // +- process
                 node = Node::CreateFloat(negative ? (value * (-1)) : value);
             }
         } else {
@@ -128,7 +128,8 @@ bool Reader::GetDecimalNumber() {
             break;
         case '0':
             if (strings_.size() == 1 && strings_[0] == '0') {
-                // 前导零是不允许的，判断是否出现重复的前导 "0"
+                // Leading zeros are not allowed, check
+                // if there is a duplicate prefix "0"
                 goto __exit;
             }
         case '1':
@@ -149,7 +150,7 @@ bool Reader::GetDecimalNumber() {
         case '\r':
         case '\n':
         case ' ':
-        case '#': // 开始注释
+        case '#':
         case ',':
         case ']':
         case '}':
@@ -200,7 +201,8 @@ bool Reader::GetFloatNumber() {
 
         case '0':
             if (strings_.size() == 1 && strings_[0] == '0') {
-                // 前导零是不允许的，判断是否出现重复的前导 "0"
+                // Leading zeros are not allowed, check
+                // if there is a duplicate prefix "0"
                 goto __exit;
             }
         case '1':
@@ -219,11 +221,10 @@ bool Reader::GetFloatNumber() {
             break;
         case 'e':
         case 'E':
-            // 读取小数精度
             if (next_must_be_num || found_E) {
                 goto __exit;
             }
-            // E后面不能有空格，只能为数字或+-
+            // E cannot be followed by a space, only a number or +-
             next_must_be_num = true;
             StringAddChar(c);
             found_E = true;
@@ -232,7 +233,7 @@ bool Reader::GetFloatNumber() {
         case '\r':
         case '\n':
         case ' ':
-        case '#': // 开始注释
+        case '#':
         case ',':
         case ']':
         case '}':
@@ -248,7 +249,7 @@ bool Reader::GetFloatNumber() {
             if (next_must_be_num) {
                 prev_char = LastInsertChar();
                 if (prev_char == 'e' || prev_char == 'E') {
-                    // E后面允许出现 +/-
+                    // +/- is allowed after E
                 } else {
                     goto __exit;
                 }
@@ -321,7 +322,7 @@ bool Reader::GetHexNumber() {
         case '\r':
         case '\n':
         case ' ':
-        case '#': // 开始注释
+        case '#':
         case ',':
         case ']':
         case '}':
@@ -372,7 +373,7 @@ bool Reader::GetBinaryNumber() {
         case '\r':
         case '\n':
         case ' ':
-        case '#': // 开始注释
+        case '#':
         case ',':
         case ']':
         case '}':
@@ -427,7 +428,7 @@ bool Reader::GetOctNumber() {
         case '\r':
         case '\n':
         case ' ':
-        case '#': // 开始注释
+        case '#':
         case ',':
         case ']':
         case '}':
@@ -507,7 +508,7 @@ Types Reader::TestPossibleType() {
         case '_':
             break;
         case '-':
-            // 时间和日期都需要
+            // Time and date are required '-'
             if (++count > 1) {
                 type = Types::TOML_DATETIME;
                 goto __exit;

@@ -117,7 +117,7 @@ bool Reader::GetDateImpl() {
             return GetTimeImpl();
         }
         if (*input_ == ' ') {
-            // 尝试加载时间
+            // try to read time string
             if (remaining_input_ > 1 && input_[1] >= '0' && input_[1] <= '9') {
                 StringAddChar(*input_);
                 input_++;

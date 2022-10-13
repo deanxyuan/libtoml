@@ -35,8 +35,7 @@ bool Reader::GetArrayImpl() {
     bool find_a_separator = true;
 
     while (remaining_input_ > 0) {
-        state_ = PARSE_STATUS_ERROR;
-        c      = *input_;
+        c = *input_;
         switch (c) {
         case '\r':
         case '\n':
@@ -53,7 +52,7 @@ bool Reader::GetArrayImpl() {
             break;
         case '\'':
         case '\"':
-            // 字符串或多行字符串
+            // string
             if (!find_a_separator || !GetStringValue()) {
                 goto __exit;
             }
@@ -76,7 +75,7 @@ bool Reader::GetArrayImpl() {
         case '7':
         case '8':
         case '9':
-            // 整数、浮点、或时间
+            // integer float datetime
             if (!find_a_separator || !GetNumberNoPrefix()) {
                 goto __exit;
             }
@@ -127,7 +126,7 @@ bool Reader::GetArrayImpl() {
             }
             goto __exit;
         case '[':
-            // 数组
+            // array
             if (!find_a_separator) {
                 goto __exit;
             }
@@ -136,7 +135,7 @@ bool Reader::GetArrayImpl() {
             remaining_input_--;
             break;
         case '{':
-            // 对象
+            // inlined object
             if (!find_a_separator || !GetInlineTableImpl()) {
                 goto __exit;
             }
@@ -161,6 +160,7 @@ bool Reader::GetArrayImpl() {
         if (c == READ_CHAR_EOF) {
             break;
         }
+        state_ = PARSE_STATUS_ERROR;
     } // end while
 __exit:
     return state_ == PARSE_STATUS_SUCCESS;
