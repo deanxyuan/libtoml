@@ -6,7 +6,7 @@
 #error "Missing Macro Definition: TEST_CASE_DIR, please check the CMakeLists.txt"
 #endif
 
-TEST(String, EscapedCharacters) {
+TEST(String, string0) {
     std::string path = TEST_CASE_DIR "/string0.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -24,7 +24,7 @@ TEST(String, EscapedCharacters) {
     EXPECT_EQ(value, s1);
 }
 
-TEST(String, MultiLineBasic) {
+TEST(String, string1) {
     std::string path = TEST_CASE_DIR "/string1.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -46,7 +46,7 @@ TEST(String, MultiLineBasic) {
 #endif
 }
 
-TEST(String, MultiLineBasicLastFoldup) {
+TEST(String, string3) {
     std::string path = TEST_CASE_DIR "/string3.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -62,7 +62,7 @@ TEST(String, MultiLineBasicLastFoldup) {
     ASSERT_EQ(n3.As<TOML::kString>()->Value(), value);
 }
 
-TEST(String, BasicStringMultiQMarks) {
+TEST(String, string4) {
     std::string path = TEST_CASE_DIR "/string4.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -86,7 +86,7 @@ TEST(String, BasicStringMultiQMarks) {
     ASSERT_EQ(n4.As<TOML::kString>()->Value(), str7);
 }
 
-TEST(String, SingleLiteral) {
+TEST(String, string5) {
     std::string path = TEST_CASE_DIR "/string5.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -102,7 +102,7 @@ TEST(String, SingleLiteral) {
     ASSERT_EQ(n4.As<TOML::kString>()->Value(), std::string(R"(<\i\c*\s*>)"));
 }
 
-TEST(String, MultiLineLiteral) {
+TEST(String, string6) {
     std::string path = TEST_CASE_DIR "/string6.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -116,7 +116,7 @@ TEST(String, MultiLineLiteral) {
                           "whitespace\n   is preserved.\n"));
 }
 
-TEST(String, LiteralMultiMarks) {
+TEST(String, string7) {
     std::string path = TEST_CASE_DIR "/string7.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -130,7 +130,7 @@ TEST(String, LiteralMultiMarks) {
               std::string(R"('That,' she said, 'is still pointless.')"));
 }
 
-TEST(String, LiteralMultiMarksEx) {
+TEST(String, string8) {
     std::string path = TEST_CASE_DIR "/string8.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);

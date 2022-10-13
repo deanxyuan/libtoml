@@ -29,7 +29,7 @@ bool CheckObjectBoolValue(TOML::Node node, const std::string &key, bool value) {
     return v.As<TOML::kBoolean>()->Value() == value;
 }
 
-TEST(Table, Basic) {
+TEST(Table, tab01) {
     std::string path = TEST_CASE_DIR "/tab01.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -46,7 +46,7 @@ TEST(Table, Basic) {
     ASSERT_TRUE(CheckObjectIntValue(n2, "key2", 456));
 }
 
-TEST(Table, ComplexTitle) {
+TEST(Table, tab02) {
     std::string path = TEST_CASE_DIR "/tab02.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -66,7 +66,7 @@ TEST(Table, ComplexTitle) {
     ASSERT_TRUE(CheckObjectStringValue(type, "name", "pug"));
 }
 
-TEST(Table, ComplexTitleEmptyTable) {
+TEST(Table, tab03) {
     std::string path = TEST_CASE_DIR "/tab03.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -105,7 +105,7 @@ TEST(Table, ComplexTitleEmptyTable) {
     ASSERT_EQ(l.As<TOML::kObject>()->size(), 0);
 }
 
-TEST(Table, ComplexTitleAfterwardParent) {
+TEST(Table, tab04) {
     std::string path = TEST_CASE_DIR "/tab04.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -122,7 +122,7 @@ TEST(Table, ComplexTitleAfterwardParent) {
     ASSERT_EQ(w.As<TOML::kObject>()->size(), 0);
 }
 
-TEST(Table, RedefineTest1) {
+TEST(Table, tab05) {
     std::string path = TEST_CASE_DIR "/tab05.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -130,7 +130,7 @@ TEST(Table, RedefineTest1) {
     ASSERT_FALSE(node);
 }
 
-TEST(Table, RedefineTest2) {
+TEST(Table, tab06) {
     std::string path = TEST_CASE_DIR "/tab06.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -138,7 +138,7 @@ TEST(Table, RedefineTest2) {
     ASSERT_FALSE(node);
 }
 
-TEST(Table, ComplexTitleMultiPointAdd) {
+TEST(Table, tab07) {
     std::string path = TEST_CASE_DIR "/tab07.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -155,7 +155,7 @@ TEST(Table, ComplexTitleMultiPointAdd) {
     ASSERT_EQ(w.As<TOML::kObject>()->size(), 0);
 }
 
-TEST(Table, TopLevelTable) {
+TEST(Table, tab08) {
     std::string path = TEST_CASE_DIR "/tab08.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -179,7 +179,7 @@ TEST(Table, TopLevelTable) {
     ASSERT_EQ(detail.Day(), 4);
 }
 
-TEST(Table, ComplexTitleMultiPointAdd2) {
+TEST(Table, tab09) {
     std::string path = TEST_CASE_DIR "/tab09.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -195,14 +195,14 @@ TEST(Table, ComplexTitleMultiPointAdd2) {
     ASSERT_EQ(taste.As<TOML::kObject>()->size(), 1);
     ASSERT_TRUE(CheckObjectBoolValue(taste, "sweet", true));
 }
-TEST(Table, RedefineTest3) {
+TEST(Table, tab10) {
     std::string path = TEST_CASE_DIR "/tab10.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_FALSE(error.empty());
     ASSERT_FALSE(node);
 }
-TEST(Table, ComplexTitleMultiPointAdd3) {
+TEST(Table, tab11) {
     std::string path = TEST_CASE_DIR "/tab11.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);

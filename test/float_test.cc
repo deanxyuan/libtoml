@@ -5,7 +5,7 @@
 #error "Missing Macro Definition: TEST_CASE_DIR, please check the CMakeLists.txt"
 #endif
 
-TEST(Float, Basic) {
+TEST(Float, float1) {
     std::string path = TEST_CASE_DIR "/float1.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -27,7 +27,7 @@ TEST(Float, Basic) {
     ASSERT_EQ(n7.As<TOML::kFloat>()->Value(), 6.626e-34);
 }
 
-TEST(Float, InvalidDotMissPrefix) {
+TEST(Float, float2) {
     std::string path = TEST_CASE_DIR "/float2.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -35,7 +35,7 @@ TEST(Float, InvalidDotMissPrefix) {
     ASSERT_FALSE(node);
 }
 
-TEST(Float, InvalidDotMissSuffix) {
+TEST(Float, float3) {
     std::string path = TEST_CASE_DIR "/float3.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -43,7 +43,7 @@ TEST(Float, InvalidDotMissSuffix) {
     ASSERT_FALSE(node);
 }
 
-TEST(Float, InvalidDotAndE) {
+TEST(Float, float4) {
     std::string path = TEST_CASE_DIR "/float4.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -51,7 +51,7 @@ TEST(Float, InvalidDotAndE) {
     ASSERT_FALSE(node);
 }
 
-TEST(Float, SplicingChar) {
+TEST(Float, float5) {
     std::string path = TEST_CASE_DIR "/float5.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -61,7 +61,7 @@ TEST(Float, SplicingChar) {
     ASSERT_EQ(n1.As<TOML::kFloat>()->Value(), 224617.445991228);
 }
 
-TEST(Float, InfAndNan) {
+TEST(Float, float6) {
     std::string path = TEST_CASE_DIR "/float6.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);

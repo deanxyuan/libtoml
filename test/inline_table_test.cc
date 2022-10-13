@@ -21,7 +21,7 @@ bool CheckObjectIntValue(TOML::Node node, const std::string &key, int64_t value)
     return v.As<TOML::kInteger>()->Value() == value;
 }
 
-TEST(InlineTable, BasicTest) {
+TEST(InlineTable, inline_table) {
     std::string path = TEST_CASE_DIR "/inline_table.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -33,7 +33,7 @@ TEST(InlineTable, BasicTest) {
     ASSERT_TRUE(CheckObjectIntValue(x, "b", 2));
 }
 
-TEST(InlineTable, SubTableTest) {
+TEST(InlineTable, inlinetab1) {
     std::string path = TEST_CASE_DIR "/inlinetab1.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -57,7 +57,7 @@ TEST(InlineTable, SubTableTest) {
     ASSERT_TRUE(CheckObjectStringValue(sub, "name", "pug"));
 }
 
-TEST(InlineTable, InvalidTest1) {
+TEST(InlineTable, inlinetab2) {
     std::string path = TEST_CASE_DIR "/inlinetab2.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -65,7 +65,7 @@ TEST(InlineTable, InvalidTest1) {
     ASSERT_FALSE(node);
 }
 
-TEST(InlineTable, InvalidTest2) {
+TEST(InlineTable, inlinetab3) {
     std::string path = TEST_CASE_DIR "/inlinetab3.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);

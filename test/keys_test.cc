@@ -21,7 +21,7 @@ bool CheckObjectIntValue(TOML::Node node, const std::string &key, int64_t value)
     return v.As<TOML::kInteger>()->Value() == value;
 }
 
-TEST(Keys, BasicTest) {
+TEST(Keys, keys00) {
     std::string path = TEST_CASE_DIR "/keys00.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -37,7 +37,7 @@ TEST(Keys, BasicTest) {
     ASSERT_EQ(n4.As<TOML::kString>()->Value(), std::string("value"));
 }
 
-TEST(Keys, StringKey) {
+TEST(Keys, keys01) {
     std::string path = TEST_CASE_DIR "/keys01.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -55,7 +55,7 @@ TEST(Keys, StringKey) {
     ASSERT_EQ(n5.As<TOML::kString>()->Value(), std::string("value"));
 }
 
-TEST(Keys, InvalidTest1) {
+TEST(Keys, keys02) {
     std::string path = TEST_CASE_DIR "/keys02.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -63,7 +63,7 @@ TEST(Keys, InvalidTest1) {
     ASSERT_FALSE(node);
 }
 
-TEST(Keys, EmptyKey) {
+TEST(Keys, keys03) {
     std::string path = TEST_CASE_DIR "/keys03.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -73,7 +73,7 @@ TEST(Keys, EmptyKey) {
     ASSERT_EQ(n1.As<TOML::kString>()->Value(), std::string("blank"));
 }
 
-TEST(Keys, ComplexKey) {
+TEST(Keys, keys04) {
     std::string path = TEST_CASE_DIR "/keys04.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -97,7 +97,7 @@ TEST(Keys, ComplexKey) {
     ASSERT_TRUE(v.As<TOML::kBoolean>()->Value());
 }
 
-TEST(Keys, ComplexKeyDefTable) {
+TEST(Keys, keys05) {
     std::string path = TEST_CASE_DIR "/keys05.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -111,15 +111,21 @@ TEST(Keys, ComplexKeyDefTable) {
     ASSERT_TRUE(CheckObjectStringValue(fruit, "flavor", "banana"));
 }
 
-TEST(Keys, RedefineTest1) {
+TEST(Keys, keys06) {
     std::string path = TEST_CASE_DIR "/keys06.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_FALSE(error.empty());
     ASSERT_FALSE(node);
 }
-
-TEST(Keys, TableMultipointAdd1) {
+TEST(Keys, keys07) {
+    std::string path = TEST_CASE_DIR "/keys07.toml";
+    std::string error;
+    TOML::Node node = TOML::LoadFromFile(path, &error);
+    ASSERT_FALSE(error.empty());
+    ASSERT_FALSE(node);
+}
+TEST(Keys, keys08) {
     std::string path = TEST_CASE_DIR "/keys08.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -135,7 +141,7 @@ TEST(Keys, TableMultipointAdd1) {
     ASSERT_TRUE(smooth.As<TOML::kBoolean>()->Value());
 }
 
-TEST(Keys, RedefineTest2) {
+TEST(Keys, keys09) {
     std::string path = TEST_CASE_DIR "/keys09.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -143,7 +149,7 @@ TEST(Keys, RedefineTest2) {
     ASSERT_FALSE(node);
 }
 
-TEST(Keys, TableMultipointAdd2) {
+TEST(Keys, keys10) {
     std::string path = TEST_CASE_DIR "/keys10.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -163,7 +169,7 @@ TEST(Keys, TableMultipointAdd2) {
     ASSERT_TRUE(CheckObjectStringValue(orange, "color", "orange"));
 }
 
-TEST(Keys, TableMultipointAdd3) {
+TEST(Keys, keys11) {
     std::string path = TEST_CASE_DIR "/keys11.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
@@ -183,7 +189,7 @@ TEST(Keys, TableMultipointAdd3) {
     ASSERT_TRUE(CheckObjectStringValue(orange, "color", "orange"));
 }
 
-TEST(Keys, RawFloatTreatedAsTable) {
+TEST(Keys, keys12) {
     std::string path = TEST_CASE_DIR "/keys12.toml";
     std::string error;
     TOML::Node node = TOML::LoadFromFile(path, &error);
