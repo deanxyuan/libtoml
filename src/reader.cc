@@ -154,7 +154,7 @@ void Reader::Run() {
             break;
         } else if (c == '\'' || c == '\"' || IsValidCharForRawKey(c)) {
             // 三种情况：
-            // 1.key = value
+            // 1.key = value (数值, 字符串, 布尔, 日期)
             // 2.array = []
             // 3.object = {}
             if (!ParseComplexKey() || !UsingComplexKey()) {
@@ -166,10 +166,12 @@ void Reader::Run() {
             if (!RestoreStack(complex_key_depth_)) {
                 break;
             }
-            state_ = PARSE_STATUS_SUCCESS;
+            prev_.key_path = current_.key_path;
+            prev_.key      = current_.key;
+            state_         = PARSE_STATUS_SUCCESS;
         } else if (c == '[') {
 
-            // 表数组的两种：1. [table] 2. [[table]]
+            // 两种：1. 表 [table] 2. 表数组 [[table]]
             //
             if (!ForceRestoreStack(table_depth_)) {
                 break;
@@ -177,9 +179,11 @@ void Reader::Run() {
             if (!GetTitleOfTable() || !UsingTableTitle()) {
                 break;
             }
-            state_ = PARSE_STATUS_SUCCESS;
+            prev_.title_path = current_.title_path;
+            prev_.title      = current_.title;
+            state_           = PARSE_STATUS_SUCCESS;
         } else {
-            // state_ = PARSE_STATUS_ERROR;
+            state_ = PARSE_STATUS_ERROR;
             break;
         }
 
@@ -205,6 +209,7 @@ __exit:
         PrintNode(root_);
     }
 }
+void Reader::SwapPathRecord() { std::swap(prev_, current_); }
 
 bool Reader::CheckSeparator() {
 
@@ -345,57 +350,6 @@ bool Reader::ParseComplexValue() {
     return (state_ == PARSE_STATUS_SUCCESS);
 }
 
-void Reader::UpdateNodeImpl(const Node &node) {
-    Node &parent = stack_.top();
-    if (parent.Type() == Types::TOML_ARRAY) {
-        parent.As<kArray>()->PushBack(node);
-    } else {
-        parent.As<kObject>()->Insert(key_, node);
-    }
-    key_.clear();
-    strings_.clear();
-}
-void Reader::PushStackImpl(const Node &node) { stack_.push(node); }
-bool Reader::PopStackImpl(Types type) {
-    if (stack_.size() == 1) {
-        return false;
-    }
-    Node &parent = stack_.top();
-    if (parent.Type() == type) {
-        stack_.pop();
-        return true;
-    }
-    return false;
-}
-int Reader::StackDepth() { return static_cast<int>(stack_.size()); }
-bool Reader::RestoreStack(int depth) {
-    while (depth > 0) {
-        if (!PopStack(Types::TOML_OBJECT)) {
-            return false;
-        }
-        depth--;
-    }
-    return true;
-}
-bool Reader::ForceRestoreStack(int depth) {
-    while (depth > 0 && !stack_.empty()) {
-        stack_.pop();
-        depth--;
-    }
-    return (depth == 0);
-}
-Node Reader::PushEmptyObject() {
-    auto node = Node::CreateObject();
-    UpdateNodeImpl(node);
-    PushStack(node);
-    return node;
-}
-Node Reader::PushEmptyArray() {
-    auto node = Node::CreateArray();
-    UpdateNodeImpl(node);
-    PushStack(node);
-    return node;
-}
 std::string Reader::Parse(const char *data, size_t len, Node *node) {
     Reader reader(data, len);
     reader.Run();

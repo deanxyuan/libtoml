@@ -169,7 +169,7 @@ bool Reader::GetInlineTableImpl() {
                 if (!ParseComplexKey()) {
                     goto __exit;
                 }
-                depth += static_cast<int>(path_.size() - 1);
+                depth += static_cast<int>(current_.key_path.size() - 1);
                 if (!UsingComplexKey() || !CheckSeparator()) {
                     goto __exit;
                 }

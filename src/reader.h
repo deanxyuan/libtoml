@@ -32,6 +32,15 @@
 
 namespace TOML {
 namespace internal {
+struct ComplexPathRecord {
+    std::string title; // 去掉空格后的表头，形如 A.B.C
+    std::vector<std::string>
+        title_path; // 表头路径 title_path[0]=A, title_path[1]=B, title_path[2]=C
+
+    std::string key;                   // 去掉空格后的复合键，形如 A.B.C
+    std::vector<std::string> key_path; // 表头路径 key_path[0]=A, key_path[1]=B, key_path[2]=C
+};
+
 class Reader {
 public:
     static std::string Parse(const char *data, size_t len, Node *node);
@@ -54,8 +63,8 @@ private:
     bool ParseComplexValue();
     bool CheckTableTileRedefine();
     bool CheckArrayOfTableExists(const std::string &name);
-    bool CheckArrayOfTablePathPrefix();
-    std::string ComplexPathPrefix(const std::string &path);
+    std::string ComplexPathPrefix(const std::vector<std::string> &vec);
+    std::string GetVectorLastElement(const std::vector<std::string> &vec);
 
     // TODO:
     // 当取完当前一组key=value数据，需要退栈
@@ -67,6 +76,8 @@ private:
     bool UsingTableTitle();
     bool UsingTableTitleImpl();
     bool UsingArrayOfTableTitleImpl();
+
+    void SwapPathRecord();
 
 private:
     // ----获取字符串value ----
@@ -111,21 +122,16 @@ private:
 
 private:
     // 栈操作
-    void UpdateNodeImpl(const Node &node);
-    void PushStackImpl(const Node &node);
-    bool PopStackImpl(Types type);
     int StackDepth();
     bool RestoreStack(int depth);
     bool ForceRestoreStack(int depth);
-
-    // print
     void UpdateNode(const Node &node);
     void PushStack(const Node &node);
     bool PopStack(Types type);
     bool InlinedTablePop();
-
     Node PushEmptyObject();
     Node PushEmptyArray();
+    // print
     void PrintNode(const Node &node);
 
 private:
@@ -174,17 +180,21 @@ private:
     std::string strings_;
     std::string error_;
     std::string desc_;
-    std::string raw_path_; // 表头或表数组中的原始路径, 用于判断表头是否重复定义
-    // for complex key or table title
-    std::vector<std::string> path_; // 表头或表数组中的路径节点
+
+    // 当前路径前缀
+    std::string path_prefix_;
+
+    ComplexPathRecord prev_;
+    ComplexPathRecord current_;
 
     // key: PATH [[PATH]]  value: PATH 数组的最后的一个元素
-    std::map<std::string, Node> array_of_table_table_;
+    std::map<std::string, Node> array_of_table_map_;
 
     Node root_;
     std::stack<Node> stack_;
-    // set of [table]
-    std::set<std::string> table_title_set_;
+    // key:full-path, value: object
+    // 所有 object 的全局路径表
+    std::map<std::string, Node> table_map_;
 };
 } // namespace internal
 } // namespace TOML

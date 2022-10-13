@@ -24,27 +24,6 @@
 namespace TOML {
 namespace internal {
 
-void Reader::UpdateNode(const Node &node) {
-    Node &parent = stack_.top();
-    if (parent.Type() == Types::TOML_ARRAY) {
-        std::cout << "Value[" << node.TypeString() << "]:" << node.ToString() << std::endl;
-    } else {
-        std::cout << "Key:" << key_ << ", Value[" << node.TypeString() << "]:" << node.ToString()
-                  << std::endl;
-    }
-    UpdateNodeImpl(node);
-}
-void Reader::PushStack(const Node &node) {
-    std::cout << "Push Stack:" << node.TypeString() << std::endl;
-    PushStackImpl(node);
-}
-bool Reader::PopStack(Types type) {
-    if (PopStackImpl(type)) {
-        std::cout << "Pop Stack:" << TypeString(type) << std::endl;
-        return true;
-    }
-    return false;
-}
 bool Reader::InlinedTablePop() {
     Node &parent = stack_.top();
     if (parent.Type() == Types::TOML_OBJECT) {
@@ -53,6 +32,57 @@ bool Reader::InlinedTablePop() {
         return true;
     }
     return false;
+}
+void Reader::UpdateNode(const Node &node) {
+    Node &parent = stack_.top();
+    if (parent.Type() == Types::TOML_ARRAY) {
+        parent.As<kArray>()->PushBack(node);
+    } else {
+        parent.As<kObject>()->Insert(key_, node);
+    }
+    key_.clear();
+    strings_.clear();
+}
+void Reader::PushStack(const Node &node) { stack_.push(node); }
+bool Reader::PopStack(Types type) {
+    if (stack_.size() == 1) {
+        return false;
+    }
+    Node &parent = stack_.top();
+    if (parent.Type() == type) {
+        stack_.pop();
+        return true;
+    }
+    return false;
+}
+int Reader::StackDepth() { return static_cast<int>(stack_.size()); }
+bool Reader::RestoreStack(int depth) {
+    while (depth > 0) {
+        if (!PopStack(Types::TOML_OBJECT)) {
+            return false;
+        }
+        depth--;
+    }
+    return true;
+}
+bool Reader::ForceRestoreStack(int depth) {
+    while (depth > 0 && !stack_.empty()) {
+        stack_.pop();
+        depth--;
+    }
+    return (depth == 0);
+}
+Node Reader::PushEmptyObject() {
+    auto node = Node::CreateObject();
+    UpdateNode(node);
+    PushStack(node);
+    return node;
+}
+Node Reader::PushEmptyArray() {
+    auto node = Node::CreateArray();
+    UpdateNode(node);
+    PushStack(node);
+    return node;
 }
 void Reader::PrintNode(const Node &node) { std::cout << "Node:" << node.ToString() << std::endl; }
 } // namespace internal

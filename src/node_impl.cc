@@ -114,7 +114,6 @@ const DateTime::Detail &DateTime::Value() const { return value_; }
 void DateTime::SetValue(DateTime::Detail *value) { value_ = *value; }
 Types DateTime::Type() const { return Types::TOML_DATETIME; }
 std::string DateTime::ToString() const { return RawString(); }
-
 void DateTime::InitDetail(DateTime::Detail *dt) { dt->Reset(); }
 DateTime::Detail::Detail() { memset(&data_, 0, sizeof(data_)); }
 DateTime::Detail::Detail(const DateTime::Detail &oth) {

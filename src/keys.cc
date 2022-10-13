@@ -31,6 +31,7 @@ bool Reader::ParseComplexKey() {
     bool find_a_separator = true;
 
     bool result = false;
+    std::string key;
 
     while (remaining_input_ > 0) {
         uint8_t c = *input_;
@@ -55,12 +56,15 @@ bool Reader::ParseComplexKey() {
             break;
         case '.':
             path.push_back(strings_);
+            key.append(strings_);
+            key.push_back('.');
             strings_.clear();
             find_a_separator = true;
             break;
         case '=':
             if (!find_a_separator) {
                 path.push_back(strings_);
+                key.append(strings_);
                 strings_.clear();
                 result = true;
             }
@@ -80,26 +84,43 @@ bool Reader::ParseComplexKey() {
     }
 __exit:
 
-    if (result) {
-        std::swap(path_, path);
-        return true;
-    }
-    path_.clear();
-    return false;
+    if (!result) path.clear();
+    std::swap(current_.key_path, path);
+    std::swap(current_.key, key);
+    return result;
 }
 
 bool Reader::UsingComplexKey() {
-    if (path_.empty()) return false;
+    /*
+        表不能定义多于一次，不允许使用 [table] 头重定义这样的表，
+        同样地，使用点分隔键来重定义已经以 [table] 形式定义过的
+        表也是不允许的。
+    */
+    std::string prefix;
+    if (current_.key_path.size() > 1) {
+        if (current_.title_path.empty()) {
+            prefix = ComplexPathPrefix(current_.key_path);
+        } else {
+            prefix = current_.title;
+            prefix.push_back('.');
+            prefix.append(ComplexPathPrefix(current_.key_path));
+        }
+        auto iter = table_map_.find(prefix);
+        if (iter != table_map_.end()) {
+            desc_ = "object \"" + prefix + "\" redefine";
+            return false;
+        }
+    }
 
     // 点分隔键为最后一个键名前的每个键名创建并定义一个表，
     // 倘若这些表尚未被创建的话
     complex_key_depth_ = 0;
 
     Node parent = stack_.top();
-    int count   = static_cast<int>(path_.size());
+    int count   = static_cast<int>(current_.key_path.size());
     for (int i = 0; i < count - 1; i++) {
         assert(parent.Type() == Types::TOML_OBJECT);
-        auto key = path_[i];
+        auto key = current_.key_path[i];
         Node obj = parent.As<kObject>()->Get(key);
         if (obj) {
             if (obj.Type() != Types::TOML_OBJECT) {
@@ -119,17 +140,18 @@ bool Reader::UsingComplexKey() {
         parent = obj;
     }
 
-    auto key = path_[count - 1];
-    if (!parent || parent.Type() != Types::TOML_OBJECT) {
-        desc_ = "internal error";
-        return false;
+    // 保存记录
+    if (!prefix.empty()) {
+        table_map_[prefix] = parent;
     }
+
+    assert(parent.Type() == Types::TOML_OBJECT);
+    auto key = GetVectorLastElement(current_.key_path);
     if (parent.As<kObject>()->Exists(key)) {
         desc_ = "\"" + key + "\" already exists";
         return false;
     }
     std::swap(key_, key);
-    path_.clear();
     return true;
 }
 
@@ -161,7 +183,7 @@ bool Reader::GetTitleOfTableImpl() {
     std::vector<std::string> path;
 
     bool result = false;
-    raw_path_.clear();
+    std::string title;
 
     while (remaining_input_ > 0) {
         uint8_t c = *input_;
@@ -186,8 +208,8 @@ bool Reader::GetTitleOfTableImpl() {
         case '\t':
             break;
         case '.':
-            raw_path_.append(strings_);
-            raw_path_.push_back('.');
+            title.append(strings_);
+            title.push_back('.');
             path.push_back(strings_);
             strings_.clear();
             find_a_separator = true;
@@ -196,7 +218,7 @@ bool Reader::GetTitleOfTableImpl() {
             if (find_a_separator) {
                 goto __exit;
             }
-            raw_path_.append(strings_);
+            title.append(strings_);
             path.push_back(strings_);
             strings_.clear();
             result = true;
@@ -215,8 +237,9 @@ bool Reader::GetTitleOfTableImpl() {
         remaining_input_--;
     }
 __exit:
-    if (!result) path_.clear();
-    std::swap(path_, path);
+    if (!result) path.clear();
+    std::swap(current_.title_path, path);
+    std::swap(current_.title, title);
     return result;
 }
 
@@ -225,26 +248,22 @@ bool Reader::UsingTableTitle() {
 }
 
 bool Reader::UsingTableTitleImpl() {
-    if (path_.empty()) return false;
 
     table_depth_ = 0;
 
-    if (!array_of_table_table_.empty() && path_.size() > 1) {
-        auto it = array_of_table_table_.find(path_[0]);
-        if (it != array_of_table_table_.end()) {
+    if (!array_of_table_map_.empty() && current_.title_path.size() > 1) {
+        auto it = array_of_table_map_.find(current_.title_path[0]);
+        if (it != array_of_table_map_.end()) {
             // 说明是对表数组的引用
             Node node = it->second;
-            int count = static_cast<int>(path_.size());
+            int count = static_cast<int>(current_.title_path.size());
             for (int i = 1; i < count; i++) {
-                if (!node || node.Type() != Types::TOML_OBJECT) {
-                    desc_ = "internal error";
-                    return false;
-                }
-                if (node.As<kObject>()->Exists(path_[i])) {
-                    node = node.As<kObject>()->Get(path_[i]);
+                assert(node.Type() == Types::TOML_OBJECT);
+                if (node.As<kObject>()->Exists(current_.title_path[i])) {
+                    node = node.As<kObject>()->Get(current_.title_path[i]);
                 } else {
                     Node obj = Node::CreateObject();
-                    node.As<kObject>()->Insert(path_[i], obj);
+                    node.As<kObject>()->Insert(current_.title_path[i], obj);
                     node = obj;
                 }
             }
@@ -255,22 +274,24 @@ bool Reader::UsingTableTitleImpl() {
     }
     // 常规表头处理
     // 判断表头是否重复定义
-    if (CheckTableTileRedefine()) {
-        desc_ = "[" + raw_path_ + "] redefine";
+    auto iter = table_map_.find(current_.title);
+    if (iter != table_map_.end()) {
+        desc_ = "object [" + current_.title + "] redefine";
         return false;
     }
-    table_title_set_.insert(raw_path_);
 
+    // 路径前缀处理，每个前缀节点都是一个OBJECT
+    std::string prefix;
     Node parent = stack_.top();
-    int count   = static_cast<int>(path_.size());
+    int count   = static_cast<int>(current_.title_path.size());
     for (int i = 0; i < count - 1; i++) {
-        auto key = path_[i];
+        auto key = current_.title_path[i];
         Node obj = parent.As<kObject>()->Get(key);
         if (!obj) {
             obj = Node::CreateObject();
             parent.As<kObject>()->Insert(key, obj);
         } else if (obj.Type() != Types::TOML_OBJECT) {
-            desc_ = "\"" + key + "\" redefine";
+            desc_ = "object " + prefix + key + " redefine";
             return false;
         } else if (obj.As<kObject>()->Inlined()) {
             desc_ = "\"" + key + "\" is an inline table and cannot be modified";
@@ -278,31 +299,37 @@ bool Reader::UsingTableTitleImpl() {
         }
         parent = obj;
         PushStack(obj);
+        prefix.append(key);
+        prefix.push_back('.');
     }
 
-    auto key = path_[path_.size() - 1];
-    if (parent.As<kObject>()->Exists(key)) {
-        desc_ = "\"" + key + "\" redefine";
+    auto key = GetVectorLastElement(current_.title_path);
+    Node obj = parent.As<kObject>()->Get(key);
+    if (!obj) {
+        obj = Node::CreateObject();
+        parent.As<kObject>()->Insert(key, obj);
+    } else if (obj.Type() != Types::TOML_OBJECT) {
+        desc_ = "node \"" + current_.title + "\" redefine";
+        return false;
+    } else if (obj.As<kObject>()->Inlined()) {
+        desc_ = "object [" + current_.title + "] is an inline table and cannot be modified";
         return false;
     }
-    Node obj = Node::CreateObject();
-    parent.As<kObject>()->Insert(key, obj);
+    table_map_[current_.title] = obj; // 记录该对象的路径，用于检测重定义
     PushStack(obj);
     table_depth_ = count;
     return true;
 }
 bool Reader::UsingArrayOfTableTitleImpl() {
-    if (path_.empty()) return false;
-    if (path_.size() == 1) {
+
+    if (current_.title_path.size() == 1) {
         // 表数组元素定义
-        std::string key = path_[0];
+        std::string key = current_.title_path[0];
         Node sub_array, parent = stack_.top();
-        if (parent.Type() != Types::TOML_OBJECT) {
-            desc_ = "internal error";
-            return false;
-        }
+        assert(parent.Type() == Types::TOML_OBJECT);
+
         if (!parent.As<kObject>()->Exists(key)) {
-            // 首次出现
+            // 首次出现，即第一个元素
             sub_array = Node::CreateArray();
             parent.As<kObject>()->Insert(key, sub_array);
         } else {
@@ -312,42 +339,31 @@ bool Reader::UsingArrayOfTableTitleImpl() {
                 desc_ = "\"" + key + "\" already exists and it is not an array";
                 return false;
             }
-            if (!CheckArrayOfTableExists(key)) {
-                desc_ = "\"" + key + "\" redefine";
-                return false;
-            }
         }
         // 创建一个空对象，入栈
         Node obj = Node::CreateObject();
-        PushStackImpl(obj);
+        PushStack(obj);
         sub_array.As<kArray>()->PushBack(obj);
         // 保存父节点(ARRAY)的最新元素
-        array_of_table_table_[key] = obj;
+        array_of_table_map_[key] = obj;
         // 更新栈高度
         table_depth_ = 1;
         return true;
     }
-    // 嵌套表数组，
-    if (array_of_table_table_.empty()) {
-        desc_ = "Missing definition of parent node \"" + path_[0] + "\"";
-        return false;
-    }
-    // 路径是否有效
-    // [[A.B.C]] prefix = A.B
-    auto prefix = ComplexPathPrefix(raw_path_);
-
-    // 路径是否存在
-    auto it = array_of_table_table_.find(prefix);
-    if (it == array_of_table_table_.end()) {
-        desc_ = "Invalid path \"" + prefix + "\"";
+    // 嵌套表数组，判断路径是否有效
+    // [[A.B.C]] 判断前缀 A.B 是否存在
+    auto prefix = ComplexPathPrefix(current_.title_path);
+    auto iter   = array_of_table_map_.find(prefix);
+    if (iter == array_of_table_map_.end()) {
+        desc_ = "Missing definition of parent node \"" + prefix + "\"";
         return false;
     }
 
     // 获取最新的节点名, 如 [[A.B.C]] 中的 C
-    auto key = path_[path_.size() - 1];
+    auto key = GetVectorLastElement(current_.title_path);
 
     // 获取路径前缀的最后一次更新的 OBJECT
-    Node sub_array, last_node = it->second;
+    Node sub_array, last_node = iter->second;
 
     // 判断 C 数组是否存在
     if (last_node.As<kObject>()->Exists(key)) {
@@ -364,41 +380,38 @@ bool Reader::UsingArrayOfTableTitleImpl() {
     }
     // 创建一个空对象，入栈
     Node obj = Node::CreateObject();
-    PushStackImpl(obj);
+    PushStack(obj);
     sub_array.As<kArray>()->PushBack(obj);
-    array_of_table_table_[raw_path_] = obj;
+    array_of_table_map_[current_.title] = obj;
 
     // 更新栈高度
     table_depth_ = 1;
     return true;
 }
 bool Reader::CheckTableTileRedefine() {
-    auto it = table_title_set_.find(raw_path_);
-    return (it != table_title_set_.end());
+    auto it = table_map_.find(current_.title);
+    return (it != table_map_.end());
 }
 bool Reader::CheckArrayOfTableExists(const std::string &name) {
-    auto it = array_of_table_table_.find(name);
-    return (it != array_of_table_table_.end());
-}
-bool Reader::CheckArrayOfTablePathPrefix() {
-    auto pos = raw_path_.find_last_of('.');
-    if (pos == std::string::npos) {
-        return false;
-    }
-    // eg: [[A.B.C]]
-    //  prefix = A.B
-    //
-    std::string prefix = raw_path_.substr(0, pos);
-    return CheckArrayOfTableExists(prefix);
+    auto it = array_of_table_map_.find(name);
+    return (it != array_of_table_map_.end());
 }
 
-std::string Reader::ComplexPathPrefix(const std::string &path) {
-    auto pos = path.find_last_of('.');
-    if (pos == std::string::npos) {
-        return path;
+std::string Reader::ComplexPathPrefix(const std::vector<std::string> &vec) {
+    std::string res;
+    int count = static_cast<int>(vec.size());
+    for (int i = 0; i < count - 1; i++) {
+        res.append(vec[i]);
+        res.push_back('.');
     }
-    return path.substr(0, pos);
+    if (!res.empty()) {
+        res.resize(res.size() - 1);
+    }
+    return res;
 }
-
+std::string Reader::GetVectorLastElement(const std::vector<std::string> &vec) {
+    if (vec.empty()) return std::string();
+    return vec[vec.size() - 1];
+}
 } // namespace internal
 } // namespace TOML

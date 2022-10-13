@@ -195,7 +195,7 @@ public:
             uint8_t *month, *day, *hour, *minute, *second;
         } data_;
     };
-    static void InitDetail(DateTime::Detail *detail);
+    static void InitDetail(DateTime::Detail *dt);
     ~DateTime();
 
     const std::string &RawString() const;
@@ -224,12 +224,11 @@ public:
     ~Object();
 
     Types Type() const override;
+
     bool Insert(const std::string &key, const Node &value);
 
     inline Iterator begin() { return obj_.begin(); }
     inline Iterator end() { return obj_.end(); }
-    inline size_t size() const { return obj_.size(); }
-
     inline bool Inlined() const { return inlined_; }
     inline void SetInlined() { inlined_ = true; }
 
@@ -265,7 +264,6 @@ public:
 
     inline Iterator begin() { return array_.begin(); }
     inline Iterator end() { return array_.end(); }
-    inline size_t size() const { return array_.size(); }
 
     const Node &operator[](size_t pos) const;
     Node &operator[](size_t pos);
