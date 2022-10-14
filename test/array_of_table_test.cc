@@ -30,7 +30,7 @@ bool CheckArrayIntValue(TOML::Node node, int index, int64_t s) {
 }
 
 bool CheckObjectStringValue(TOML::Node node, const std::string &key, const std::string &value) {
-    TOML::Node v = node.As<TOML::kObject>()->Get(key);
+    TOML::Node v = node.As<TOML::kTable>()->Get(key);
     if (v.Type() != TOML::kString) {
         return false;
     }
@@ -38,7 +38,7 @@ bool CheckObjectStringValue(TOML::Node node, const std::string &key, const std::
 }
 
 bool CheckObjectIntValue(TOML::Node node, const std::string &key, int64_t value) {
-    TOML::Node v = node.As<TOML::kObject>()->Get(key);
+    TOML::Node v = node.As<TOML::kTable>()->Get(key);
     if (v.Type() != TOML::kInteger) {
         return false;
     }
@@ -51,21 +51,21 @@ TEST(Array, arrtab1) {
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
-    TOML::Node products = node.AsRoot()->Get("products");
+    TOML::Node products = node.AsTable()->Get("products");
     ASSERT_EQ(products.Type(), TOML::kArray);
     ASSERT_EQ(products.As<TOML::kArray>()->size(), 3);
 
     TOML::Node n1 = products.AsArray()->At(0);
-    ASSERT_EQ(n1.As<TOML::kObject>()->size(), 2);
+    ASSERT_EQ(n1.As<TOML::kTable>()->size(), 2);
     ASSERT_TRUE(CheckObjectStringValue(n1, "name", "Hammer"));
     ASSERT_TRUE(CheckObjectIntValue(n1, "sku", 738594937));
 
     TOML::Node n2 = products.AsArray()->At(1);
-    ASSERT_EQ(n2.Type(), TOML::kObject);
+    ASSERT_EQ(n2.Type(), TOML::kTable);
     ASSERT_EQ(n2.AsTable()->size(), 0);
 
     TOML::Node n3 = products.AsArray()->At(2);
-    ASSERT_EQ(n3.As<TOML::kObject>()->size(), 3);
+    ASSERT_EQ(n3.As<TOML::kTable>()->size(), 3);
     ASSERT_TRUE(CheckObjectStringValue(n3, "name", "Nail"));
     ASSERT_TRUE(CheckObjectIntValue(n3, "sku", 284758393));
     ASSERT_TRUE(CheckObjectStringValue(n3, "color", "gray"));
@@ -77,12 +77,12 @@ TEST(Array, arrtab2) {
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
-    TOML::Node fruits = node.AsRoot()->Get("fruits");
+    TOML::Node fruits = node.AsTable()->Get("fruits");
     ASSERT_EQ(fruits.Type(), TOML::kArray);
     ASSERT_EQ(fruits.As<TOML::kArray>()->size(), 2);
 
     TOML::Node n1 = fruits.AsArray()->At(0);
-    ASSERT_EQ(n1.As<TOML::kObject>()->size(), 3);
+    ASSERT_EQ(n1.As<TOML::kTable>()->size(), 3);
     ASSERT_TRUE(CheckObjectStringValue(n1, "name", "apple"));
     TOML::Node physical = n1.AsTable()->Get("physical");
     ASSERT_TRUE(CheckObjectStringValue(physical, "color", "red"));
@@ -96,7 +96,7 @@ TEST(Array, arrtab2) {
     ASSERT_TRUE(CheckObjectStringValue(e2, "name", "granny smith"));
 
     TOML::Node n2 = fruits.AsArray()->At(1);
-    ASSERT_EQ(n2.Type(), TOML::kObject);
+    ASSERT_EQ(n2.Type(), TOML::kTable);
     ASSERT_EQ(n2.AsTable()->size(), 2);
     ASSERT_TRUE(CheckObjectStringValue(n2, "name", "banana"));
 
@@ -145,26 +145,26 @@ TEST(Array, arrtab7) {
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
-    TOML::Node points = node.As<TOML::kObject>()->Get("points");
+    TOML::Node points = node.As<TOML::kTable>()->Get("points");
     ASSERT_EQ(points.As<TOML::kArray>()->size(), 3);
 
     TOML::Node n1 = points.AsArray()->At(0);
-    ASSERT_EQ(n1.Type(), TOML::kObject);
-    ASSERT_EQ(n1.As<TOML::kObject>()->size(), 3);
+    ASSERT_EQ(n1.Type(), TOML::kTable);
+    ASSERT_EQ(n1.As<TOML::kTable>()->size(), 3);
     ASSERT_TRUE(CheckObjectIntValue(n1, "x", 1));
     ASSERT_TRUE(CheckObjectIntValue(n1, "y", 2));
     ASSERT_TRUE(CheckObjectIntValue(n1, "z", 3));
 
     TOML::Node n2 = points.AsArray()->At(1);
-    ASSERT_EQ(n2.Type(), TOML::kObject);
-    ASSERT_EQ(n2.As<TOML::kObject>()->size(), 3);
+    ASSERT_EQ(n2.Type(), TOML::kTable);
+    ASSERT_EQ(n2.As<TOML::kTable>()->size(), 3);
     ASSERT_TRUE(CheckObjectIntValue(n2, "x", 7));
     ASSERT_TRUE(CheckObjectIntValue(n2, "y", 8));
     ASSERT_TRUE(CheckObjectIntValue(n2, "z", 9));
 
     TOML::Node n3 = points.AsArray()->At(2);
-    ASSERT_EQ(n3.Type(), TOML::kObject);
-    ASSERT_EQ(n3.As<TOML::kObject>()->size(), 3);
+    ASSERT_EQ(n3.Type(), TOML::kTable);
+    ASSERT_EQ(n3.As<TOML::kTable>()->size(), 3);
     ASSERT_TRUE(CheckObjectIntValue(n3, "x", 2));
     ASSERT_TRUE(CheckObjectIntValue(n3, "y", 4));
     ASSERT_TRUE(CheckObjectIntValue(n3, "z", 8));

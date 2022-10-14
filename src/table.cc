@@ -127,7 +127,7 @@ bool Reader::GetInlineTableImpl() {
                 }
                 goto __exit;
             case '{':
-                PushEmptyObject();
+                PushEmptyTable();
                 input_++;
                 remaining_input_--;
                 find_a_separator  = false;
@@ -279,19 +279,19 @@ bool Reader::UsingTableTitleImpl() {
         if (it != array_of_table_map_.end()) {
             // 说明是对表数组的引用
             Node node = it->second;
-            assert(node.Type() == Types::TOML_OBJECT);
+            assert(node.Type() == Types::TOML_TABLE);
             int count = static_cast<int>(current_.title_path.size());
             for (int i = 1; i < count; i++) {
-                Node obj = node.As<kObject>()->Get(current_.title_path[i]);
+                Node obj = node.As<kTable>()->Get(current_.title_path[i]);
                 if (obj) {
-                    if (obj.Type() != Types::TOML_OBJECT) {
+                    if (obj.Type() != Types::TOML_TABLE) {
                         desc_ = "Node \"" + current_.title_path[i] + "\" definition conflict";
                         return false;
                     }
                     node = obj;
                 } else {
-                    obj = Node::CreateObject();
-                    node.As<kObject>()->Insert(current_.title_path[i], obj);
+                    obj = Node::CreateTable();
+                    node.As<kTable>()->Insert(current_.title_path[i], obj);
                     node = obj;
                 }
             }
@@ -304,24 +304,24 @@ bool Reader::UsingTableTitleImpl() {
     // 判断表头是否重复定义
     auto iter = table_map_.find(current_.title);
     if (iter != table_map_.end()) {
-        desc_ = "object [" + current_.title + "] redefine";
+        desc_ = "node [" + current_.title + "] redefine";
         return false;
     }
 
-    // 路径前缀处理，每个前缀节点都是一个OBJECT
+    // 路径前缀处理，每个前缀节点都是一个 TABLE
     std::string prefix;
     Node parent = stack_.top();
     int count   = static_cast<int>(current_.title_path.size());
     for (int i = 0; i < count - 1; i++) {
         auto key = current_.title_path[i];
-        Node obj = parent.As<kObject>()->Get(key);
+        Node obj = parent.As<kTable>()->Get(key);
         if (!obj) {
-            obj = Node::CreateObject();
-            parent.As<kObject>()->Insert(key, obj);
-        } else if (obj.Type() != Types::TOML_OBJECT) {
-            desc_ = "object " + prefix + key + " redefine";
+            obj = Node::CreateTable();
+            parent.As<kTable>()->Insert(key, obj);
+        } else if (obj.Type() != Types::TOML_TABLE) {
+            desc_ = "node " + prefix + key + " redefine";
             return false;
-        } else if (obj.As<kObject>()->Inlined()) {
+        } else if (obj.As<kTable>()->Inlined()) {
             desc_ = "\"" + key + "\" is an inline table and cannot be modified";
             return false;
         }
@@ -332,15 +332,15 @@ bool Reader::UsingTableTitleImpl() {
     }
 
     auto key = GetVectorLastElement(current_.title_path);
-    Node obj = parent.As<kObject>()->Get(key);
+    Node obj = parent.As<kTable>()->Get(key);
     if (!obj) {
-        obj = Node::CreateObject();
-        parent.As<kObject>()->Insert(key, obj);
-    } else if (obj.Type() != Types::TOML_OBJECT) {
+        obj = Node::CreateTable();
+        parent.As<kTable>()->Insert(key, obj);
+    } else if (obj.Type() != Types::TOML_TABLE) {
         desc_ = "node \"" + current_.title + "\" redefine";
         return false;
-    } else if (obj.As<kObject>()->Inlined()) {
-        desc_ = "object [" + current_.title + "] is an inline table and cannot be modified";
+    } else if (obj.As<kTable>()->Inlined()) {
+        desc_ = "node [" + current_.title + "] is an inline table and cannot be modified";
         return false;
     }
     table_map_[current_.title] = DISABLE_REPEATED; // 记录该对象的路径，用于检测重定义

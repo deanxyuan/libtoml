@@ -88,8 +88,7 @@ std::string Node::TypeString() const {
     }
     return std::string();
 }
-TOML::Object *Node::AsRoot() { return dynamic_cast<TOML::Object *>(impl_); }
-TOML::Object *Node::AsTable() { return dynamic_cast<TOML::Object *>(impl_); }
+TOML::Table *Node::AsTable() { return dynamic_cast<TOML::Table *>(impl_); }
 TOML::Array *Node::AsArray() { return dynamic_cast<TOML::Array *>(impl_); }
 Node Node::CreateNode(Types type) {
     NodeImpl *impl = nullptr;
@@ -109,8 +108,8 @@ Node Node::CreateNode(Types type) {
     case Types::TOML_DATETIME:
         impl = new DateTime();
         break;
-    case Types::TOML_OBJECT:
-        impl = new Object();
+    case Types::TOML_TABLE:
+        impl = new Table();
         break;
     case Types::TOML_ARRAY:
         impl = new Array();
@@ -157,8 +156,8 @@ Node Node::CreateDateTime(const std::string &s) {
     impl->Ref();
     return Node(impl);
 }
-Node Node::CreateObject() {
-    auto impl = new Object();
+Node Node::CreateTable() {
+    auto impl = new Table();
     impl->Ref();
     return Node(impl);
 }
@@ -190,8 +189,8 @@ std::string TypeString(Types type) {
     case TOML::Types::TOML_DATETIME:
         str = "Datetime";
         break;
-    case TOML::Types::TOML_OBJECT:
-        str = "Object";
+    case TOML::Types::TOML_TABLE:
+        str = "Table";
         break;
     case TOML::Types::TOML_ARRAY:
         str = "Array";

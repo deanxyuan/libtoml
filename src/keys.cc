@@ -109,7 +109,7 @@ bool Reader::UsingComplexKey() {
         if (it == table_map_.end()) {
             table_map_[prefix] = ALLOWED_REPEATED;
         } else if (it->second == DISABLE_REPEATED) {
-            desc_ = "object \"" + prefix + "\" redefine";
+            desc_ = "node \"" + prefix + "\" redefine";
             return false;
         }
     }
@@ -121,21 +121,21 @@ bool Reader::UsingComplexKey() {
     Node parent = stack_.top();
     int count   = static_cast<int>(current_.key_path.size());
     for (int i = 0; i < count - 1; i++) {
-        assert(parent.Type() == Types::TOML_OBJECT);
+        assert(parent.Type() == Types::TOML_TABLE);
         auto key = current_.key_path[i];
-        Node obj = parent.As<kObject>()->Get(key);
+        Node obj = parent.As<kTable>()->Get(key);
         if (obj) {
-            if (obj.Type() != Types::TOML_OBJECT) {
-                desc_ = "\"" + key + "\" already exists and it is not an object";
+            if (obj.Type() != Types::TOML_TABLE) {
+                desc_ = "\"" + key + "\" already exists and it is not an table";
                 return false;
             }
-            if (obj.As<kObject>()->Inlined()) {
+            if (obj.As<kTable>()->Inlined()) {
                 desc_ = "\"" + key + "\" is an inline table and cannot be modified";
                 return false;
             }
         } else {
-            obj = Node::CreateObject();
-            parent.As<kObject>()->Insert(key, obj);
+            obj = Node::CreateTable();
+            parent.As<kTable>()->Insert(key, obj);
         }
         complex_key_depth_++;
         PushStack(obj);
@@ -143,11 +143,11 @@ bool Reader::UsingComplexKey() {
     }
 
     auto key = GetVectorLastElement(current_.key_path);
-    if (parent.Type() != Types::TOML_OBJECT) {
-        desc_ = "internal error (the parent of \"" + key + "\" is not an object)";
+    if (parent.Type() != Types::TOML_TABLE) {
+        desc_ = "internal error (the parent of \"" + key + "\" is not an table)";
         return false;
     }
-    if (parent.As<kObject>()->Exists(key)) {
+    if (parent.As<kTable>()->Exists(key)) {
         desc_ = "\"" + key + "\" already exists";
         return false;
     }

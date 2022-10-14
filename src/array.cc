@@ -136,7 +136,7 @@ bool Reader::GetArrayImpl() {
             remaining_input_--;
             break;
         case '{':
-            // inlined object
+            // inlined table
             if (!find_a_separator || !GetInlineTableImpl()) {
                 goto __exit;
             }
@@ -172,14 +172,14 @@ bool Reader::UsingArrayOfTableTitleImpl() {
         // 表数组元素定义
         std::string key = current_.title_path[0];
         Node sub_array, parent = stack_.top();
-        assert(parent.Type() == Types::TOML_OBJECT);
-        if (!parent.As<kObject>()->Exists(key)) {
+        assert(parent.Type() == Types::TOML_TABLE);
+        if (!parent.As<kTable>()->Exists(key)) {
             // 首次出现，即第一个元素
             sub_array = Node::CreateArray();
-            parent.As<kObject>()->Insert(key, sub_array);
+            parent.As<kTable>()->Insert(key, sub_array);
         } else {
             // 非首次出现，表示插入新的元素
-            sub_array = parent.As<kObject>()->Get(key);
+            sub_array = parent.As<kTable>()->Get(key);
             if (sub_array.Type() != Types::TOML_ARRAY) {
                 desc_ = "\"" + key + "\" already exists and it is not an array";
                 return false;
@@ -191,7 +191,7 @@ bool Reader::UsingArrayOfTableTitleImpl() {
             }
         }
         // 创建一个空对象，入栈
-        Node obj = Node::CreateObject();
+        Node obj = Node::CreateTable();
         PushStack(obj);
         sub_array.As<kArray>()->PushBack(obj);
         // 保存父节点(ARRAY)的最新元素
@@ -212,12 +212,12 @@ bool Reader::UsingArrayOfTableTitleImpl() {
     // 获取最新的节点名, 如 [[A.B.C]] 中的 C
     auto key = GetVectorLastElement(current_.title_path);
 
-    // 获取路径前缀的最后一次更新的 OBJECT
+    // 获取路径前缀的最后一次更新的 TABLE
     Node sub_array, last_node = iter->second;
 
     // 判断 C 数组是否存在
-    if (last_node.As<kObject>()->Exists(key)) {
-        sub_array = last_node.As<kObject>()->Get(key);
+    if (last_node.As<kTable>()->Exists(key)) {
+        sub_array = last_node.As<kTable>()->Get(key);
         if (sub_array.Type() != Types::TOML_ARRAY) {
             desc_ = "\"" + key + "\" must be array";
             return false;
@@ -225,11 +225,11 @@ bool Reader::UsingArrayOfTableTitleImpl() {
 
     } else {
         sub_array = Node::CreateArray();
-        // 更新父节点，最后一次的 OBJECT
-        last_node.As<kObject>()->Insert(key, sub_array);
+        // 更新父节点，最后一次的 TABLE
+        last_node.As<kTable>()->Insert(key, sub_array);
     }
     // 创建一个空对象，入栈
-    Node obj = Node::CreateObject();
+    Node obj = Node::CreateTable();
     PushStack(obj);
     sub_array.As<kArray>()->PushBack(obj);
     array_of_table_map_[current_.title] = obj;

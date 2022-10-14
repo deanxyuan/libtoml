@@ -30,7 +30,7 @@ bool CheckArrayIntValue(TOML::Node node, int index, int64_t s) {
 }
 
 bool CheckObjectStringValue(TOML::Node node, const std::string &key, const std::string &value) {
-    TOML::Node v = node.As<TOML::kObject>()->Get(key);
+    TOML::Node v = node.As<TOML::kTable>()->Get(key);
     if (v.Type() != TOML::kString) {
         return false;
     }
@@ -43,19 +43,19 @@ TEST(Array, BasicTest) {
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kObject>()->Get("integers");
+    TOML::Node n1 = node.As<TOML::kTable>()->Get("integers");
     ASSERT_EQ(n1.As<TOML::kArray>()->size(), 3);
     ASSERT_TRUE(CheckArrayIntValue(n1, 0, 1));
     ASSERT_TRUE(CheckArrayIntValue(n1, 1, 2));
     ASSERT_TRUE(CheckArrayIntValue(n1, 2, 3));
 
-    TOML::Node n2 = node.As<TOML::kObject>()->Get("colors");
+    TOML::Node n2 = node.As<TOML::kTable>()->Get("colors");
     ASSERT_EQ(n2.As<TOML::kArray>()->size(), 3);
     ASSERT_TRUE(CheckArrayStringValue(n2, 0, "red"));
     ASSERT_TRUE(CheckArrayStringValue(n2, 1, "yellow"));
     ASSERT_TRUE(CheckArrayStringValue(n2, 2, "green"));
 
-    TOML::Node nested_arrays_of_ints = node.As<TOML::kObject>()->Get("nested_arrays_of_ints");
+    TOML::Node nested_arrays_of_ints = node.As<TOML::kTable>()->Get("nested_arrays_of_ints");
     ASSERT_EQ(nested_arrays_of_ints.As<TOML::kArray>()->size(), 2);
     TOML::Node n3n1 = nested_arrays_of_ints.As<TOML::kArray>()->At(0);
     ASSERT_EQ(n3n1.As<TOML::kArray>()->size(), 2);
@@ -67,7 +67,7 @@ TEST(Array, BasicTest) {
     ASSERT_TRUE(CheckArrayIntValue(n3n2, 1, 4));
     ASSERT_TRUE(CheckArrayIntValue(n3n2, 2, 5));
 
-    TOML::Node nested_mixed_array = node.As<TOML::kObject>()->Get("nested_mixed_array");
+    TOML::Node nested_mixed_array = node.As<TOML::kTable>()->Get("nested_mixed_array");
     ASSERT_EQ(nested_mixed_array.As<TOML::kArray>()->size(), 2);
     TOML::Node n4n1 = nested_mixed_array.As<TOML::kArray>()->At(0);
     ASSERT_EQ(n4n1.As<TOML::kArray>()->size(), 2);
@@ -79,14 +79,14 @@ TEST(Array, BasicTest) {
     ASSERT_TRUE(CheckArrayStringValue(n4n2, 1, "b"));
     ASSERT_TRUE(CheckArrayStringValue(n4n2, 2, "c"));
 
-    TOML::Node string_array = node.As<TOML::kObject>()->Get("string_array");
+    TOML::Node string_array = node.As<TOML::kTable>()->Get("string_array");
     ASSERT_EQ(string_array.As<TOML::kArray>()->size(), 4);
     ASSERT_TRUE(CheckArrayStringValue(string_array, 0, "all"));
     ASSERT_TRUE(CheckArrayStringValue(string_array, 1, "strings"));
     ASSERT_TRUE(CheckArrayStringValue(string_array, 2, "are the same"));
     ASSERT_TRUE(CheckArrayStringValue(string_array, 3, "type"));
 
-    TOML::Node numbers = node.As<TOML::kObject>()->Get("numbers");
+    TOML::Node numbers = node.As<TOML::kTable>()->Get("numbers");
     ASSERT_EQ(numbers.As<TOML::kArray>()->size(), 6);
     TOML::Node f1 = numbers.As<TOML::kArray>()->At(0);
     ASSERT_FLOAT_EQ(f1.As<TOML::kFloat>()->Value(), 0.1);
@@ -101,11 +101,11 @@ TEST(Array, BasicTest) {
     ASSERT_TRUE(CheckArrayIntValue(numbers, 4, 2));
     ASSERT_TRUE(CheckArrayIntValue(numbers, 5, 5));
 
-    TOML::Node contributors = node.As<TOML::kObject>()->Get("contributors");
+    TOML::Node contributors = node.As<TOML::kTable>()->Get("contributors");
     ASSERT_EQ(contributors.As<TOML::kArray>()->size(), 2);
     ASSERT_TRUE(CheckArrayStringValue(contributors, 0, "Foo Bar <foo@example.com>"));
     TOML::Node n5n2 = contributors.As<TOML::kArray>()->At(1);
-    ASSERT_EQ(n5n2.As<TOML::kObject>()->size(), 3);
+    ASSERT_EQ(n5n2.As<TOML::kTable>()->size(), 3);
     ASSERT_TRUE(CheckObjectStringValue(n5n2, "name", "Baz Qux"));
     ASSERT_TRUE(CheckObjectStringValue(n5n2, "email", "bazqux@example.com"));
     ASSERT_TRUE(CheckObjectStringValue(n5n2, "url", "https://example.com/bazqux"));
@@ -117,13 +117,13 @@ TEST(Array, MultiLineTest) {
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
-    TOML::Node integers2 = node.As<TOML::kObject>()->Get("integers2");
+    TOML::Node integers2 = node.As<TOML::kTable>()->Get("integers2");
     ASSERT_EQ(integers2.As<TOML::kArray>()->size(), 3);
     ASSERT_TRUE(CheckArrayIntValue(integers2, 0, 1));
     ASSERT_TRUE(CheckArrayIntValue(integers2, 1, 2));
     ASSERT_TRUE(CheckArrayIntValue(integers2, 2, 3));
 
-    TOML::Node integers3 = node.As<TOML::kObject>()->Get("integers3");
+    TOML::Node integers3 = node.As<TOML::kTable>()->Get("integers3");
     ASSERT_EQ(integers3.As<TOML::kArray>()->size(), 2);
     ASSERT_TRUE(CheckArrayIntValue(integers3, 0, 1));
     ASSERT_TRUE(CheckArrayIntValue(integers3, 1, 2));

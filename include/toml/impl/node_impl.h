@@ -220,27 +220,27 @@ private:
     DateTime::Detail value_;
 };
 
-class Object : public NodeImpl {
+class Table : public NodeImpl {
     friend class Node;
 
 public:
     using RealType = std::map<std::string, Node>;
     using Iterator = RealType::iterator;
 
-    ~Object();
+    ~Table();
 
     Types Type() const override;
 
     bool Insert(const std::string &key, const Node &value);
 
-    inline Iterator begin() { return obj_.begin(); }
-    inline Iterator end() { return obj_.end(); }
+    inline Iterator begin() { return table_.begin(); }
+    inline Iterator end() { return table_.end(); }
     inline bool Inlined() const { return inlined_; }
     inline void SetInlined() { inlined_ = true; }
-    inline size_t size() const { return obj_.size(); }
+    inline size_t size() const { return table_.size(); }
     // If the key does not exist,
     // a empty node will be inserted
-    // Just like Object[key]=Node();
+    // Just like Table[key]=Node();
     Node &operator[](std::string &&key);
     Node &operator[](const std::string &key);
 
@@ -253,10 +253,10 @@ public:
     bool ExistsWithType(const std::string &key, Types type) const;
 
 private:
-    Object();
+    Table();
     std::string ToStringImpl(char key_delimiter, char value_delimiter) const;
     bool inlined_;
-    Object::RealType obj_;
+    Table::RealType table_;
 };
 
 class Array : public NodeImpl {

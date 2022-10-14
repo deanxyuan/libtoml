@@ -6,7 +6,7 @@
 #endif
 
 bool CheckObjectStringValue(TOML::Node node, const std::string &key, const std::string &value) {
-    TOML::Node v = node.As<TOML::kObject>()->Get(key);
+    TOML::Node v = node.As<TOML::kTable>()->Get(key);
     if (v.Type() != TOML::kString) {
         return false;
     }
@@ -14,7 +14,7 @@ bool CheckObjectStringValue(TOML::Node node, const std::string &key, const std::
 }
 
 bool CheckObjectIntValue(TOML::Node node, const std::string &key, int64_t value) {
-    TOML::Node v = node.As<TOML::kObject>()->Get(key);
+    TOML::Node v = node.As<TOML::kTable>()->Get(key);
     if (v.Type() != TOML::kInteger) {
         return false;
     }
@@ -22,7 +22,7 @@ bool CheckObjectIntValue(TOML::Node node, const std::string &key, int64_t value)
 }
 
 bool CheckObjectBoolValue(TOML::Node node, const std::string &key, bool value) {
-    TOML::Node v = node.As<TOML::kObject>()->Get(key);
+    TOML::Node v = node.As<TOML::kTable>()->Get(key);
     if (v.Type() != TOML::kBoolean) {
         return false;
     }
@@ -35,13 +35,13 @@ TEST(Table, tab01) {
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
-    TOML::Node table = node.As<TOML::kObject>()->Get("table-1");
-    ASSERT_EQ(table.As<TOML::kObject>()->size(), 2);
+    TOML::Node table = node.As<TOML::kTable>()->Get("table-1");
+    ASSERT_EQ(table.As<TOML::kTable>()->size(), 2);
     ASSERT_TRUE(CheckObjectStringValue(table, "key1", "some string"));
     ASSERT_TRUE(CheckObjectIntValue(table, "key2", 123));
 
-    TOML::Node n2 = node.As<TOML::kObject>()->Get("table-2");
-    ASSERT_EQ(n2.As<TOML::kObject>()->size(), 2);
+    TOML::Node n2 = node.As<TOML::kTable>()->Get("table-2");
+    ASSERT_EQ(n2.As<TOML::kTable>()->size(), 2);
     ASSERT_TRUE(CheckObjectStringValue(n2, "key1", "another string"));
     ASSERT_TRUE(CheckObjectIntValue(n2, "key2", 456));
 }
@@ -57,12 +57,12 @@ TEST(Table, tab02) {
         [dog."tater.man"]
         type.name = "pug"
     */
-    TOML::Node dog = node.As<TOML::kObject>()->Get("dog");
-    ASSERT_EQ(dog.As<TOML::kObject>()->size(), 1);
-    TOML::Node man = dog.As<TOML::kObject>()->Get("tater.man");
-    ASSERT_EQ(man.As<TOML::kObject>()->size(), 1);
-    TOML::Node type = man.As<TOML::kObject>()->Get("type");
-    ASSERT_EQ(type.As<TOML::kObject>()->size(), 1);
+    TOML::Node dog = node.As<TOML::kTable>()->Get("dog");
+    ASSERT_EQ(dog.As<TOML::kTable>()->size(), 1);
+    TOML::Node man = dog.As<TOML::kTable>()->Get("tater.man");
+    ASSERT_EQ(man.As<TOML::kTable>()->size(), 1);
+    TOML::Node type = man.As<TOML::kTable>()->Get("type");
+    ASSERT_EQ(type.As<TOML::kTable>()->size(), 1);
     ASSERT_TRUE(CheckObjectStringValue(type, "name", "pug"));
 }
 
@@ -76,33 +76,33 @@ TEST(Table, tab03) {
     /*
         [a.b.c]
     */
-    TOML::Node a = node.As<TOML::kObject>()->Get("a");
-    ASSERT_EQ(a.As<TOML::kObject>()->size(), 1);
-    TOML::Node b = a.As<TOML::kObject>()->Get("b");
-    ASSERT_EQ(b.As<TOML::kObject>()->size(), 1);
-    TOML::Node c = b.As<TOML::kObject>()->Get("c");
-    ASSERT_EQ(c.As<TOML::kObject>()->size(), 0);
+    TOML::Node a = node.As<TOML::kTable>()->Get("a");
+    ASSERT_EQ(a.As<TOML::kTable>()->size(), 1);
+    TOML::Node b = a.As<TOML::kTable>()->Get("b");
+    ASSERT_EQ(b.As<TOML::kTable>()->size(), 1);
+    TOML::Node c = b.As<TOML::kTable>()->Get("c");
+    ASSERT_EQ(c.As<TOML::kTable>()->size(), 0);
 
-    TOML::Node d = node.As<TOML::kObject>()->Get("d");
-    ASSERT_EQ(d.As<TOML::kObject>()->size(), 1);
-    TOML::Node e = d.As<TOML::kObject>()->Get("e");
-    ASSERT_EQ(e.As<TOML::kObject>()->size(), 1);
-    TOML::Node f = e.As<TOML::kObject>()->Get("f");
-    ASSERT_EQ(f.As<TOML::kObject>()->size(), 0);
+    TOML::Node d = node.As<TOML::kTable>()->Get("d");
+    ASSERT_EQ(d.As<TOML::kTable>()->size(), 1);
+    TOML::Node e = d.As<TOML::kTable>()->Get("e");
+    ASSERT_EQ(e.As<TOML::kTable>()->size(), 1);
+    TOML::Node f = e.As<TOML::kTable>()->Get("f");
+    ASSERT_EQ(f.As<TOML::kTable>()->size(), 0);
 
-    TOML::Node g = node.As<TOML::kObject>()->Get("g");
-    ASSERT_EQ(g.As<TOML::kObject>()->size(), 1);
-    TOML::Node h = g.As<TOML::kObject>()->Get("h");
-    ASSERT_EQ(h.As<TOML::kObject>()->size(), 1);
-    TOML::Node i = h.As<TOML::kObject>()->Get("i");
-    ASSERT_EQ(i.As<TOML::kObject>()->size(), 0);
+    TOML::Node g = node.As<TOML::kTable>()->Get("g");
+    ASSERT_EQ(g.As<TOML::kTable>()->size(), 1);
+    TOML::Node h = g.As<TOML::kTable>()->Get("h");
+    ASSERT_EQ(h.As<TOML::kTable>()->size(), 1);
+    TOML::Node i = h.As<TOML::kTable>()->Get("i");
+    ASSERT_EQ(i.As<TOML::kTable>()->size(), 0);
 
-    TOML::Node j = node.As<TOML::kObject>()->Get("j");
-    ASSERT_EQ(j.As<TOML::kObject>()->size(), 1);
-    TOML::Node k = j.As<TOML::kObject>()->Get("ʞ");
-    ASSERT_EQ(k.As<TOML::kObject>()->size(), 1);
-    TOML::Node l = k.As<TOML::kObject>()->Get("l");
-    ASSERT_EQ(l.As<TOML::kObject>()->size(), 0);
+    TOML::Node j = node.As<TOML::kTable>()->Get("j");
+    ASSERT_EQ(j.As<TOML::kTable>()->size(), 1);
+    TOML::Node k = j.As<TOML::kTable>()->Get("ʞ");
+    ASSERT_EQ(k.As<TOML::kTable>()->size(), 1);
+    TOML::Node l = k.As<TOML::kTable>()->Get("l");
+    ASSERT_EQ(l.As<TOML::kTable>()->size(), 0);
 }
 
 TEST(Table, tab04) {
@@ -112,14 +112,14 @@ TEST(Table, tab04) {
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
 
-    TOML::Node x = node.As<TOML::kObject>()->Get("x");
-    ASSERT_EQ(x.As<TOML::kObject>()->size(), 1);
-    TOML::Node y = x.As<TOML::kObject>()->Get("y");
-    ASSERT_EQ(y.As<TOML::kObject>()->size(), 1);
-    TOML::Node z = y.As<TOML::kObject>()->Get("z");
-    ASSERT_EQ(z.As<TOML::kObject>()->size(), 1);
-    TOML::Node w = z.As<TOML::kObject>()->Get("w");
-    ASSERT_EQ(w.As<TOML::kObject>()->size(), 0);
+    TOML::Node x = node.As<TOML::kTable>()->Get("x");
+    ASSERT_EQ(x.As<TOML::kTable>()->size(), 1);
+    TOML::Node y = x.As<TOML::kTable>()->Get("y");
+    ASSERT_EQ(y.As<TOML::kTable>()->size(), 1);
+    TOML::Node z = y.As<TOML::kTable>()->Get("z");
+    ASSERT_EQ(z.As<TOML::kTable>()->size(), 1);
+    TOML::Node w = z.As<TOML::kTable>()->Get("w");
+    ASSERT_EQ(w.As<TOML::kTable>()->size(), 0);
 }
 
 TEST(Table, tab05) {
@@ -145,14 +145,14 @@ TEST(Table, tab07) {
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
 
-    TOML::Node fruit = node.As<TOML::kObject>()->Get("fruit");
-    ASSERT_EQ(fruit.As<TOML::kObject>()->size(), 2);
-    TOML::Node y = fruit.As<TOML::kObject>()->Get("apple");
-    ASSERT_EQ(y.As<TOML::kObject>()->size(), 0);
-    TOML::Node z = fruit.As<TOML::kObject>()->Get("orange");
-    ASSERT_EQ(z.As<TOML::kObject>()->size(), 0);
-    TOML::Node w = node.As<TOML::kObject>()->Get("animal");
-    ASSERT_EQ(w.As<TOML::kObject>()->size(), 0);
+    TOML::Node fruit = node.As<TOML::kTable>()->Get("fruit");
+    ASSERT_EQ(fruit.As<TOML::kTable>()->size(), 2);
+    TOML::Node y = fruit.As<TOML::kTable>()->Get("apple");
+    ASSERT_EQ(y.As<TOML::kTable>()->size(), 0);
+    TOML::Node z = fruit.As<TOML::kTable>()->Get("orange");
+    ASSERT_EQ(z.As<TOML::kTable>()->size(), 0);
+    TOML::Node w = node.As<TOML::kTable>()->Get("animal");
+    ASSERT_EQ(w.As<TOML::kTable>()->size(), 0);
 }
 
 TEST(Table, tab08) {
@@ -162,15 +162,15 @@ TEST(Table, tab08) {
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
 
-    TOML::Node n1 = node.As<TOML::kObject>()->Get("name");
+    TOML::Node n1 = node.As<TOML::kTable>()->Get("name");
     ASSERT_EQ(n1.As<TOML::kString>()->Value(), std::string("Fido"));
-    TOML::Node n2 = node.As<TOML::kObject>()->Get("breed");
+    TOML::Node n2 = node.As<TOML::kTable>()->Get("breed");
     ASSERT_EQ(n2.As<TOML::kString>()->Value(), std::string("pug"));
 
-    TOML::Node owner = node.As<TOML::kObject>()->Get("owner");
-    ASSERT_EQ(owner.As<TOML::kObject>()->size(), 2);
+    TOML::Node owner = node.As<TOML::kTable>()->Get("owner");
+    ASSERT_EQ(owner.As<TOML::kTable>()->size(), 2);
     ASSERT_TRUE(CheckObjectStringValue(owner, "name", "Regina Dogman"));
-    TOML::Node dt = owner.As<TOML::kObject>()->Get("member_since");
+    TOML::Node dt = owner.As<TOML::kTable>()->Get("member_since");
     ASSERT_EQ(dt.Type(), TOML::kDateTime);
     ASSERT_EQ(dt.As<TOML::kDateTime>()->RawString(), "1999-08-04");
     auto detail = dt.As<TOML::kDateTime>()->Value();
@@ -186,13 +186,13 @@ TEST(Table, tab09) {
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
 
-    TOML::Node fruit = node.As<TOML::kObject>()->Get("fruit");
-    ASSERT_EQ(fruit.As<TOML::kObject>()->size(), 1);
-    TOML::Node y = fruit.As<TOML::kObject>()->Get("apple");
-    ASSERT_EQ(y.As<TOML::kObject>()->size(), 2);
+    TOML::Node fruit = node.As<TOML::kTable>()->Get("fruit");
+    ASSERT_EQ(fruit.As<TOML::kTable>()->size(), 1);
+    TOML::Node y = fruit.As<TOML::kTable>()->Get("apple");
+    ASSERT_EQ(y.As<TOML::kTable>()->size(), 2);
     ASSERT_TRUE(CheckObjectStringValue(y, "color", "red"));
-    TOML::Node taste = y.As<TOML::kObject>()->Get("taste");
-    ASSERT_EQ(taste.As<TOML::kObject>()->size(), 1);
+    TOML::Node taste = y.As<TOML::kTable>()->Get("taste");
+    ASSERT_EQ(taste.As<TOML::kTable>()->size(), 1);
     ASSERT_TRUE(CheckObjectBoolValue(taste, "sweet", true));
 }
 TEST(Table, tab10) {
@@ -209,17 +209,17 @@ TEST(Table, tab11) {
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
 
-    TOML::Node fruit = node.As<TOML::kObject>()->Get("fruit");
-    ASSERT_EQ(fruit.As<TOML::kObject>()->size(), 1);
-    TOML::Node y = fruit.As<TOML::kObject>()->Get("apple");
-    ASSERT_EQ(y.As<TOML::kObject>()->size(), 3);
+    TOML::Node fruit = node.As<TOML::kTable>()->Get("fruit");
+    ASSERT_EQ(fruit.As<TOML::kTable>()->size(), 1);
+    TOML::Node y = fruit.As<TOML::kTable>()->Get("apple");
+    ASSERT_EQ(y.As<TOML::kTable>()->size(), 3);
     ASSERT_TRUE(CheckObjectStringValue(y, "color", "red"));
-    TOML::Node taste = y.As<TOML::kObject>()->Get("taste");
-    ASSERT_EQ(taste.As<TOML::kObject>()->size(), 1);
+    TOML::Node taste = y.As<TOML::kTable>()->Get("taste");
+    ASSERT_EQ(taste.As<TOML::kTable>()->size(), 1);
     ASSERT_TRUE(CheckObjectBoolValue(taste, "sweet", true));
 
-    TOML::Node texture = y.As<TOML::kObject>()->Get("texture");
-    ASSERT_EQ(texture.As<TOML::kObject>()->size(), 1);
+    TOML::Node texture = y.As<TOML::kTable>()->Get("texture");
+    ASSERT_EQ(texture.As<TOML::kTable>()->size(), 1);
     ASSERT_TRUE(CheckObjectBoolValue(texture, "smooth", true));
 }
 

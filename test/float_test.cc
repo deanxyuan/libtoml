@@ -11,19 +11,19 @@ TEST(Float, float1) {
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kObject>()->Get("flt1");
+    TOML::Node n1 = node.As<TOML::kTable>()->Get("flt1");
     ASSERT_EQ(n1.As<TOML::kFloat>()->Value(), 1.0);
-    TOML::Node n2 = node.As<TOML::kObject>()->Get("flt2");
+    TOML::Node n2 = node.As<TOML::kTable>()->Get("flt2");
     ASSERT_EQ(n2.As<TOML::kFloat>()->Value(), 3.1415);
-    TOML::Node n3 = node.As<TOML::kObject>()->Get("flt3");
+    TOML::Node n3 = node.As<TOML::kTable>()->Get("flt3");
     ASSERT_EQ(n3.As<TOML::kFloat>()->Value(), -0.01);
-    TOML::Node n4 = node.As<TOML::kObject>()->Get("flt4");
+    TOML::Node n4 = node.As<TOML::kTable>()->Get("flt4");
     ASSERT_EQ(n4.As<TOML::kFloat>()->Value(), 5e+22);
-    TOML::Node n5 = node.As<TOML::kObject>()->Get("flt5");
+    TOML::Node n5 = node.As<TOML::kTable>()->Get("flt5");
     ASSERT_EQ(n5.As<TOML::kFloat>()->Value(), 1e06);
-    TOML::Node n6 = node.As<TOML::kObject>()->Get("flt6");
+    TOML::Node n6 = node.As<TOML::kTable>()->Get("flt6");
     ASSERT_EQ(n6.As<TOML::kFloat>()->Value(), -2E-2);
-    TOML::Node n7 = node.As<TOML::kObject>()->Get("flt7");
+    TOML::Node n7 = node.As<TOML::kTable>()->Get("flt7");
     ASSERT_EQ(n7.As<TOML::kFloat>()->Value(), 6.626e-34);
 }
 
@@ -57,7 +57,7 @@ TEST(Float, float5) {
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kObject>()->Get("flt8");
+    TOML::Node n1 = node.As<TOML::kTable>()->Get("flt8");
     ASSERT_EQ(n1.As<TOML::kFloat>()->Value(), 224617.445991228);
 }
 
@@ -67,25 +67,25 @@ TEST(Float, float6) {
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kObject>()->Get("sf1");
+    TOML::Node n1 = node.As<TOML::kTable>()->Get("sf1");
     ASSERT_TRUE(std::isinf(n1.As<TOML::kFloat>()->Value()));
     ASSERT_EQ(n1.As<TOML::kFloat>()->Value(), INFINITY);
 
-    TOML::Node n2 = node.As<TOML::kObject>()->Get("sf2");
+    TOML::Node n2 = node.As<TOML::kTable>()->Get("sf2");
     ASSERT_TRUE(std::isinf(n2.As<TOML::kFloat>()->Value()));
     ASSERT_EQ(n2.As<TOML::kFloat>()->Value(), INFINITY);
 
-    TOML::Node n3 = node.As<TOML::kObject>()->Get("sf3");
+    TOML::Node n3 = node.As<TOML::kTable>()->Get("sf3");
     ASSERT_TRUE(std::isinf(n3.As<TOML::kFloat>()->Value()));
     ASSERT_EQ(n3.As<TOML::kFloat>()->Value(), INFINITY * -1);
 
-    TOML::Node n4 = node.As<TOML::kObject>()->Get("sf4");
+    TOML::Node n4 = node.As<TOML::kTable>()->Get("sf4");
     ASSERT_TRUE(std::isnan(n4.As<TOML::kFloat>()->Value()));
 
-    TOML::Node n5 = node.As<TOML::kObject>()->Get("sf5");
+    TOML::Node n5 = node.As<TOML::kTable>()->Get("sf5");
     ASSERT_TRUE(std::isnan(n5.As<TOML::kFloat>()->Value()));
 
-    TOML::Node n6 = node.As<TOML::kObject>()->Get("sf6");
+    TOML::Node n6 = node.As<TOML::kTable>()->Get("sf6");
     ASSERT_TRUE(std::isnan(n6.As<TOML::kFloat>()->Value()));
 }
 

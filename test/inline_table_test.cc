@@ -6,7 +6,7 @@
 #endif
 
 bool CheckObjectStringValue(TOML::Node node, const std::string &key, const std::string &value) {
-    TOML::Node v = node.As<TOML::kObject>()->Get(key);
+    TOML::Node v = node.As<TOML::kTable>()->Get(key);
     if (v.Type() != TOML::kString) {
         return false;
     }
@@ -14,7 +14,7 @@ bool CheckObjectStringValue(TOML::Node node, const std::string &key, const std::
 }
 
 bool CheckObjectIntValue(TOML::Node node, const std::string &key, int64_t value) {
-    TOML::Node v = node.As<TOML::kObject>()->Get(key);
+    TOML::Node v = node.As<TOML::kTable>()->Get(key);
     if (v.Type() != TOML::kInteger) {
         return false;
     }
@@ -27,8 +27,8 @@ TEST(InlineTable, inline_table) {
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
-    TOML::Node x = node.As<TOML::kObject>()->Get("x");
-    ASSERT_EQ(x.As<TOML::kObject>()->size(), 2);
+    TOML::Node x = node.As<TOML::kTable>()->Get("x");
+    ASSERT_EQ(x.As<TOML::kTable>()->size(), 2);
     ASSERT_TRUE(CheckObjectIntValue(x, "a", 1));
     ASSERT_TRUE(CheckObjectIntValue(x, "b", 2));
 }
@@ -39,21 +39,21 @@ TEST(InlineTable, inlinetab1) {
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
-    TOML::Node name = node.As<TOML::kObject>()->Get("name");
-    ASSERT_EQ(name.As<TOML::kObject>()->size(), 2);
+    TOML::Node name = node.As<TOML::kTable>()->Get("name");
+    ASSERT_EQ(name.As<TOML::kTable>()->size(), 2);
     ASSERT_TRUE(CheckObjectStringValue(name, "first", "Tom"));
     ASSERT_TRUE(CheckObjectStringValue(name, "last", "Preston-Werner"));
 
-    TOML::Node point = node.As<TOML::kObject>()->Get("point");
-    ASSERT_EQ(point.As<TOML::kObject>()->size(), 2);
+    TOML::Node point = node.As<TOML::kTable>()->Get("point");
+    ASSERT_EQ(point.As<TOML::kTable>()->size(), 2);
     ASSERT_TRUE(CheckObjectIntValue(point, "x", 1));
     ASSERT_TRUE(CheckObjectIntValue(point, "y", 2));
 
     // animal = { type.name = "pug" }
-    TOML::Node animal = node.As<TOML::kObject>()->Get("animal");
-    ASSERT_EQ(animal.As<TOML::kObject>()->size(), 1);
-    TOML::Node sub = animal.As<TOML::kObject>()->Get("type");
-    ASSERT_EQ(sub.As<TOML::kObject>()->size(), 1);
+    TOML::Node animal = node.As<TOML::kTable>()->Get("animal");
+    ASSERT_EQ(animal.As<TOML::kTable>()->size(), 1);
+    TOML::Node sub = animal.As<TOML::kTable>()->Get("type");
+    ASSERT_EQ(sub.As<TOML::kTable>()->size(), 1);
     ASSERT_TRUE(CheckObjectStringValue(sub, "name", "pug"));
 }
 

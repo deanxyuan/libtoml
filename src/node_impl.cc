@@ -251,46 +251,46 @@ bool DateTime::Detail::Specific() { return data_.buffer.tm_specific != 0; }
 void DateTime::Detail::Reset() { memset(&data_, 0, sizeof(data_)); }
 // ------------------------------
 
-Object::Object()
+Table::Table()
     : NodeImpl()
     , inlined_(false) {}
 
-Object::~Object() {}
+Table::~Table() {}
 
-Types Object::Type() const { return Types::TOML_OBJECT; }
-bool Object::Insert(const std::string &key, const Node &value) {
+Types Table::Type() const { return Types::TOML_TABLE; }
+bool Table::Insert(const std::string &key, const Node &value) {
     if (inlined_) return false;
-    obj_[key] = value;
+    table_[key] = value;
     return true;
 }
-Node &Object::operator[](std::string &&key) { return obj_[key]; }
-Node &Object::operator[](const std::string &key) { return obj_[key]; }
-Node Object::Get(const std::string &key) {
-    auto it = obj_.find(key);
-    if (it != obj_.end()) {
+Node &Table::operator[](std::string &&key) { return table_[key]; }
+Node &Table::operator[](const std::string &key) { return table_[key]; }
+Node Table::Get(const std::string &key) {
+    auto it = table_.find(key);
+    if (it != table_.end()) {
         return it->second;
     }
     return Node();
 }
 
-Node Object::Get(std::string &&key) {
-    auto it = obj_.find(key);
-    if (it != obj_.end()) {
+Node Table::Get(std::string &&key) {
+    auto it = table_.find(key);
+    if (it != table_.end()) {
         return it->second;
     }
     return Node();
 }
 
-std::string Object::ToStringImpl(char key_delimiter, char value_delimiter) const {
-    if (obj_.empty()) return std::string("{}");
+std::string Table::ToStringImpl(char key_delimiter, char value_delimiter) const {
+    if (table_.empty()) return std::string("{}");
 
     std::stringstream ss;
     ss << "{";
 
-    auto it = obj_.begin();
+    auto it = table_.begin();
 
     int i = 0;
-    for (; i < static_cast<int>(obj_.size()) - 1; i++) {
+    for (; i < static_cast<int>(table_.size()) - 1; i++) {
         ss << StringToString(it->first);
         ss << key_delimiter;
         ss << it->second.ToString();
@@ -302,15 +302,15 @@ std::string Object::ToStringImpl(char key_delimiter, char value_delimiter) const
     ss << it->second.ToString() << "}";
     return ss.str();
 }
-std::string Object::ToString() const { return ToStringImpl('=', ','); }
-std::string Object::ToJSON() const { return ToStringImpl(':', ','); }
-bool Object::Exists(const std::string &key) const {
-    auto it = obj_.find(key);
-    return (it != obj_.end());
+std::string Table::ToString() const { return ToStringImpl('=', ','); }
+std::string Table::ToJSON() const { return ToStringImpl(':', ','); }
+bool Table::Exists(const std::string &key) const {
+    auto it = table_.find(key);
+    return (it != table_.end());
 }
-bool Object::ExistsWithType(const std::string &key, Types type) const {
-    auto it = obj_.find(key);
-    return (it != obj_.end() && it->second.Type() == type);
+bool Table::ExistsWithType(const std::string &key, Types type) const {
+    auto it = table_.find(key);
+    return (it != table_.end() && it->second.Type() == type);
 }
 
 // ------------------------------

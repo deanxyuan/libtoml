@@ -113,7 +113,7 @@ uint32_t Reader::SkipFrontSpace() {
 
 void Reader::Run() {
 
-    root_ = Node::CreateObject();
+    root_ = Node::CreateTable();
     PushStack(root_);
 
     uint32_t c = 0;
@@ -124,8 +124,8 @@ void Reader::Run() {
         // 有效数据有如下六种情况：
         // 1. key=value
         // 2. [table]
-        // 3. array = []
-        // 4. object = {}
+        // 3. static array = []
+        // 4. inline table = {}
         // 5. [[table]]
         // 6. # comment
     __re_search:
@@ -150,7 +150,7 @@ void Reader::Run() {
             // 三种情况：
             // 1.key = value (数值, 字符串, 布尔, 日期)
             // 2.array = []
-            // 3.object = {}
+            // 3.table = {}
             if (!ParseComplexKey() || !UsingComplexKey()) {
                 break;
             }

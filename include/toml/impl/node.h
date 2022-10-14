@@ -35,7 +35,7 @@ class String;
 class Integer;
 class Float;
 class DateTime;
-class Object;
+class Table;
 class Array;
 
 template <Types T>
@@ -63,8 +63,8 @@ struct ToNodeImpl<Types::TOML_DATETIME> {
     using type = TOML::DateTime;
 };
 template <>
-struct ToNodeImpl<Types::TOML_OBJECT> {
-    using type = TOML::Object;
+struct ToNodeImpl<Types::TOML_TABLE> {
+    using type = TOML::Table;
 };
 template <>
 struct ToNodeImpl<Types::TOML_ARRAY> {
@@ -83,7 +83,7 @@ public:
     static Node CreateInteger(uint64_t n);
     static Node CreateFloat(double d);
     static Node CreateDateTime(const std::string &s);
-    static Node CreateObject();
+    static Node CreateTable();
     static Node CreateArray();
 
     Node();
@@ -106,8 +106,7 @@ public:
     }
 
     // Use as a table
-    TOML::Object *AsRoot();
-    TOML::Object *AsTable();
+    TOML::Table *AsTable();
     TOML::Array *AsArray();
 
     std::string ToString() const;

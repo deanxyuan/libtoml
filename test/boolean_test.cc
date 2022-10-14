@@ -11,9 +11,9 @@ TEST(Boolean, BasicTest) {
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kObject>()->Get("bool1");
+    TOML::Node n1 = node.As<TOML::kTable>()->Get("bool1");
     ASSERT_TRUE(n1.As<TOML::kBoolean>()->Value());
-    TOML::Node n2 = node.As<TOML::kObject>()->Get("bool2");
+    TOML::Node n2 = node.As<TOML::kTable>()->Get("bool2");
     ASSERT_FALSE(n2.As<TOML::kBoolean>()->Value());
 }
 

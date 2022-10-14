@@ -130,7 +130,7 @@ private:
     bool PopStack(Types type);
     bool StaticArrayPop();
     bool InlinedTablePop();
-    Node PushEmptyObject();
+    Node PushEmptyTable();
     Node PushEmptyArray();
 
 private:

@@ -34,8 +34,8 @@ bool Reader::StaticArrayPop() {
 }
 bool Reader::InlinedTablePop() {
     Node &parent = stack_.top();
-    if (parent.Type() == Types::TOML_OBJECT) {
-        parent.As<kObject>()->SetInlined();
+    if (parent.Type() == Types::TOML_TABLE) {
+        parent.As<kTable>()->SetInlined();
         stack_.pop();
         return true;
     }
@@ -46,7 +46,7 @@ void Reader::UpdateNode(const Node &node) {
     if (parent.Type() == Types::TOML_ARRAY) {
         parent.As<kArray>()->PushBack(node);
     } else {
-        parent.As<kObject>()->Insert(key_, node);
+        parent.As<kTable>()->Insert(key_, node);
     }
     key_.clear();
     strings_.clear();
@@ -66,7 +66,7 @@ bool Reader::PopStack(Types type) {
 int Reader::StackDepth() { return static_cast<int>(stack_.size()); }
 bool Reader::RestoreStack(int depth) {
     while (depth > 0) {
-        if (!PopStack(Types::TOML_OBJECT)) {
+        if (!PopStack(Types::TOML_TABLE)) {
             return false;
         }
         depth--;
@@ -80,8 +80,8 @@ bool Reader::ForceRestoreStack(int depth) {
     }
     return (depth == 0);
 }
-Node Reader::PushEmptyObject() {
-    auto node = Node::CreateObject();
+Node Reader::PushEmptyTable() {
+    auto node = Node::CreateTable();
     UpdateNode(node);
     PushStack(node);
     return node;

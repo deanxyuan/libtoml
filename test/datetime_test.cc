@@ -25,7 +25,7 @@ TEST(DateTime, RFC3339Format) {
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kObject>()->Get("odt1");
+    TOML::Node n1 = node.As<TOML::kTable>()->Get("odt1");
     ASSERT_EQ(n1.As<TOML::kDateTime>()->RawString(), std::string("1979-05-27T07:32:00Z"));
     auto dt1 = n1.As<TOML::kDateTime>()->Value();
     ASSERT_TRUE(CheckDateYear(dt1, 1979));
@@ -35,7 +35,7 @@ TEST(DateTime, RFC3339Format) {
     ASSERT_TRUE(CheckTimeMinute(dt1, 32));
     ASSERT_TRUE(CheckTimeSecond(dt1, 0));
 
-    TOML::Node n2 = node.As<TOML::kObject>()->Get("odt2");
+    TOML::Node n2 = node.As<TOML::kTable>()->Get("odt2");
     ASSERT_EQ(n2.As<TOML::kDateTime>()->RawString(), std::string("1979-05-27T00:32:00-07:00"));
     auto dt2 = n2.As<TOML::kDateTime>()->Value();
     ASSERT_TRUE(CheckDateYear(dt2, 1979));
@@ -46,7 +46,7 @@ TEST(DateTime, RFC3339Format) {
     ASSERT_TRUE(CheckTimeSecond(dt2, 0));
     ASSERT_TRUE(CheckGMTOffsetSecond(dt2, 7 * 3600));
 
-    TOML::Node n3 = node.As<TOML::kObject>()->Get("odt3");
+    TOML::Node n3 = node.As<TOML::kTable>()->Get("odt3");
     ASSERT_EQ(n3.As<TOML::kDateTime>()->RawString(),
               std::string("1979-05-27T00:32:00.999999-07:00"));
     auto dt3 = n3.As<TOML::kDateTime>()->Value();
@@ -59,7 +59,7 @@ TEST(DateTime, RFC3339Format) {
     ASSERT_TRUE(CheckGMTOffsetSecond(dt3, 7 * 3600));
     ASSERT_TRUE(CheckTimeMicroSecond(dt3, 999999));
 
-    TOML::Node n4 = node.As<TOML::kObject>()->Get("odt4");
+    TOML::Node n4 = node.As<TOML::kTable>()->Get("odt4");
     ASSERT_EQ(n4.As<TOML::kDateTime>()->RawString(), std::string("1979-05-27T00:32:00.01-07:00"));
     auto dt4 = n4.As<TOML::kDateTime>()->Value();
     ASSERT_TRUE(CheckDateYear(dt4, 1979));
@@ -78,7 +78,7 @@ TEST(DateTime, RFC3339FormatEx) {
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kObject>()->Get("odt4");
+    TOML::Node n1 = node.As<TOML::kTable>()->Get("odt4");
     ASSERT_EQ(n1.As<TOML::kDateTime>()->RawString(), std::string("1979-05-27 07:32:00Z"));
     auto dt1 = n1.As<TOML::kDateTime>()->Value();
     ASSERT_TRUE(CheckDateYear(dt1, 1979));
@@ -95,7 +95,7 @@ TEST(DateTime, NoTimeZone) {
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kObject>()->Get("ldt1");
+    TOML::Node n1 = node.As<TOML::kTable>()->Get("ldt1");
     ASSERT_EQ(n1.As<TOML::kDateTime>()->RawString(), std::string("1979-05-27T07:32:00"));
     auto dt1 = n1.As<TOML::kDateTime>()->Value();
     ASSERT_TRUE(CheckDateYear(dt1, 1979));
@@ -105,7 +105,7 @@ TEST(DateTime, NoTimeZone) {
     ASSERT_TRUE(CheckTimeMinute(dt1, 32));
     ASSERT_TRUE(CheckTimeSecond(dt1, 0));
 
-    TOML::Node n3 = node.As<TOML::kObject>()->Get("ldt2");
+    TOML::Node n3 = node.As<TOML::kTable>()->Get("ldt2");
     ASSERT_EQ(n3.As<TOML::kDateTime>()->RawString(), std::string("1979-05-27T00:32:00.999999"));
     auto dt3 = n3.As<TOML::kDateTime>()->Value();
     ASSERT_TRUE(CheckDateYear(dt3, 1979));
@@ -123,7 +123,7 @@ TEST(DateTime, Date) {
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kObject>()->Get("ld1");
+    TOML::Node n1 = node.As<TOML::kTable>()->Get("ld1");
     ASSERT_EQ(n1.As<TOML::kDateTime>()->RawString(), std::string("1979-05-27"));
     auto dt1 = n1.As<TOML::kDateTime>()->Value();
     ASSERT_TRUE(CheckDateYear(dt1, 1979));
@@ -137,14 +137,14 @@ TEST(DateTime, Time) {
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kObject>()->Get("lt1");
+    TOML::Node n1 = node.As<TOML::kTable>()->Get("lt1");
     ASSERT_EQ(n1.As<TOML::kDateTime>()->RawString(), std::string("07:32:00"));
     auto dt1 = n1.As<TOML::kDateTime>()->Value();
     ASSERT_TRUE(CheckTimeHour(dt1, 7));
     ASSERT_TRUE(CheckTimeMinute(dt1, 32));
     ASSERT_TRUE(CheckTimeSecond(dt1, 0));
 
-    TOML::Node n2 = node.As<TOML::kObject>()->Get("lt2");
+    TOML::Node n2 = node.As<TOML::kTable>()->Get("lt2");
     ASSERT_EQ(n2.As<TOML::kDateTime>()->RawString(), std::string("00:32:00.999999"));
     auto dt3 = n2.As<TOML::kDateTime>()->Value();
     ASSERT_TRUE(CheckTimeHour(dt3, 0));

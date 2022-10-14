@@ -6,7 +6,7 @@
 #endif
 
 bool CheckObjectIntValue(TOML::Node node, const std::string &key, int64_t value) {
-    TOML::Node v = node.As<TOML::kObject>()->Get(key);
+    TOML::Node v = node.As<TOML::kTable>()->Get(key);
     if (v.Type() != TOML::kInteger) {
         return false;
     }
@@ -27,15 +27,15 @@ TEST(InlineTable, array_of_tables) {
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
-    TOML::Node x = node.As<TOML::kObject>()->Get("x");
+    TOML::Node x = node.As<TOML::kTable>()->Get("x");
     ASSERT_EQ(x.Type(), TOML::kArray);
     ASSERT_EQ(x.As<TOML::kArray>()->size(), 2);
     TOML::Node N1 = x.As<TOML::kArray>()->At(0);
-    ASSERT_EQ(N1.Type(), TOML::kObject);
+    ASSERT_EQ(N1.Type(), TOML::kTable);
     ASSERT_TRUE(CheckObjectIntValue(N1, "a", 1));
 
     TOML::Node N2 = x.As<TOML::kArray>()->At(1);
-    ASSERT_EQ(N2.Type(), TOML::kObject);
+    ASSERT_EQ(N2.Type(), TOML::kTable);
     ASSERT_TRUE(CheckObjectIntValue(N2, "a", 2));
 }
 
@@ -45,7 +45,7 @@ TEST(InlineTable, inline_array) {
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
-    TOML::Node x = node.As<TOML::kObject>()->Get("x");
+    TOML::Node x = node.As<TOML::kTable>()->Get("x");
     ASSERT_EQ(x.Type(), TOML::kArray);
     ASSERT_EQ(x.As<TOML::kArray>()->size(), 3);
     ASSERT_TRUE(CheckArrayIntValue(x, 0, 1));

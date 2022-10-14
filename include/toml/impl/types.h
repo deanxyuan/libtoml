@@ -34,7 +34,7 @@ enum class Types : int {
     TOML_INTEGER,
     TOML_FLOAT,
     TOML_DATETIME,
-    TOML_OBJECT,
+    TOML_TABLE,
     TOML_ARRAY,
 };
 constexpr Types kNull     = Types::TOML_NULL;
@@ -43,7 +43,7 @@ constexpr Types kString   = Types::TOML_STRING;
 constexpr Types kInteger  = Types::TOML_INTEGER;
 constexpr Types kFloat    = Types::TOML_FLOAT;
 constexpr Types kDateTime = Types::TOML_DATETIME;
-constexpr Types kObject   = Types::TOML_OBJECT;
+constexpr Types kTable    = Types::TOML_TABLE;
 constexpr Types kArray    = Types::TOML_ARRAY;
 
 } // namespace TOML

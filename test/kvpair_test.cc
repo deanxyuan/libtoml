@@ -11,7 +11,7 @@ TEST(KVPair, Basic) {
     TOML::Node node = TOML::LoadFromFile(path, &error);
     ASSERT_TRUE(error.empty());
     ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kObject>()->Get("key");
+    TOML::Node n1 = node.As<TOML::kTable>()->Get("key");
     ASSERT_EQ(n1.As<TOML::kString>()->Value(), std::string("value"));
 }
 
