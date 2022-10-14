@@ -36,6 +36,7 @@ public:
     virtual ~NodeImpl();
     virtual Types Type() const;
     virtual std::string ToString() const;
+    virtual std::string ToJSON() const;
 
 private:
     void Ref();
@@ -55,6 +56,7 @@ public:
     void SetValue(const std::string &value);
     void SetValue(const char *value);
     std::string ToString() const override;
+    std::string ToJSON() const override;
 
 private:
     String();
@@ -73,6 +75,7 @@ public:
     bool Value() const;
     void SetValue(bool value);
     std::string ToString() const override;
+    std::string ToJSON() const override;
 
 private:
     Boolean();
@@ -106,6 +109,7 @@ public:
         }
     }
     std::string ToString() const override;
+    std::string ToJSON() const override;
 
 private:
     Integer();
@@ -134,6 +138,7 @@ public:
     void SetValue(double);
     Types Type() const override;
     std::string ToString() const override;
+    std::string ToJSON() const override;
 
 private:
     Float();
@@ -204,6 +209,7 @@ public:
     void SetValue(DateTime::Detail *detail);
     Types Type() const override;
     std::string ToString() const override;
+    std::string ToJSON() const override;
 
 private:
     DateTime();
@@ -241,10 +247,13 @@ public:
     Node Get(const std::string &key);
     Node Get(std::string &&key);
     std::string ToString() const override;
+    std::string ToJSON() const override;
+
     bool Exists(const std::string &key) const;
 
 private:
     Object();
+    std::string ToStringImpl(char key_delimiter, char value_delimiter) const;
     bool inlined_;
     Object::RealType obj_;
 };
@@ -271,6 +280,7 @@ public:
     const Node &At(size_t pos) const;
     Node &At(size_t pos);
     std::string ToString() const override;
+    std::string ToJSON() const override;
 
 private:
     Array();

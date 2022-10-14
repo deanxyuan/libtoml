@@ -75,19 +75,21 @@ Types Node::Type() const {
 }
 
 std::string Node::ToString() const {
-    if (impl_) {
-        return impl_->ToString();
-    }
+    if (impl_) return impl_->ToString();
     return std::string("null");
 }
-
+std::string Node::ToJSON() const {
+    if (impl_) return impl_->ToJSON();
+    return std::string("null");
+}
 std::string Node::TypeString() const {
     if (impl_) {
         return TOML::TypeString(impl_->Type());
     }
     return std::string();
 }
-
+TOML::Object *Node::Root() { return dynamic_cast<TOML::Object *>(impl_); }
+TOML::Object *Node::Table() { return dynamic_cast<TOML::Object *>(impl_); }
 Node Node::CreateNode(Types type) {
     NodeImpl *impl = nullptr;
     switch (type) {

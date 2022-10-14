@@ -202,9 +202,6 @@ void Reader::Run() {
 __exit:
     if (state_ != PARSE_STATUS_SUCCESS) {
         error_ = std::string("TOML parse error at index ") + std::to_string(CurrentIndex());
-        if (!desc_.empty()) {
-            error_ += ", " + desc_;
-        }
     }
 }
 
@@ -351,9 +348,11 @@ std::string Reader::Parse(const char *data, size_t len, Node *node) {
     Reader reader(data, len);
     reader.Run();
     if (reader.Result() != PARSE_STATUS_SUCCESS) {
-        return reader.error_;
+        if (reader.desc_.empty()) {
+            return reader.error_;
+        }
+        return reader.error_ + ", " + reader.desc_;
     }
-
     std::swap(*node, reader.root_);
     return std::string();
 }

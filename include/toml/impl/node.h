@@ -105,7 +105,12 @@ public:
         return dynamic_cast<typename ToNodeImpl<T>::type *>(impl_);
     }
 
+    // Use as a table
+    inline TOML::Object *Root();
+    inline TOML::Object *Table();
+
     std::string ToString() const;
+    std::string ToJSON() const;
 
 private:
     Node(NodeImpl *impl)

@@ -29,8 +29,21 @@ Types NodeImpl::Type() const { return Types::TOML_NULL; }
 void NodeImpl::Ref() { ref_count_.fetch_add(1, std::memory_order_relaxed); }
 int32_t NodeImpl::Unref() { return ref_count_.fetch_sub(1, std::memory_order_acq_rel); }
 std::string NodeImpl::ToString() const { return std::string("null"); }
+std::string NodeImpl::ToJSON() const { return std::string("null"); }
 
 // ------------------------------
+static std::string StringToString(const std::string &value) {
+    std::string ss;
+    ss.push_back('\"');
+    for (auto c : value) {
+        if (c == '\"') {
+            ss.push_back('\\');
+        }
+        ss.push_back(c);
+    }
+    ss.push_back('\"');
+    return ss;
+}
 
 String::String()
     : NodeImpl() {}
@@ -42,11 +55,8 @@ const std::string &String::Value() const { return value_; }
 void String::SetValue(const std::string &value) { value_ = value; }
 void String::SetValue(const char *value) { value_ = std::string(value); }
 Types String::Type() const { return Types::TOML_STRING; }
-std::string String::ToString() const {
-    std::stringstream ss;
-    ss << "\"" << value_ << "\"";
-    return ss.str();
-}
+std::string String::ToString() const { return StringToString(value_); }
+std::string String::ToJSON() const { return StringToString(value_); }
 
 // ------------------------------
 Boolean::Boolean()
@@ -60,6 +70,7 @@ bool Boolean::Value() const { return value_; }
 void Boolean::SetValue(bool value) { value_ = value; }
 Types Boolean::Type() const { return Types::TOML_BOOLEAN; }
 std::string Boolean::ToString() const { return value_ ? "true" : "false"; }
+std::string Boolean::ToJSON() const { return value_ ? "true" : "false"; }
 
 // ------------------------------
 Integer::Integer()
@@ -80,6 +91,7 @@ void Integer::SetValue(int64_t value) { *reinterpret_cast<int64_t *>(value_) = v
 void Integer::SetValue(uint64_t value) { *reinterpret_cast<uint64_t *>(value_) = value; }
 Types Integer::Type() const { return Types::TOML_INTEGER; }
 std::string Integer::ToString() const { return std::to_string(Value<true>()); }
+std::string Integer::ToJSON() const { return std::to_string(Value<true>()); }
 
 // ------------------------------
 Float::Float()
@@ -93,6 +105,7 @@ double Float::Value() const { return value_; }
 void Float::SetValue(double value) { value_ = value; }
 Types Float::Type() const { return Types::TOML_FLOAT; }
 std::string Float::ToString() const { return std::to_string(value_); }
+std::string Float::ToJSON() const { return std::to_string(value_); }
 
 // ------------------------------
 
@@ -114,6 +127,7 @@ const DateTime::Detail &DateTime::Value() const { return value_; }
 void DateTime::SetValue(DateTime::Detail *value) { value_ = *value; }
 Types DateTime::Type() const { return Types::TOML_DATETIME; }
 std::string DateTime::ToString() const { return RawString(); }
+std::string DateTime::ToJSON() const { return StringToString(raw_); }
 void DateTime::InitDetail(DateTime::Detail *dt) { dt->Reset(); }
 DateTime::Detail::Detail() { memset(&data_, 0, sizeof(data_)); }
 DateTime::Detail::Detail(const DateTime::Detail &oth) {
@@ -267,7 +281,7 @@ Node Object::Get(std::string &&key) {
     return Node();
 }
 
-std::string Object::ToString() const {
+std::string Object::ToStringImpl(char key_delimiter, char value_delimiter) const {
     if (obj_.empty()) return std::string("{}");
 
     std::stringstream ss;
@@ -277,14 +291,19 @@ std::string Object::ToString() const {
 
     int i = 0;
     for (; i < static_cast<int>(obj_.size()) - 1; i++) {
-        ss << "\"" << it->first << "\" = ";
-        ss << it->second.ToString() << ",";
+        ss << StringToString(it->first);
+        ss << key_delimiter;
+        ss << it->second.ToString();
+        ss << value_delimiter;
         it++;
     }
-    ss << "\"" << it->first << "\" = ";
+    ss << StringToString(it->first);
+    ss << key_delimiter;
     ss << it->second.ToString() << "}";
     return ss.str();
 }
+std::string Object::ToString() const { return ToStringImpl('=', ','); }
+std::string Object::ToJSON() const { return ToStringImpl(':', ','); }
 bool Object::Exists(const std::string &key) const {
     auto it = obj_.find(key);
     return (it != obj_.end());
@@ -316,14 +335,15 @@ std::string Array::ToString() const {
     if (array_.empty()) return std::string("[]");
 
     std::stringstream ss;
-    ss << "[";
+    ss << '[';
 
     int i = 0;
     for (; i < static_cast<int>(array_.size()) - 1; i++) {
-        ss << array_[i].ToString() << ",";
+        ss << array_[i].ToString();
+        ss << ',';
     }
-    ss << array_[i].ToString() << "]";
+    ss << array_[i].ToString() << ']';
     return ss.str();
 }
-
+std::string Array::ToJSON() const { return ToString(); }
 } // namespace TOML
