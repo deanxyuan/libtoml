@@ -132,7 +132,7 @@ void Reader::Run() {
         // step 1 : 跳过空格前缀
         c = SkipFrontSpace();
 
-        if (c == READ_CHAR_EOF) {
+        if (c == READ_CHAR_EOF || (c == 0 && remaining_input_ == 1)) {
             state_ = PARSE_STATUS_SUCCESS;
             break;
         }

@@ -13,6 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(LIBTOML_BUILD_TESTS "Build libtoml's unit tests" ON)
+option(LIBTOML_BUILD_EXAMPLE "Build libtoml's example" ON)
 
 aux_source_directory(${PROJECT_SOURCE_DIR}/src TOML_IMPL_SRC)
 
@@ -94,3 +95,26 @@ if(LIBTOML_BUILD_TESTS)
     libtoml_unit_test("${PROJECT_SOURCE_DIR}/test/table_test.cc")
 
 endif(LIBTOML_BUILD_TESTS)
+
+if(LIBTOML_BUILD_EXAMPLE)
+    add_executable(sample "")
+    target_sources(sample
+    PRIVATE
+        "${PROJECT_SOURCE_DIR}/example/sample.cc"
+    )
+
+    target_include_directories(sample
+    PRIVATE
+        ${PROJECT_SOURCE_DIR}/include
+    )
+
+    target_compile_options(sample
+    PRIVATE
+        -Wall
+    )
+
+    target_link_libraries(sample
+    PRIVATE
+        toml
+    )
+endif(LIBTOML_BUILD_EXAMPLE)
