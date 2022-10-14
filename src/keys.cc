@@ -152,21 +152,5 @@ bool Reader::UsingComplexKey() {
     return true;
 }
 
-std::string Reader::ComplexPathPrefix(const std::vector<std::string> &vec) {
-    std::string res;
-    int count = static_cast<int>(vec.size());
-    for (int i = 0; i < count - 1; i++) {
-        res.append(vec[i]);
-        res.push_back('.');
-    }
-    if (!res.empty()) {
-        res.resize(res.size() - 1);
-    }
-    return res;
-}
-std::string Reader::GetVectorLastElement(const std::vector<std::string> &vec) {
-    if (vec.empty()) return std::string();
-    return vec[vec.size() - 1];
-}
 } // namespace internal
 } // namespace TOML

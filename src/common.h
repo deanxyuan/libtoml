@@ -23,6 +23,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <vector>
 
 namespace TOML {
 
@@ -51,9 +52,14 @@ bool IsValidCharForString(bool multiline, uint8_t ch);
  */
 bool IsByteExistsInTarget(const char *target, uint8_t cc);
 
-uint32_t StringToInt(const std::string &str, int radix = 10);
-uint32_t StringToInt(const char *str, int radix = 10);
+int64_t StringToInt(const std::string &str, int radix = 10);
+uint64_t StringToUInt(const std::string &str, int radix = 10);
+double StringToFloat(const std::string &str);
 int BufferToInt(const uint8_t *buff, size_t len);
 int BufferToInt(const char *buff, int len);
+
+std::string ComplexPathPrefix(const std::vector<std::string> &vec);
+std::string GetVectorLastElement(const std::vector<std::string> &vec);
+
 } // namespace TOML
 #endif // TOML_SRC_COMMON_H_

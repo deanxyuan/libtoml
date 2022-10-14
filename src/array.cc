@@ -235,10 +235,5 @@ bool Reader::UsingArrayOfTableTitleImpl() {
     return true;
 }
 
-bool Reader::CheckArrayOfTableExists(const std::string &name) {
-    auto it = array_of_table_map_.find(name);
-    return (it != array_of_table_map_.end());
-}
-
 } // namespace internal
 } // namespace TOML

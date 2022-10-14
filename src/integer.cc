@@ -48,14 +48,14 @@ bool Reader::GetNumberWithPrefix() {
         // has a '+-' prefix, so it can only be a decimal integer or float
         if (TestNumberIsFloat()) {
             if (GetFloatNumber()) {
-                auto value = StringToDouble();
+                auto value = StringToFloat(strings_);
                 // +- process
                 node = Node::CreateFloat(negative ? (value * (-1)) : value);
             }
         } else {
             if (GetDecimalNumber()) {
-                node = negative ? Node::CreateInteger(StringToInt() * (-1))
-                                : Node::CreateInteger(StringToUInt());
+                node = negative ? Node::CreateInteger(StringToInt(strings_) * (-1))
+                                : Node::CreateInteger(StringToUInt(strings_));
             }
         }
         break;
@@ -72,15 +72,15 @@ bool Reader::GetNumberNoPrefix() {
     Node node;
     if (StartsWith("0x")) { // hex
         if (GetHexNumber()) {
-            node = Node::CreateInteger(StringToUInt(16));
+            node = Node::CreateInteger(StringToUInt(strings_, 16));
         }
     } else if (StartsWith("0b")) { // binary
         if (GetBinaryNumber()) {
-            node = Node::CreateInteger(StringToUInt(2));
+            node = Node::CreateInteger(StringToUInt(strings_, 2));
         }
     } else if (StartsWith("0o")) { // oct
         if (GetOctNumber()) {
-            node = Node::CreateInteger(StringToUInt(8));
+            node = Node::CreateInteger(StringToUInt(strings_, 8));
         }
     } else {
         // float, decimal, datetime
@@ -88,12 +88,12 @@ bool Reader::GetNumberNoPrefix() {
         switch (type) {
         case TOML::Types::TOML_INTEGER:
             if (GetDecimalNumber()) {
-                node = Node::CreateInteger(StringToUInt());
+                node = Node::CreateInteger(StringToUInt(strings_));
             }
             break;
         case TOML::Types::TOML_FLOAT:
             if (GetFloatNumber()) {
-                node = Node::CreateFloat(StringToDouble());
+                node = Node::CreateFloat(StringToFloat(strings_));
             }
             break;
         default:
@@ -462,19 +462,6 @@ bool Reader::TestNumberIsFloat() {
         }
     }
     return false;
-}
-
-double Reader::StringToDouble() {
-    char *endptr = nullptr;
-    return std::strtod(strings_.data(), &endptr);
-}
-int64_t Reader::StringToInt(int radix) {
-    char *endptr = nullptr;
-    return std::strtoll(strings_.data(), &endptr, radix);
-}
-uint64_t Reader::StringToUInt(int radix) {
-    char *endptr = nullptr;
-    return std::strtoull(strings_.data(), &endptr, radix);
 }
 
 Types Reader::TestPossibleType() {

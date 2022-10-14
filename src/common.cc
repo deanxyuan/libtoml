@@ -135,14 +135,19 @@ bool IsByteExistsInTarget(const char *target, uint8_t cc) {
     return false;
 };
 
-uint32_t StringToInt(const std::string &str, int radix) {
+int64_t StringToInt(const std::string &str, int radix) {
     char *endptr = nullptr;
-    return std::strtoul(str.data(), &endptr, radix);
+    return std::strtoll(str.data(), &endptr, radix);
 }
 
-uint32_t StringToInt(const char *str, int radix) {
+uint64_t StringToUInt(const std::string &str, int radix) {
     char *endptr = nullptr;
-    return std::strtoul(str, &endptr, radix);
+    return std::strtoull(str.data(), &endptr, radix);
+}
+
+double StringToFloat(const std::string &str) {
+    char *endptr = nullptr;
+    return std::strtod(str.data(), &endptr);
 }
 
 int BufferToInt(const uint8_t *buff, size_t len) {
@@ -153,5 +158,22 @@ int BufferToInt(const uint8_t *buff, size_t len) {
 int BufferToInt(const char *buff, int len) {
     std::string str(buff, len);
     return atoi(str.c_str());
+}
+
+std::string ComplexPathPrefix(const std::vector<std::string> &vec) {
+    std::string res;
+    int count = static_cast<int>(vec.size());
+    for (int i = 0; i < count - 1; i++) {
+        res.append(vec[i]);
+        res.push_back('.');
+    }
+    if (!res.empty()) {
+        res.resize(res.size() - 1);
+    }
+    return res;
+}
+std::string GetVectorLastElement(const std::vector<std::string> &vec) {
+    if (vec.empty()) return std::string();
+    return vec[vec.size() - 1];
 }
 } // namespace TOML
