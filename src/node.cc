@@ -88,8 +88,9 @@ std::string Node::TypeString() const {
     }
     return std::string();
 }
-TOML::Object *Node::Root() { return dynamic_cast<TOML::Object *>(impl_); }
-TOML::Object *Node::Table() { return dynamic_cast<TOML::Object *>(impl_); }
+TOML::Object *Node::AsRoot() { return dynamic_cast<TOML::Object *>(impl_); }
+TOML::Object *Node::AsTable() { return dynamic_cast<TOML::Object *>(impl_); }
+TOML::Array *Node::AsArray() { return dynamic_cast<TOML::Array *>(impl_); }
 Node Node::CreateNode(Types type) {
     NodeImpl *impl = nullptr;
     switch (type) {

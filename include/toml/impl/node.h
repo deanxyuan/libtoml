@@ -106,8 +106,9 @@ public:
     }
 
     // Use as a table
-    inline TOML::Object *Root();
-    inline TOML::Object *Table();
+    TOML::Object *AsRoot();
+    TOML::Object *AsTable();
+    TOML::Array *AsArray();
 
     std::string ToString() const;
     std::string ToJSON() const;
