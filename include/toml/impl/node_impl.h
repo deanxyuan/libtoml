@@ -270,7 +270,8 @@ public:
     Types Type() const override;
     void Insert(size_t index, const Node &value);
     void PushBack(const Node &value);
-
+    inline bool Static() const { return static_; }
+    inline void SetStatic() { static_ = true; }
     inline Iterator begin() { return array_.begin(); }
     inline Iterator end() { return array_.end(); }
     inline size_t size() const { return array_.size(); }
@@ -284,7 +285,7 @@ public:
 
 private:
     Array();
-
+    bool static_;
     Array::RealType array_;
 };
 

@@ -143,7 +143,7 @@ bool Reader::GetArrayImpl() {
             find_a_separator = false;
             break;
         case ']':
-            if (!PopStack(Types::TOML_ARRAY)) {
+            if (!StaticArrayPop()) {
                 goto __exit;
             }
             input_++;
@@ -173,7 +173,6 @@ bool Reader::UsingArrayOfTableTitleImpl() {
         std::string key = current_.title_path[0];
         Node sub_array, parent = stack_.top();
         assert(parent.Type() == Types::TOML_OBJECT);
-
         if (!parent.As<kObject>()->Exists(key)) {
             // 首次出现，即第一个元素
             sub_array = Node::CreateArray();
@@ -183,6 +182,11 @@ bool Reader::UsingArrayOfTableTitleImpl() {
             sub_array = parent.As<kObject>()->Get(key);
             if (sub_array.Type() != Types::TOML_ARRAY) {
                 desc_ = "\"" + key + "\" already exists and it is not an array";
+                return false;
+            }
+            // 判断是否为静态数组
+            if (sub_array.As<kArray>()->Static()) {
+                desc_ = "\"" + key + "\" is an static array";
                 return false;
             }
         }

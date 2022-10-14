@@ -24,6 +24,15 @@
 namespace TOML {
 namespace internal {
 
+bool Reader::StaticArrayPop() {
+    Node &parent = stack_.top();
+    if (parent.Type() == Types::TOML_ARRAY) {
+        parent.As<kArray>()->SetStatic();
+        stack_.pop();
+        return true;
+    }
+    return false;
+}
 bool Reader::InlinedTablePop() {
     Node &parent = stack_.top();
     if (parent.Type() == Types::TOML_OBJECT) {

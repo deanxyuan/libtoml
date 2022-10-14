@@ -311,7 +311,8 @@ bool Object::Exists(const std::string &key) const {
 
 // ------------------------------
 Array::Array()
-    : NodeImpl() {}
+    : NodeImpl()
+    , static_(false) {}
 Array::~Array() {}
 
 Types Array::Type() const { return Types::TOML_ARRAY; }
