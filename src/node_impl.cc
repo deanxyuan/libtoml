@@ -22,16 +22,6 @@
 
 namespace TOML {
 
-NodeImpl::NodeImpl(/* args */)
-    : ref_count_(0) {}
-NodeImpl::~NodeImpl() {}
-Types NodeImpl::Type() const { return Types::TOML_NULL; }
-void NodeImpl::Ref() { ref_count_.fetch_add(1, std::memory_order_relaxed); }
-int32_t NodeImpl::Unref() { return ref_count_.fetch_sub(1, std::memory_order_acq_rel); }
-std::string NodeImpl::ToString() const { return std::string("null"); }
-std::string NodeImpl::ToJSON() const { return std::string("null"); }
-
-// ------------------------------
 static std::string StringToString(const std::string &value) {
     std::string ss;
     ss.push_back('\"');
@@ -45,6 +35,16 @@ static std::string StringToString(const std::string &value) {
     return ss;
 }
 
+NodeImpl::NodeImpl(/* args */)
+    : ref_count_(0) {}
+NodeImpl::~NodeImpl() {}
+Types NodeImpl::Type() const { return Types::TOML_NULL; }
+void NodeImpl::Ref() { ref_count_.fetch_add(1, std::memory_order_relaxed); }
+int32_t NodeImpl::Unref() { return ref_count_.fetch_sub(1, std::memory_order_acq_rel); }
+std::string NodeImpl::ToString() const { return std::string("null"); }
+std::string NodeImpl::ToJSON() const { return std::string("null"); }
+
+// ------------------------------
 String::String()
     : NodeImpl() {}
 String::String(const std::string &s)
@@ -55,7 +55,7 @@ const std::string &String::Value() const { return value_; }
 void String::SetValue(const std::string &value) { value_ = value; }
 void String::SetValue(const char *value) { value_ = std::string(value); }
 Types String::Type() const { return Types::TOML_STRING; }
-std::string String::ToString() const { return StringToString(value_); }
+std::string String::ToString() const { return value_; }
 std::string String::ToJSON() const { return StringToString(value_); }
 
 // ------------------------------
@@ -126,8 +126,12 @@ void DateTime::SetRawString(const std::string &s) { raw_ = s; }
 const DateTime::Detail &DateTime::Value() const { return value_; }
 void DateTime::SetValue(DateTime::Detail *value) { value_ = *value; }
 Types DateTime::Type() const { return Types::TOML_DATETIME; }
-std::string DateTime::ToString() const { return RawString(); }
-std::string DateTime::ToJSON() const { return StringToString(raw_); }
+std::string DateTime::ToString() const { return raw_; }
+std::string DateTime::ToJSON() const {
+    std::stringstream ss;
+    ss << '"' << raw_ << '"';
+    return ss.str();
+}
 void DateTime::InitDetail(DateTime::Detail *dt) { dt->Reset(); }
 DateTime::Detail::Detail() { memset(&data_, 0, sizeof(data_)); }
 DateTime::Detail::Detail(const DateTime::Detail &oth) {
@@ -281,29 +285,44 @@ Node Table::Get(std::string &&key) {
     return Node();
 }
 
-std::string Table::ToStringImpl(char key_delimiter, char value_delimiter) const {
+std::string Table::ToString() const {
     if (table_.empty()) return std::string("{}");
 
     std::stringstream ss;
     ss << "{";
 
-    auto it = table_.begin();
-
-    int i = 0;
-    for (; i < static_cast<int>(table_.size()) - 1; i++) {
-        ss << StringToString(it->first);
-        ss << key_delimiter;
+    auto it   = table_.begin();
+    int count = static_cast<int>(table_.size());
+    for (int i = 0; i < count - 1; i++) {
+        ss << it->first << '=';
         ss << it->second.ToString();
-        ss << value_delimiter;
+        ss << ',';
         it++;
     }
-    ss << StringToString(it->first);
-    ss << key_delimiter;
+    ss << it->first << '=';
     ss << it->second.ToString() << "}";
     return ss.str();
 }
-std::string Table::ToString() const { return ToStringImpl('=', ','); }
-std::string Table::ToJSON() const { return ToStringImpl(':', ','); }
+std::string Table::ToJSON() const {
+    if (table_.empty()) return std::string("{}");
+
+    std::stringstream ss;
+    ss << "{";
+
+    auto it   = table_.begin();
+    int count = static_cast<int>(table_.size());
+    for (int i = 0; i < count - 1; i++) {
+        ss << StringToString(it->first);
+        ss << ':';
+        ss << it->second.ToJSON();
+        ss << ',';
+        it++;
+    }
+    ss << StringToString(it->first);
+    ss << ':';
+    ss << it->second.ToJSON() << "}";
+    return ss.str();
+}
 bool Table::Exists(const std::string &key) const {
     auto it = table_.find(key);
     return (it != table_.end());
@@ -342,13 +361,28 @@ std::string Array::ToString() const {
     std::stringstream ss;
     ss << '[';
 
-    int i = 0;
-    for (; i < static_cast<int>(array_.size()) - 1; i++) {
+    int i     = 0;
+    int count = static_cast<int>(array_.size());
+    for (; i < count - 1; i++) {
         ss << array_[i].ToString();
         ss << ',';
     }
     ss << array_[i].ToString() << ']';
     return ss.str();
 }
-std::string Array::ToJSON() const { return ToString(); }
+std::string Array::ToJSON() const {
+    if (array_.empty()) return std::string("[]");
+
+    std::stringstream ss;
+    ss << '[';
+
+    int i     = 0;
+    int count = static_cast<int>(array_.size());
+    for (; i < count - 1; i++) {
+        ss << array_[i].ToJSON();
+        ss << ',';
+    }
+    ss << array_[i].ToJSON() << ']';
+    return ss.str();
+}
 } // namespace TOML
