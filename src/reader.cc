@@ -48,8 +48,8 @@ void Reader::SetKey() {
 }
 
 void Reader::StringAddChar(uint32_t c) { strings_.push_back(static_cast<uint8_t>(c)); }
-void Reader::StringAddPtr(const char *ptr) { strings_.append(ptr); }
-void Reader::StringAddPtr(const char *ptr, size_t count) { strings_.append(ptr, count); }
+void Reader::StringAddCString(const char *ptr) { strings_.append(ptr); }
+void Reader::StringAddCString(const char *ptr, size_t count) { strings_.append(ptr, count); }
 void Reader::StringAddCharEx(int count, char ch) { strings_.append(count, ch); }
 void Reader::StringAddString(const std::string &s) { strings_.append(s); }
 uint32_t Reader::LastInsertChar() {
@@ -59,12 +59,6 @@ uint32_t Reader::LastInsertChar() {
 bool Reader::IsValidCharForRawKey(uint32_t c) {
     if (c == '-' || c == '_' || (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') ||
         (c >= 'a' && c <= 'z')) {
-        return true;
-    }
-    return false;
-}
-bool Reader::IsValidCharForHex(uint32_t c) {
-    if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')) {
         return true;
     }
     return false;
@@ -213,7 +207,6 @@ __exit:
         }
     }
 }
-void Reader::SwapPathRecord() { std::swap(prev_, current_); }
 
 bool Reader::CheckSeparator() {
 

@@ -84,6 +84,5 @@ Node Reader::PushEmptyArray() {
     PushStack(node);
     return node;
 }
-void Reader::PrintNode(const Node &node) { std::cout << "Node:" << node.ToString() << std::endl; }
 } // namespace internal
 } // namespace TOML

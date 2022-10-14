@@ -87,7 +87,7 @@ bool Reader::GetTimeImpl() {
             dt_.SetMicroSecond(BufferToInt(buff, 9) / 1000);
         }
 
-        StringAddPtr(buff, i);
+        StringAddCString(buff, i);
         input_ += i;
         remaining_input_ -= i;
 
@@ -135,7 +135,7 @@ bool Reader::ReadUTCOffsetString() {
     if (remaining_input_ < 5) return false;
     if (input_[2] == ':') {
         if (isdigit(input_[0]) && isdigit(input_[1]) && isdigit(input_[3]) && isdigit(input_[4])) {
-            StringAddPtr(reinterpret_cast<const char *>(input_), 5);
+            StringAddCString(reinterpret_cast<const char *>(input_), 5);
             int hh = BufferToInt(&input_[0], 2);
             int mm = BufferToInt(&input_[3], 2);
             dt_.SetGMTOffset(hh, mm);
@@ -154,7 +154,7 @@ bool Reader::ReadTimeString() {
     if (input_[2] == ':' && input_[5] == ':') {
         if (isdigit(input_[0]) && isdigit(input_[1]) && isdigit(input_[3]) && isdigit(input_[4]) &&
             isdigit(input_[6]) && isdigit(input_[7])) {
-            StringAddPtr(reinterpret_cast<const char *>(input_), 8);
+            StringAddCString(reinterpret_cast<const char *>(input_), 8);
             dt_.SetHour(BufferToInt(&input_[0], 2));
             dt_.SetMinute(BufferToInt(&input_[3], 2));
             dt_.SetSecond(BufferToInt(&input_[6], 2));
@@ -172,7 +172,7 @@ bool Reader::ReadDateString() {
     if (input_[4] == '-' && input_[7] == '-') {
         if (isdigit(input_[0]) && isdigit(input_[1]) && isdigit(input_[2]) && isdigit(input_[3]) &&
             isdigit(input_[5]) && isdigit(input_[6]) && isdigit(input_[8]) && isdigit(input_[9])) {
-            StringAddPtr(reinterpret_cast<const char *>(input_), 10);
+            StringAddCString(reinterpret_cast<const char *>(input_), 10);
             dt_.SetYear(BufferToInt(&input_[0], 4));
             dt_.SetMonth(BufferToInt(&input_[5], 2));
             dt_.SetDay(BufferToInt(&input_[8], 2));

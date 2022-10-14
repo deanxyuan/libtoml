@@ -66,12 +66,9 @@ private:
     bool ParseComplexKey();
     bool CheckSeparator();
     bool ParseComplexValue();
-    bool CheckTableTileRedefine();
-    bool CheckArrayOfTableExists(const std::string &name);
     std::string ComplexPathPrefix(const std::vector<std::string> &vec);
     std::string GetVectorLastElement(const std::vector<std::string> &vec);
 
-    // TODO:
     // 当取完当前一组key=value数据，需要退栈
     // 退栈次数 complex_key_depth_
     bool UsingComplexKey();
@@ -82,7 +79,9 @@ private:
     bool UsingTableTitleImpl();
     bool UsingArrayOfTableTitleImpl();
 
-    void SwapPathRecord();
+    // 首字节必需为 #
+    bool SkipComment();
+    uint32_t SkipFrontSpace();
 
 private:
     // ----获取字符串value ----
@@ -93,7 +92,8 @@ private:
     bool GetBasicString();
     bool GetMultiLineLiteralString();
     bool GetMultiLineBasicString();
-    //--------------------------------
+    // 从当前位置开始，测试连续有多少个相同的字符
+    int TestSameCharCount(uint8_t ch);
 
 private:
     // 获取带正负号value（有正负数）
@@ -104,7 +104,12 @@ private:
     bool GetHexNumber();
     bool GetBinaryNumber();
     bool GetOctNumber();
-    //--------------------------------
+
+    // 浮点，十进制，日期时间
+    Types TestPossibleType();
+
+    // 当前数据可能是浮点数，返回true
+    bool TestNumberIsFloat();
 
 private:
     // 获取日期时间
@@ -116,8 +121,9 @@ private:
     bool ReadUTCOffsetString();
 
 private:
-    // 获取数组
+    // 数组和表数组
     bool GetArrayImpl();
+    bool CheckArrayOfTableExists(const std::string &name);
 
 private:
     // 获取表
@@ -125,6 +131,7 @@ private:
     bool GetTitleOfTable();
     bool GetTitleOfTableImpl();
     void DisablePrevTable();
+    bool CheckTableTileRedefine();
 
 private:
     // 栈操作
@@ -137,35 +144,20 @@ private:
     bool InlinedTablePop();
     Node PushEmptyObject();
     Node PushEmptyArray();
-    // print
-    void PrintNode(const Node &node);
 
 private:
+    // string_ or input_
     bool IsValidCharForRawKey(uint32_t c);
-    bool IsValidCharForHex(uint32_t c);
     bool IsSpaceOrNextLine(uint32_t c);
 
     bool StartsWith(const char *prefix);
     void SetKey();
     void StringAddChar(uint32_t c);
-    void StringAddPtr(const char *ptr);
-    void StringAddPtr(const char *ptr, size_t count);
+    void StringAddCString(const char *ptr);
+    void StringAddCString(const char *ptr, size_t count);
     void StringAddCharEx(int count, char ch);
     void StringAddString(const std::string &s);
     uint32_t LastInsertChar();
-
-    // 从当前位置开始，测试连续有多少个相同的字符
-    int TestSameCharCount(uint8_t ch);
-
-    // 浮点，十进制，日期时间
-    Types TestPossibleType();
-
-    // 当前数据可能是浮点数，返回true
-    bool TestNumberIsFloat();
-
-    // 首字节必需为 #
-    bool SkipComment();
-    uint32_t SkipFrontSpace();
 
     double StringToDouble();
     int64_t StringToInt(int radix = 10);
