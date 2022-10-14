@@ -5,7 +5,7 @@
 #error "Missing Macro Definition: TEST_CASE_DIR, please check the CMakeLists.txt"
 #endif
 
-bool CheckObjectIntValue(TOML::Node node, const std::string &key, int64_t value) {
+bool CheckTableHasIntValue(TOML::Node node, const std::string &key, int64_t value) {
     TOML::Node v = node.As<TOML::kTable>()->Get(key);
     if (v.Type() != TOML::kInteger) {
         return false;
@@ -13,7 +13,7 @@ bool CheckObjectIntValue(TOML::Node node, const std::string &key, int64_t value)
     return v.As<TOML::kInteger>()->Value() == value;
 }
 
-bool CheckArrayIntValue(TOML::Node node, int index, int64_t s) {
+bool CheckArrayHasIntValue(TOML::Node node, int index, int64_t s) {
     TOML::Node v = node.As<TOML::kArray>()->At(index);
     if (v.Type() != TOML::kInteger) {
         return false;
@@ -32,11 +32,11 @@ TEST(InlineTable, array_of_tables) {
     ASSERT_EQ(x.As<TOML::kArray>()->size(), 2);
     TOML::Node N1 = x.As<TOML::kArray>()->At(0);
     ASSERT_EQ(N1.Type(), TOML::kTable);
-    ASSERT_TRUE(CheckObjectIntValue(N1, "a", 1));
+    ASSERT_TRUE(CheckTableHasIntValue(N1, "a", 1));
 
     TOML::Node N2 = x.As<TOML::kArray>()->At(1);
     ASSERT_EQ(N2.Type(), TOML::kTable);
-    ASSERT_TRUE(CheckObjectIntValue(N2, "a", 2));
+    ASSERT_TRUE(CheckTableHasIntValue(N2, "a", 2));
 }
 
 TEST(InlineTable, inline_array) {
@@ -48,9 +48,9 @@ TEST(InlineTable, inline_array) {
     TOML::Node x = node.As<TOML::kTable>()->Get("x");
     ASSERT_EQ(x.Type(), TOML::kArray);
     ASSERT_EQ(x.As<TOML::kArray>()->size(), 3);
-    ASSERT_TRUE(CheckArrayIntValue(x, 0, 1));
-    ASSERT_TRUE(CheckArrayIntValue(x, 1, 2));
-    ASSERT_TRUE(CheckArrayIntValue(x, 2, 3));
+    ASSERT_TRUE(CheckArrayHasIntValue(x, 0, 1));
+    ASSERT_TRUE(CheckArrayHasIntValue(x, 1, 2));
+    ASSERT_TRUE(CheckArrayHasIntValue(x, 2, 3));
 }
 
 int main(int argc, char *argv[]) {

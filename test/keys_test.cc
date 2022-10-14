@@ -5,7 +5,7 @@
 #error "Missing Macro Definition: TEST_CASE_DIR, please check the CMakeLists.txt"
 #endif
 
-bool CheckObjectStringValue(TOML::Node node, const std::string &key, const std::string &value) {
+bool CheckTableHasStringValue(TOML::Node node, const std::string &key, const std::string &value) {
     TOML::Node v = node.As<TOML::kTable>()->Get(key);
     if (v.Type() != TOML::kString) {
         return false;
@@ -13,7 +13,7 @@ bool CheckObjectStringValue(TOML::Node node, const std::string &key, const std::
     return v.As<TOML::kString>()->Value() == value;
 }
 
-bool CheckObjectIntValue(TOML::Node node, const std::string &key, int64_t value) {
+bool CheckTableHasIntValue(TOML::Node node, const std::string &key, int64_t value) {
     TOML::Node v = node.As<TOML::kTable>()->Get(key);
     if (v.Type() != TOML::kInteger) {
         return false;
@@ -86,8 +86,8 @@ TEST(Keys, keys04) {
     // physical.shape = "round"
     TOML::Node physical = node.As<TOML::kTable>()->Get("physical");
     ASSERT_EQ(physical.As<TOML::kTable>()->size(), 2);
-    ASSERT_TRUE(CheckObjectStringValue(physical, "color", "orange"));
-    ASSERT_TRUE(CheckObjectStringValue(physical, "shape", "round"));
+    ASSERT_TRUE(CheckTableHasStringValue(physical, "color", "orange"));
+    ASSERT_TRUE(CheckTableHasStringValue(physical, "shape", "round"));
 
     // site."google.com" = true
     TOML::Node site = node.As<TOML::kTable>()->Get("site");
@@ -106,9 +106,9 @@ TEST(Keys, keys05) {
 
     TOML::Node fruit = node.As<TOML::kTable>()->Get("fruit");
     ASSERT_EQ(fruit.As<TOML::kTable>()->size(), 3);
-    ASSERT_TRUE(CheckObjectStringValue(fruit, "color", "yellow"));
-    ASSERT_TRUE(CheckObjectStringValue(fruit, "name", "banana"));
-    ASSERT_TRUE(CheckObjectStringValue(fruit, "flavor", "banana"));
+    ASSERT_TRUE(CheckTableHasStringValue(fruit, "color", "yellow"));
+    ASSERT_TRUE(CheckTableHasStringValue(fruit, "name", "banana"));
+    ASSERT_TRUE(CheckTableHasStringValue(fruit, "flavor", "banana"));
 }
 
 TEST(Keys, keys06) {
@@ -134,7 +134,7 @@ TEST(Keys, keys08) {
 
     TOML::Node fruit = node.As<TOML::kTable>()->Get("fruit");
     ASSERT_EQ(fruit.As<TOML::kTable>()->size(), 2);
-    ASSERT_TRUE(CheckObjectIntValue(fruit, "orange", 2));
+    ASSERT_TRUE(CheckTableHasIntValue(fruit, "orange", 2));
     TOML::Node apple  = fruit.As<TOML::kTable>()->Get("apple");
     TOML::Node smooth = apple.As<TOML::kTable>()->Get("smooth");
     ASSERT_EQ(smooth.Type(), TOML::kBoolean);
@@ -158,15 +158,15 @@ TEST(Keys, keys10) {
 
     TOML::Node apple = node.As<TOML::kTable>()->Get("apple");
     ASSERT_EQ(apple.As<TOML::kTable>()->size(), 3);
-    ASSERT_TRUE(CheckObjectStringValue(apple, "type", "fruit"));
-    ASSERT_TRUE(CheckObjectStringValue(apple, "skin", "thin"));
-    ASSERT_TRUE(CheckObjectStringValue(apple, "color", "red"));
+    ASSERT_TRUE(CheckTableHasStringValue(apple, "type", "fruit"));
+    ASSERT_TRUE(CheckTableHasStringValue(apple, "skin", "thin"));
+    ASSERT_TRUE(CheckTableHasStringValue(apple, "color", "red"));
 
     TOML::Node orange = node.As<TOML::kTable>()->Get("orange");
     ASSERT_EQ(orange.As<TOML::kTable>()->size(), 3);
-    ASSERT_TRUE(CheckObjectStringValue(orange, "type", "fruit"));
-    ASSERT_TRUE(CheckObjectStringValue(orange, "skin", "thick"));
-    ASSERT_TRUE(CheckObjectStringValue(orange, "color", "orange"));
+    ASSERT_TRUE(CheckTableHasStringValue(orange, "type", "fruit"));
+    ASSERT_TRUE(CheckTableHasStringValue(orange, "skin", "thick"));
+    ASSERT_TRUE(CheckTableHasStringValue(orange, "color", "orange"));
 }
 
 TEST(Keys, keys11) {
@@ -178,15 +178,15 @@ TEST(Keys, keys11) {
 
     TOML::Node apple = node.As<TOML::kTable>()->Get("apple");
     ASSERT_EQ(apple.As<TOML::kTable>()->size(), 3);
-    ASSERT_TRUE(CheckObjectStringValue(apple, "type", "fruit"));
-    ASSERT_TRUE(CheckObjectStringValue(apple, "skin", "thin"));
-    ASSERT_TRUE(CheckObjectStringValue(apple, "color", "red"));
+    ASSERT_TRUE(CheckTableHasStringValue(apple, "type", "fruit"));
+    ASSERT_TRUE(CheckTableHasStringValue(apple, "skin", "thin"));
+    ASSERT_TRUE(CheckTableHasStringValue(apple, "color", "red"));
 
     TOML::Node orange = node.As<TOML::kTable>()->Get("orange");
     ASSERT_EQ(orange.As<TOML::kTable>()->size(), 3);
-    ASSERT_TRUE(CheckObjectStringValue(orange, "type", "fruit"));
-    ASSERT_TRUE(CheckObjectStringValue(orange, "skin", "thick"));
-    ASSERT_TRUE(CheckObjectStringValue(orange, "color", "orange"));
+    ASSERT_TRUE(CheckTableHasStringValue(orange, "type", "fruit"));
+    ASSERT_TRUE(CheckTableHasStringValue(orange, "skin", "thick"));
+    ASSERT_TRUE(CheckTableHasStringValue(orange, "color", "orange"));
 }
 
 TEST(Keys, keys12) {
@@ -198,7 +198,7 @@ TEST(Keys, keys12) {
 
     TOML::Node n1 = node.As<TOML::kTable>()->Get("3");
     ASSERT_EQ(n1.As<TOML::kTable>()->size(), 1);
-    ASSERT_TRUE(CheckObjectStringValue(n1, "14159", "pi"));
+    ASSERT_TRUE(CheckTableHasStringValue(n1, "14159", "pi"));
 }
 
 int main(int argc, char *argv[]) {

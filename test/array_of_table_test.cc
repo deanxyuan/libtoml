@@ -5,31 +5,7 @@
 #error "Missing Macro Definition: TEST_CASE_DIR, please check the CMakeLists.txt"
 #endif
 
-bool CheckArrayStringValue(TOML::Node node, int index, const std::string &s) {
-    TOML::Node v = node.As<TOML::kArray>()->At(index);
-    if (v.Type() != TOML::kString) {
-        return false;
-    }
-    return v.As<TOML::kString>()->Value() == s;
-}
-
-bool CheckArrayFloatValue(TOML::Node node, int index, float s) {
-    TOML::Node v = node.As<TOML::kArray>()->At(index);
-    if (v.Type() != TOML::kFloat) {
-        return false;
-    }
-    return v.As<TOML::kFloat>()->Value() == s;
-}
-
-bool CheckArrayIntValue(TOML::Node node, int index, int64_t s) {
-    TOML::Node v = node.As<TOML::kArray>()->At(index);
-    if (v.Type() != TOML::kInteger) {
-        return false;
-    }
-    return v.As<TOML::kInteger>()->Value() == s;
-}
-
-bool CheckObjectStringValue(TOML::Node node, const std::string &key, const std::string &value) {
+bool CheckTableHasStringValue(TOML::Node node, const std::string &key, const std::string &value) {
     TOML::Node v = node.As<TOML::kTable>()->Get(key);
     if (v.Type() != TOML::kString) {
         return false;
@@ -37,7 +13,7 @@ bool CheckObjectStringValue(TOML::Node node, const std::string &key, const std::
     return v.As<TOML::kString>()->Value() == value;
 }
 
-bool CheckObjectIntValue(TOML::Node node, const std::string &key, int64_t value) {
+bool CheckTableHasIntValue(TOML::Node node, const std::string &key, int64_t value) {
     TOML::Node v = node.As<TOML::kTable>()->Get(key);
     if (v.Type() != TOML::kInteger) {
         return false;
@@ -57,8 +33,8 @@ TEST(Array, arrtab1) {
 
     TOML::Node n1 = products.AsArray()->At(0);
     ASSERT_EQ(n1.As<TOML::kTable>()->size(), 2);
-    ASSERT_TRUE(CheckObjectStringValue(n1, "name", "Hammer"));
-    ASSERT_TRUE(CheckObjectIntValue(n1, "sku", 738594937));
+    ASSERT_TRUE(CheckTableHasStringValue(n1, "name", "Hammer"));
+    ASSERT_TRUE(CheckTableHasIntValue(n1, "sku", 738594937));
 
     TOML::Node n2 = products.AsArray()->At(1);
     ASSERT_EQ(n2.Type(), TOML::kTable);
@@ -66,9 +42,9 @@ TEST(Array, arrtab1) {
 
     TOML::Node n3 = products.AsArray()->At(2);
     ASSERT_EQ(n3.As<TOML::kTable>()->size(), 3);
-    ASSERT_TRUE(CheckObjectStringValue(n3, "name", "Nail"));
-    ASSERT_TRUE(CheckObjectIntValue(n3, "sku", 284758393));
-    ASSERT_TRUE(CheckObjectStringValue(n3, "color", "gray"));
+    ASSERT_TRUE(CheckTableHasStringValue(n3, "name", "Nail"));
+    ASSERT_TRUE(CheckTableHasIntValue(n3, "sku", 284758393));
+    ASSERT_TRUE(CheckTableHasStringValue(n3, "color", "gray"));
 }
 
 TEST(Array, arrtab2) {
@@ -83,28 +59,28 @@ TEST(Array, arrtab2) {
 
     TOML::Node n1 = fruits.AsArray()->At(0);
     ASSERT_EQ(n1.As<TOML::kTable>()->size(), 3);
-    ASSERT_TRUE(CheckObjectStringValue(n1, "name", "apple"));
+    ASSERT_TRUE(CheckTableHasStringValue(n1, "name", "apple"));
     TOML::Node physical = n1.AsTable()->Get("physical");
-    ASSERT_TRUE(CheckObjectStringValue(physical, "color", "red"));
-    ASSERT_TRUE(CheckObjectStringValue(physical, "shape", "round"));
+    ASSERT_TRUE(CheckTableHasStringValue(physical, "color", "red"));
+    ASSERT_TRUE(CheckTableHasStringValue(physical, "shape", "round"));
     TOML::Node varieties = n1.AsTable()->Get("varieties");
     ASSERT_EQ(varieties.Type(), TOML::kArray);
     ASSERT_EQ(varieties.As<TOML::kArray>()->size(), 2);
     TOML::Node e1 = varieties.As<TOML::kArray>()->At(0);
     TOML::Node e2 = varieties.As<TOML::kArray>()->At(1);
-    ASSERT_TRUE(CheckObjectStringValue(e1, "name", "red delicious"));
-    ASSERT_TRUE(CheckObjectStringValue(e2, "name", "granny smith"));
+    ASSERT_TRUE(CheckTableHasStringValue(e1, "name", "red delicious"));
+    ASSERT_TRUE(CheckTableHasStringValue(e2, "name", "granny smith"));
 
     TOML::Node n2 = fruits.AsArray()->At(1);
     ASSERT_EQ(n2.Type(), TOML::kTable);
     ASSERT_EQ(n2.AsTable()->size(), 2);
-    ASSERT_TRUE(CheckObjectStringValue(n2, "name", "banana"));
+    ASSERT_TRUE(CheckTableHasStringValue(n2, "name", "banana"));
 
     varieties = n2.AsTable()->Get("varieties");
     ASSERT_EQ(varieties.Type(), TOML::kArray);
     ASSERT_EQ(varieties.As<TOML::kArray>()->size(), 1);
     TOML::Node e3 = varieties.As<TOML::kArray>()->At(0);
-    ASSERT_TRUE(CheckObjectStringValue(e3, "name", "plantain"));
+    ASSERT_TRUE(CheckTableHasStringValue(e3, "name", "plantain"));
 }
 
 TEST(Array, arrtab3) {
@@ -151,23 +127,23 @@ TEST(Array, arrtab7) {
     TOML::Node n1 = points.AsArray()->At(0);
     ASSERT_EQ(n1.Type(), TOML::kTable);
     ASSERT_EQ(n1.As<TOML::kTable>()->size(), 3);
-    ASSERT_TRUE(CheckObjectIntValue(n1, "x", 1));
-    ASSERT_TRUE(CheckObjectIntValue(n1, "y", 2));
-    ASSERT_TRUE(CheckObjectIntValue(n1, "z", 3));
+    ASSERT_TRUE(CheckTableHasIntValue(n1, "x", 1));
+    ASSERT_TRUE(CheckTableHasIntValue(n1, "y", 2));
+    ASSERT_TRUE(CheckTableHasIntValue(n1, "z", 3));
 
     TOML::Node n2 = points.AsArray()->At(1);
     ASSERT_EQ(n2.Type(), TOML::kTable);
     ASSERT_EQ(n2.As<TOML::kTable>()->size(), 3);
-    ASSERT_TRUE(CheckObjectIntValue(n2, "x", 7));
-    ASSERT_TRUE(CheckObjectIntValue(n2, "y", 8));
-    ASSERT_TRUE(CheckObjectIntValue(n2, "z", 9));
+    ASSERT_TRUE(CheckTableHasIntValue(n2, "x", 7));
+    ASSERT_TRUE(CheckTableHasIntValue(n2, "y", 8));
+    ASSERT_TRUE(CheckTableHasIntValue(n2, "z", 9));
 
     TOML::Node n3 = points.AsArray()->At(2);
     ASSERT_EQ(n3.Type(), TOML::kTable);
     ASSERT_EQ(n3.As<TOML::kTable>()->size(), 3);
-    ASSERT_TRUE(CheckObjectIntValue(n3, "x", 2));
-    ASSERT_TRUE(CheckObjectIntValue(n3, "y", 4));
-    ASSERT_TRUE(CheckObjectIntValue(n3, "z", 8));
+    ASSERT_TRUE(CheckTableHasIntValue(n3, "x", 2));
+    ASSERT_TRUE(CheckTableHasIntValue(n3, "y", 4));
+    ASSERT_TRUE(CheckTableHasIntValue(n3, "z", 8));
 }
 
 int main(int argc, char *argv[]) {

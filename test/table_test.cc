@@ -5,7 +5,7 @@
 #error "Missing Macro Definition: TEST_CASE_DIR, please check the CMakeLists.txt"
 #endif
 
-bool CheckObjectStringValue(TOML::Node node, const std::string &key, const std::string &value) {
+bool CheckTableHasStringValue(TOML::Node node, const std::string &key, const std::string &value) {
     TOML::Node v = node.As<TOML::kTable>()->Get(key);
     if (v.Type() != TOML::kString) {
         return false;
@@ -13,7 +13,7 @@ bool CheckObjectStringValue(TOML::Node node, const std::string &key, const std::
     return v.As<TOML::kString>()->Value() == value;
 }
 
-bool CheckObjectIntValue(TOML::Node node, const std::string &key, int64_t value) {
+bool CheckTableHasIntValue(TOML::Node node, const std::string &key, int64_t value) {
     TOML::Node v = node.As<TOML::kTable>()->Get(key);
     if (v.Type() != TOML::kInteger) {
         return false;
@@ -21,7 +21,7 @@ bool CheckObjectIntValue(TOML::Node node, const std::string &key, int64_t value)
     return v.As<TOML::kInteger>()->Value() == value;
 }
 
-bool CheckObjectBoolValue(TOML::Node node, const std::string &key, bool value) {
+bool CheckTableHasBoolValue(TOML::Node node, const std::string &key, bool value) {
     TOML::Node v = node.As<TOML::kTable>()->Get(key);
     if (v.Type() != TOML::kBoolean) {
         return false;
@@ -37,13 +37,13 @@ TEST(Table, tab01) {
     ASSERT_TRUE(node);
     TOML::Node table = node.As<TOML::kTable>()->Get("table-1");
     ASSERT_EQ(table.As<TOML::kTable>()->size(), 2);
-    ASSERT_TRUE(CheckObjectStringValue(table, "key1", "some string"));
-    ASSERT_TRUE(CheckObjectIntValue(table, "key2", 123));
+    ASSERT_TRUE(CheckTableHasStringValue(table, "key1", "some string"));
+    ASSERT_TRUE(CheckTableHasIntValue(table, "key2", 123));
 
     TOML::Node n2 = node.As<TOML::kTable>()->Get("table-2");
     ASSERT_EQ(n2.As<TOML::kTable>()->size(), 2);
-    ASSERT_TRUE(CheckObjectStringValue(n2, "key1", "another string"));
-    ASSERT_TRUE(CheckObjectIntValue(n2, "key2", 456));
+    ASSERT_TRUE(CheckTableHasStringValue(n2, "key1", "another string"));
+    ASSERT_TRUE(CheckTableHasIntValue(n2, "key2", 456));
 }
 
 TEST(Table, tab02) {
@@ -63,7 +63,7 @@ TEST(Table, tab02) {
     ASSERT_EQ(man.As<TOML::kTable>()->size(), 1);
     TOML::Node type = man.As<TOML::kTable>()->Get("type");
     ASSERT_EQ(type.As<TOML::kTable>()->size(), 1);
-    ASSERT_TRUE(CheckObjectStringValue(type, "name", "pug"));
+    ASSERT_TRUE(CheckTableHasStringValue(type, "name", "pug"));
 }
 
 TEST(Table, tab03) {
@@ -169,7 +169,7 @@ TEST(Table, tab08) {
 
     TOML::Node owner = node.As<TOML::kTable>()->Get("owner");
     ASSERT_EQ(owner.As<TOML::kTable>()->size(), 2);
-    ASSERT_TRUE(CheckObjectStringValue(owner, "name", "Regina Dogman"));
+    ASSERT_TRUE(CheckTableHasStringValue(owner, "name", "Regina Dogman"));
     TOML::Node dt = owner.As<TOML::kTable>()->Get("member_since");
     ASSERT_EQ(dt.Type(), TOML::kDateTime);
     ASSERT_EQ(dt.As<TOML::kDateTime>()->RawString(), "1999-08-04");
@@ -190,10 +190,10 @@ TEST(Table, tab09) {
     ASSERT_EQ(fruit.As<TOML::kTable>()->size(), 1);
     TOML::Node y = fruit.As<TOML::kTable>()->Get("apple");
     ASSERT_EQ(y.As<TOML::kTable>()->size(), 2);
-    ASSERT_TRUE(CheckObjectStringValue(y, "color", "red"));
+    ASSERT_TRUE(CheckTableHasStringValue(y, "color", "red"));
     TOML::Node taste = y.As<TOML::kTable>()->Get("taste");
     ASSERT_EQ(taste.As<TOML::kTable>()->size(), 1);
-    ASSERT_TRUE(CheckObjectBoolValue(taste, "sweet", true));
+    ASSERT_TRUE(CheckTableHasBoolValue(taste, "sweet", true));
 }
 TEST(Table, tab10) {
     std::string path = TEST_CASE_DIR "/tab10.toml";
@@ -213,14 +213,14 @@ TEST(Table, tab11) {
     ASSERT_EQ(fruit.As<TOML::kTable>()->size(), 1);
     TOML::Node y = fruit.As<TOML::kTable>()->Get("apple");
     ASSERT_EQ(y.As<TOML::kTable>()->size(), 3);
-    ASSERT_TRUE(CheckObjectStringValue(y, "color", "red"));
+    ASSERT_TRUE(CheckTableHasStringValue(y, "color", "red"));
     TOML::Node taste = y.As<TOML::kTable>()->Get("taste");
     ASSERT_EQ(taste.As<TOML::kTable>()->size(), 1);
-    ASSERT_TRUE(CheckObjectBoolValue(taste, "sweet", true));
+    ASSERT_TRUE(CheckTableHasBoolValue(taste, "sweet", true));
 
     TOML::Node texture = y.As<TOML::kTable>()->Get("texture");
     ASSERT_EQ(texture.As<TOML::kTable>()->size(), 1);
-    ASSERT_TRUE(CheckObjectBoolValue(texture, "smooth", true));
+    ASSERT_TRUE(CheckTableHasBoolValue(texture, "smooth", true));
 }
 
 int main(int argc, char *argv[]) {
