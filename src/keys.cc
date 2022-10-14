@@ -142,8 +142,11 @@ bool Reader::UsingComplexKey() {
         parent = obj;
     }
 
-    assert(parent.Type() == Types::TOML_OBJECT);
     auto key = GetVectorLastElement(current_.key_path);
+    if (parent.Type() != Types::TOML_OBJECT) {
+        desc_ = "internal error (the parent of \"" + key + "\" is not an object)";
+        return false;
+    }
     if (parent.As<kObject>()->Exists(key)) {
         desc_ = "\"" + key + "\" already exists";
         return false;

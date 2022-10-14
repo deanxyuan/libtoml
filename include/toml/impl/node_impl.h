@@ -250,6 +250,7 @@ public:
     std::string ToJSON() const override;
 
     bool Exists(const std::string &key) const;
+    bool ExistsWithType(const std::string &key, Types type) const;
 
 private:
     Object();

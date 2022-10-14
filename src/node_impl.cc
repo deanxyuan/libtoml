@@ -308,6 +308,10 @@ bool Object::Exists(const std::string &key) const {
     auto it = obj_.find(key);
     return (it != obj_.end());
 }
+bool Object::ExistsWithType(const std::string &key, Types type) const {
+    auto it = obj_.find(key);
+    return (it != obj_.end() && it->second.Type() == type);
+}
 
 // ------------------------------
 Array::Array()

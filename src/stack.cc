@@ -18,7 +18,6 @@
 
 #include "src/reader.h"
 #include <string.h>
-#include <iostream>
 #include "src/common.h"
 
 namespace TOML {

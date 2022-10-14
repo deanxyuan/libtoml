@@ -32,7 +32,6 @@ PRIVATE
 target_compile_options(toml
 PRIVATE
     -Wall
-    -g
 )
 
 
@@ -63,6 +62,7 @@ if(LIBTOML_BUILD_TESTS)
     target_compile_options("${test_target_name}"
     PRIVATE
         -fno-access-control
+        -Wall
     )
 
     target_link_libraries("${test_target_name}"

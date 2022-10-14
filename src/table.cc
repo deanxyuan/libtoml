@@ -20,7 +20,6 @@
 #include <assert.h>
 #include <math.h>
 #include <string.h>
-#include <iostream>
 #include "src/common.h"
 
 namespace TOML {
@@ -280,13 +279,18 @@ bool Reader::UsingTableTitleImpl() {
         if (it != array_of_table_map_.end()) {
             // 说明是对表数组的引用
             Node node = it->second;
+            assert(node.Type() == Types::TOML_OBJECT);
             int count = static_cast<int>(current_.title_path.size());
             for (int i = 1; i < count; i++) {
-                assert(node.Type() == Types::TOML_OBJECT);
-                if (node.As<kObject>()->Exists(current_.title_path[i])) {
-                    node = node.As<kObject>()->Get(current_.title_path[i]);
+                Node obj = node.As<kObject>()->Get(current_.title_path[i]);
+                if (obj) {
+                    if (obj.Type() != Types::TOML_OBJECT) {
+                        desc_ = "Node \"" + current_.title_path[i] + "\" definition conflict";
+                        return false;
+                    }
+                    node = obj;
                 } else {
-                    Node obj = Node::CreateObject();
+                    obj = Node::CreateObject();
                     node.As<kObject>()->Insert(current_.title_path[i], obj);
                     node = obj;
                 }
