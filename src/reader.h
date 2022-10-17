@@ -135,8 +135,6 @@ private:
 
 private:
     // string_ or input_
-    bool IsValidCharForRawKey(uint32_t c);
-    bool IsSpaceOrNextLine(uint32_t c);
     uint32_t LastInsertChar();
 
     bool StartsWith(const char *prefix);

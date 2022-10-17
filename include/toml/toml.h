@@ -23,4 +23,5 @@
 #include "toml/impl/node_impl.h"
 #include "toml/impl/reader.h"
 
+#define LIBTOML_VERSION "1.0.1"
 #endif // TOML_TOML_H_

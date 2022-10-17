@@ -238,6 +238,7 @@ public:
     inline bool Inlined() const { return inlined_; }
     inline void SetInlined() { inlined_ = true; }
     inline size_t size() const { return table_.size(); }
+    inline bool empty() const { return table_.empty(); }
     // If the key does not exist,
     // a empty node will be inserted
     // Just like Table[key]=Node();
@@ -276,6 +277,7 @@ public:
     inline Iterator begin() { return array_.begin(); }
     inline Iterator end() { return array_.end(); }
     inline size_t size() const { return array_.size(); }
+    inline bool empty() const { return array_.empty(); }
 
     const Node &operator[](size_t pos) const;
     Node &operator[](size_t pos);

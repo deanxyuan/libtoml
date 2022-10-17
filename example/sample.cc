@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
 
     std::string error_desc;
     //
-    TOML::Node root = TOML::LoadFromData(buff, strlen(buff), &error_desc);
+    TOML::Node root = TOML::LoadFromString(buff, strlen(buff), &error_desc);
     std::cout << "error desc:" << error_desc << std::endl;
 
     // check key exists

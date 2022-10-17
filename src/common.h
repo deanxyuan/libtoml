@@ -61,5 +61,9 @@ int BufferToInt(const char *buff, int len);
 std::string ComplexPathPrefix(const std::vector<std::string> &vec);
 std::string GetVectorLastElement(const std::vector<std::string> &vec);
 
+bool IsValidCharForRawKey(uint32_t c);
+bool IsSpaceOrNextLine(uint32_t c);
+bool IsCharExists(const std::string &target, uint8_t cc);
+bool IsCharExists(const std::string &target, const std::string &sub);
 } // namespace TOML
 #endif // TOML_SRC_COMMON_H_

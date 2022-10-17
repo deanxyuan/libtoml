@@ -56,20 +56,6 @@ uint32_t Reader::LastInsertChar() {
     size_t count = strings_.size();
     return count == 0 ? READ_CHAR_EOF : strings_[count - 1];
 }
-bool Reader::IsValidCharForRawKey(uint32_t c) {
-    if (c == '-' || c == '_' || (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') ||
-        (c >= 'a' && c <= 'z')) {
-        return true;
-    }
-    return false;
-}
-
-bool Reader::IsSpaceOrNextLine(uint32_t c) {
-    if (c == ' ' || c == '\t' || c == '\r' || c == '\n') {
-        return true;
-    }
-    return false;
-}
 
 bool Reader::StartsWith(const char *prefix) {
     size_t prefix_len = strlen(prefix);
@@ -384,12 +370,12 @@ Node LoadFromFile(const std::string &path, std::string *error) {
         return Node();
     }
     file.close();
-    return LoadFromData(buff.get(), file_size, error);
+    return LoadFromString(buff.get(), file_size, error);
 }
 
-Node LoadFromData(const char *data, size_t len, std::string *error) {
+Node LoadFromString(const char *buff, size_t len, std::string *error) {
     Node node;
-    std::string desc = internal::Reader::Parse(data, len, &node);
+    std::string desc = internal::Reader::Parse(buff, len, &node);
     if (error) *error = desc;
     return node;
 }

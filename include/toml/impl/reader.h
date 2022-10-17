@@ -26,8 +26,22 @@
 #include "toml/impl/node_impl.h"
 
 namespace TOML {
+/**
+ * @brief  Load a TOML file.
+ * @param file[in] Path to loaded TOML file
+ * @param error[out] Error description, can be nullptr
+ * @return return empty node if error occurs
+ */
 Node LoadFromFile(const std::string &file, std::string *error);
-Node LoadFromData(const char *data, size_t len, std::string *error);
+
+/**
+ * @brief  Load the TOML string, which cannot contain the terminating null character.
+ * @param buff[in] Pointer to a buffer where the TOML string is stored
+ * @param len[in] Maximum number of bytes to be used in the buff
+ * @param error[out] Error description, can be nullptr
+ * @return return empty node if error occurs
+ */
+Node LoadFromString(const char *buff, size_t len, std::string *error);
 
 } // namespace TOML
 #endif // TOML_IMPL_READER_H_

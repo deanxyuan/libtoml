@@ -176,4 +176,26 @@ std::string GetVectorLastElement(const std::vector<std::string> &vec) {
     if (vec.empty()) return std::string();
     return vec[vec.size() - 1];
 }
+bool IsValidCharForRawKey(uint32_t c) {
+    if (c == '-' || c == '_' || (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') ||
+        (c >= 'a' && c <= 'z')) {
+        return true;
+    }
+    return false;
+}
+bool IsSpaceOrNextLine(uint32_t c) {
+    if (c == ' ' || c == '\t' || c == '\r' || c == '\n') {
+        return true;
+    }
+    return false;
+}
+bool IsCharExists(const std::string &target, uint8_t cc) {
+    auto it = target.find(static_cast<char>(cc));
+    return it != std::string::npos;
+}
+
+bool IsCharExists(const std::string &target, const std::string &sub) {
+    auto it = target.find_first_of(sub);
+    return it != std::string::npos;
+}
 } // namespace TOML
