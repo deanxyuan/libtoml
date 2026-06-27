@@ -18,7 +18,6 @@
 
 #include "toml/value.h"
 #include "toml/error.h"
-#include <cstdio>
 
 namespace TOML {
 
@@ -26,14 +25,12 @@ std::string Error::to_string() const {
     if (ok()) {
         return "";
     }
-    char buf[256];
     if (location.line > 0) {
-        std::snprintf(buf, sizeof(buf), "line %zu, column %zu: %s",
-                       location.line, location.column, message.c_str());
-    } else {
-        std::snprintf(buf, sizeof(buf), "%s", message.c_str());
+        return "line " + std::to_string(location.line) +
+               ", column " + std::to_string(location.column) +
+               ": " + message;
     }
-    return buf;
+    return message;
 }
 
 } // namespace TOML

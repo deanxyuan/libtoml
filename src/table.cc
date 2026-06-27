@@ -18,6 +18,7 @@
 
 #include "toml/table.h"
 #include "toml/value.h"
+#include "src/format_utils.h"
 
 namespace TOML {
 
@@ -87,7 +88,7 @@ std::string Table::to_toml() const {
         if (it != data_.begin()) {
             result += '\n';
         }
-        result += it->first;
+        result += escape_toml_key(it->first);
         result += " = ";
         result += it->second.to_toml();
     }
@@ -103,9 +104,8 @@ std::string Table::to_json() const {
         }
         first = false;
         // JSON key must be a quoted string
-        result += '"';
-        result += pair.first;
-        result += "\": ";
+        result += json_escape_string(pair.first);
+        result += ": ";
         result += pair.second.to_json();
     }
     result += '}';

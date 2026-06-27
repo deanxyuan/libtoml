@@ -19,7 +19,7 @@ set(TOML_SOURCES
     src/lexer.cc
     src/parser.cc
     src/writer.cc
-    src/utf8.cc
+    src/format_utils.cc
 )
 
 add_library(toml STATIC ${TOML_SOURCES})

@@ -17,6 +17,7 @@
  */
 
 #include "toml/value.h"
+#include "src/format_utils.h"
 #include <cmath>
 #include <cstdio>
 #include <limits>
@@ -37,94 +38,6 @@ const char* type_name(Type type) {
     case kArray:     return "array";
     default:         return "unknown";
     }
-}
-
-// ---------------------------------------------------------------------------
-// String escaping helpers
-// ---------------------------------------------------------------------------
-
-static std::string toml_escape_string(const std::string& s) {
-    std::string result;
-    result.reserve(s.size() + 2);
-    result.push_back('"');
-    for (unsigned char c : s) {
-        switch (c) {
-        case '"':  result += "\\\""; break;
-        case '\\': result += "\\\\"; break;
-        case '\b': result += "\\b"; break;
-        case '\f': result += "\\f"; break;
-        case '\n': result += "\\n"; break;
-        case '\r': result += "\\r"; break;
-        case '\t': result += "\\t"; break;
-        case '\0': result += "\\0"; break;
-        default:
-            if (c < 0x20) {
-                char buf[8];
-                std::snprintf(buf, sizeof(buf), "\\u%04x", c);
-                result += buf;
-            } else {
-                result.push_back(static_cast<char>(c));
-            }
-        }
-    }
-    result.push_back('"');
-    return result;
-}
-
-static std::string json_escape_string(const std::string& s) {
-    std::string result;
-    result.reserve(s.size() + 2);
-    result.push_back('"');
-    for (unsigned char c : s) {
-        switch (c) {
-        case '"':  result += "\\\""; break;
-        case '\\': result += "\\\\"; break;
-        case '\b': result += "\\b"; break;
-        case '\f': result += "\\f"; break;
-        case '\n': result += "\\n"; break;
-        case '\r': result += "\\r"; break;
-        case '\t': result += "\\t"; break;
-        default:
-            if (c < 0x20) {
-                char buf[8];
-                std::snprintf(buf, sizeof(buf), "\\u%04x", c);
-                result += buf;
-            } else {
-                result.push_back(static_cast<char>(c));
-            }
-        }
-    }
-    result.push_back('"');
-    return result;
-}
-
-static std::string format_float(double v) {
-    if (!std::isfinite(v)) {
-        if (std::isnan(v))      return "nan";
-        if (v > 0)              return "inf";
-        return "-inf";
-    }
-    std::ostringstream ss;
-    ss.precision(std::numeric_limits<double>::max_digits10);
-    ss << v;
-    std::string s = ss.str();
-    // TOML requires a decimal point or exponent for floats
-    if (s.find('.') == std::string::npos && s.find('e') == std::string::npos &&
-        s.find('E') == std::string::npos) {
-        s += ".0";
-    }
-    return s;
-}
-
-static std::string format_float_json(double v) {
-    if (!std::isfinite(v)) {
-        // JSON has no representation for inf/nan
-        return "null";
-    }
-    std::ostringstream ss;
-    ss.precision(std::numeric_limits<double>::max_digits10);
-    ss << v;
-    return ss.str();
 }
 
 // ---------------------------------------------------------------------------
@@ -383,9 +296,9 @@ std::string Value::to_toml() const {
         return buf;
     }
     case kFloat:
-        return format_float(storage_.float_val);
+        return format_float_toml(storage_.float_val);
     case kString:
-        return toml_escape_string(*storage_.string_val);
+        return escape_toml_string(*storage_.string_val);
     case kDateTime:
         return storage_.datetime_val.to_toml();
     case kArray:

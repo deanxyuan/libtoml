@@ -17,6 +17,7 @@
  */
 
 #include "toml/writer.h"
+#include "src/format_utils.h"
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -43,38 +44,6 @@ std::string to_json(const Value& value) {
 }
 
 // ---------------------------------------------------------------------------
-// String escaping helpers (same as in value.cc)
-// ---------------------------------------------------------------------------
-
-static std::string escape_toml_string(const std::string& s) {
-    std::string result;
-    result.reserve(s.size() + 2);
-    result.push_back('"');
-    for (unsigned char c : s) {
-        switch (c) {
-        case '"':  result += "\\\""; break;
-        case '\\': result += "\\\\"; break;
-        case '\b': result += "\\b"; break;
-        case '\f': result += "\\f"; break;
-        case '\n': result += "\\n"; break;
-        case '\r': result += "\\r"; break;
-        case '\t': result += "\\t"; break;
-        case '\0': result += "\\0"; break;
-        default:
-            if (c < 0x20) {
-                char buf[8];
-                std::snprintf(buf, sizeof(buf), "\\u%04x", c);
-                result += buf;
-            } else {
-                result.push_back(static_cast<char>(c));
-            }
-        }
-    }
-    result.push_back('"');
-    return result;
-}
-
-// ---------------------------------------------------------------------------
 // Number formatting helpers
 // ---------------------------------------------------------------------------
 
@@ -90,48 +59,12 @@ static std::string format_uinteger(uint64_t v) {
     return buf;
 }
 
-static std::string format_float_toml(double v) {
-    if (!std::isfinite(v)) {
-        if (std::isnan(v)) return "nan";
-        if (v > 0) return "inf";
-        return "-inf";
-    }
-    std::ostringstream ss;
-    ss.precision(std::numeric_limits<double>::max_digits10);
-    ss << v;
-    std::string s = ss.str();
-    // TOML requires a decimal point or exponent for floats
-    if (s.find('.') == std::string::npos && s.find('e') == std::string::npos &&
-        s.find('E') == std::string::npos) {
-        s += ".0";
-    }
-    return s;
-}
-
 // ---------------------------------------------------------------------------
 // Helper: make indent string
 // ---------------------------------------------------------------------------
 
 static std::string make_indent(size_t level, const FormatOptions& opts) {
     return std::string(level * opts.indent, opts.indent_char);
-}
-
-// ---------------------------------------------------------------------------
-// Helper: escape a TOML key (bare key or quoted key)
-// ---------------------------------------------------------------------------
-
-static std::string escape_key(const std::string& key) {
-    // Check if key is a valid bare key
-    if (key.empty()) {
-        return escape_toml_string(key);
-    }
-    for (char c : key) {
-        if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
-              (c >= '0' && c <= '9') || c == '-' || c == '_')) {
-            return escape_toml_string(key);
-        }
-    }
-    return key;
 }
 
 // ---------------------------------------------------------------------------
@@ -252,7 +185,7 @@ static void write_toml_inline_table(std::string& out, const Table& table) {
             out += ", ";
         }
         first = false;
-        out += escape_key(pair.first);
+        out += escape_toml_key(pair.first);
         out += " = ";
         const auto& val = pair.second;
         if (val.is_table()) {
@@ -303,7 +236,7 @@ static void write_toml_table_section(std::string& out, const Table& table,
         const auto& val = table.at(key);
         if (is_simple_value(val)) {
             out += indent;
-            out += escape_key(key);
+            out += escape_toml_key(key);
             out += " = ";
             write_toml_simple(out, val);
             out += '\n';
@@ -315,7 +248,7 @@ static void write_toml_table_section(std::string& out, const Table& table,
         const auto& val = table.at(key);
         if (val.is_array() && !array_contains_tables(val.as_array())) {
             out += indent;
-            out += escape_key(key);
+            out += escape_toml_key(key);
             out += " = ";
             write_toml_inline_array(out, val.as_array());
             out += '\n';
@@ -328,7 +261,7 @@ static void write_toml_table_section(std::string& out, const Table& table,
         if (val.is_table() && val.as_table().size() <= 3) {
             // Use inline format for small tables
             out += indent;
-            out += escape_key(key);
+            out += escape_toml_key(key);
             out += " = ";
             write_toml_inline_table(out, val.as_table());
             out += '\n';
@@ -340,8 +273,8 @@ static void write_toml_table_section(std::string& out, const Table& table,
         const auto& val = table.at(key);
         if (val.is_table() && val.as_table().size() > 3) {
             std::string new_prefix = prefix.empty()
-                                         ? escape_key(key)
-                                         : prefix + "." + escape_key(key);
+                                         ? escape_toml_key(key)
+                                         : prefix + "." + escape_toml_key(key);
             out += "\n[";
             out += new_prefix;
             out += "]\n";
@@ -356,8 +289,8 @@ static void write_toml_table_section(std::string& out, const Table& table,
         if (val.is_array() && array_contains_tables(val.as_array())) {
             const auto& arr = val.as_array();
             std::string new_prefix = prefix.empty()
-                                         ? escape_key(key)
-                                         : prefix + "." + escape_key(key);
+                                         ? escape_toml_key(key)
+                                         : prefix + "." + escape_toml_key(key);
             for (size_t i = 0; i < arr.size(); ++i) {
                 if (arr.at(i).is_table()) {
                     out += "\n[[";

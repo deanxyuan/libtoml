@@ -396,12 +396,9 @@ Value Parser::parse_number() {
 
         uint64_t uval = 0;
 
-        bool is_hex = false;
-        bool is_oct_bin = false;
         if (start + 1 < text.size() && text[start] == '0' &&
             (text[start + 1] == 'x' || text[start + 1] == 'X')) {
             // Hex: 0x...
-            is_hex = true;
             for (size_t i = start + 2; i < text.size(); i++) {
                 char c = text[i];
                 if (c == '_')
@@ -420,7 +417,6 @@ Value Parser::parse_number() {
         } else if (start + 1 < text.size() && text[start] == '0' &&
                    (text[start + 1] == 'o' || text[start + 1] == 'O')) {
             // Octal: 0o...
-            is_oct_bin = true;
             for (size_t i = start + 2; i < text.size(); i++) {
                 char c = text[i];
                 if (c == '_')
@@ -432,7 +428,6 @@ Value Parser::parse_number() {
         } else if (start + 1 < text.size() && text[start] == '0' &&
                    (text[start + 1] == 'b' || text[start + 1] == 'B')) {
             // Binary: 0b...
-            is_oct_bin = true;
             for (size_t i = start + 2; i < text.size(); i++) {
                 char c = text[i];
                 if (c == '_')
@@ -459,11 +454,6 @@ Value Parser::parse_number() {
                 return error("integer out of range: " + text);
             return Value(static_cast<int64_t>(-static_cast<int64_t>(uval)));
         }
-
-        // Hex values are always stored as unsigned (commonly used for
-        // bit masks, addresses, etc. where unsigned is natural).
-        if (is_hex)
-            return Value(static_cast<uint64_t>(uval));
 
         if (uval > INT64_MAX)
             return Value(static_cast<uint64_t>(uval));

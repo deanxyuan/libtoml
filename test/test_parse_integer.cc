@@ -61,13 +61,13 @@ TEST(Integer, OtherDecimalInteger) {
     const auto& node = result.value;
 
     const auto& n1 = node.as_table().at("hex1");
-    ASSERT_EQ(n1.as_uinteger(), 0xDEADBEEF);
+    ASSERT_EQ(n1.as_integer(), static_cast<int64_t>(0xDEADBEEF));
 
     const auto& n2 = node.as_table().at("hex2");
-    ASSERT_EQ(n2.as_uinteger(), 0xdeadbeef);
+    ASSERT_EQ(n2.as_integer(), static_cast<int64_t>(0xdeadbeef));
 
     const auto& n3 = node.as_table().at("hex3");
-    ASSERT_EQ(n3.as_uinteger(), 0xdeadbeef);
+    ASSERT_EQ(n3.as_integer(), static_cast<int64_t>(0xdeadbeef));
 
     const auto& n4 = node.as_table().at("oct1");
     ASSERT_EQ(n4.as_integer(), 01234567);

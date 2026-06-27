@@ -444,16 +444,17 @@ Lexer::Token Lexer::lex_basic_string(size_t start_line, size_t start_col) {
                 result += '\\';
                 break;
             case 'u': {
+                size_t old_pos = pos_;
                 if (!decode_unicode_escape(data_, len_, pos_, 4, result))
                     return error_token("invalid unicode escape", start_line, start_col);
-                // update column tracking (advance() doesn't handle raw pos_ increments)
-                column_ += 4;
+                column_ += (pos_ - old_pos);
                 break;
             }
             case 'U': {
+                size_t old_pos = pos_;
                 if (!decode_unicode_escape(data_, len_, pos_, 8, result))
                     return error_token("invalid unicode escape", start_line, start_col);
-                column_ += 8;
+                column_ += (pos_ - old_pos);
                 break;
             }
             default:
@@ -462,6 +463,16 @@ Lexer::Token Lexer::lex_basic_string(size_t start_line, size_t start_col) {
         } else if (c == '\n' || c == '\r') {
             return error_token("basic string cannot contain newline", start_line, start_col);
         } else {
+            char ch = peek_char();
+            if (ch >= 0x00 && ch <= 0x08) {
+                return error_token("basic string contains illegal control character", start_line, start_col);
+            }
+            if (ch == 0x0B || ch == 0x0C) {
+                return error_token("basic string contains illegal control character", start_line, start_col);
+            }
+            if (ch >= 0x0E && ch <= 0x1F) {
+                return error_token("basic string contains illegal control character", start_line, start_col);
+            }
             result += advance();
         }
     }
@@ -569,21 +580,27 @@ Lexer::Token Lexer::lex_multi_line_basic_string(size_t start_line, size_t start_
                 result += '\\';
                 break;
             case 'u': {
+                size_t old_pos = pos_;
                 if (!decode_unicode_escape(data_, len_, pos_, 4, result))
                     return error_token("invalid unicode escape", start_line, start_col);
-                column_ += 4;
+                column_ += (pos_ - old_pos);
                 break;
             }
             case 'U': {
+                size_t old_pos = pos_;
                 if (!decode_unicode_escape(data_, len_, pos_, 8, result))
                     return error_token("invalid unicode escape", start_line, start_col);
-                column_ += 8;
+                column_ += (pos_ - old_pos);
                 break;
             }
             default:
                 return error_token("invalid escape character", start_line, start_col);
             }
         } else {
+            char ch = peek_char();
+            if ((ch >= 0x00 && ch <= 0x08) || ch == 0x0B || ch == 0x0C || (ch >= 0x0E && ch <= 0x1F)) {
+                return error_token("basic string contains illegal control character", start_line, start_col);
+            }
             result += advance();
         }
     }

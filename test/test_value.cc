@@ -65,12 +65,14 @@ TEST(Value, IntegerValue) {
 
 TEST(Value, UIntegerValue) {
     TOML::Value v(static_cast<uint64_t>(123));
-    ASSERT_TRUE(v.is_integer());
+    ASSERT_TRUE(v.is_uinteger());
+    ASSERT_FALSE(v.is_integer());
     ASSERT_EQ(v.type(), TOML::kUInteger);
     ASSERT_EQ(v.as_uinteger(), 123u);
 
     TOML::Value v_max(std::numeric_limits<uint64_t>::max());
-    ASSERT_TRUE(v_max.is_integer());
+    ASSERT_TRUE(v_max.is_uinteger());
+    ASSERT_FALSE(v_max.is_integer());
     ASSERT_EQ(v_max.as_uinteger(), std::numeric_limits<uint64_t>::max());
 }
 

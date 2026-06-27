@@ -57,9 +57,8 @@ public:
     Type type() const { return type_; }
     bool is_null() const { return type_ == kNull; }
     bool is_boolean() const { return type_ == kBoolean; }
-    bool is_integer() const {
-        return type_ == kInteger || type_ == kUInteger;
-    }
+    bool is_integer() const { return type_ == kInteger; }
+    bool is_uinteger() const { return type_ == kUInteger; }
     bool is_float() const { return type_ == kFloat; }
     bool is_string() const { return type_ == kString; }
     bool is_datetime() const { return type_ == kDateTime; }
