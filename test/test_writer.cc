@@ -230,10 +230,10 @@ ratio = 3.14
 
     // Verify values survive the round trip
     const auto& tbl = result2.value.as_table();
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(tbl, "name", "test"));
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(tbl, "port", 8080));
-    ASSERT_TRUE(testutil::CheckTableHasBoolValue(tbl, "enabled", true));
-    ASSERT_TRUE(testutil::CheckTableHasFloatValue(tbl, "ratio", 3.14));
+    ASSERT_TRUE(test::CheckTableHasStringValue(tbl, "name", "test"));
+    ASSERT_TRUE(test::CheckTableHasIntValue(tbl, "port", 8080));
+    ASSERT_TRUE(test::CheckTableHasBoolValue(tbl, "enabled", true));
+    ASSERT_TRUE(test::CheckTableHasFloatValue(tbl, "ratio", 3.14));
 }
 
 TEST(Writer, RoundTripArray) {
@@ -307,10 +307,10 @@ timeout = 30
     ASSERT_TRUE(r2.ok()) << "Round-trip parse failed: " << r2.error.to_string();
 
     const auto& server = r2.value.as_table().at("server").as_table();
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(server, "host", "localhost"));
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(server, "port", 8080));
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(server, "protocol", "https"));
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(server, "timeout", 30));
+    ASSERT_TRUE(test::CheckTableHasStringValue(server, "host", "localhost"));
+    ASSERT_TRUE(test::CheckTableHasIntValue(server, "port", 8080));
+    ASSERT_TRUE(test::CheckTableHasStringValue(server, "protocol", "https"));
+    ASSERT_TRUE(test::CheckTableHasIntValue(server, "timeout", 30));
 }
 
 TEST(Writer, RoundTripArrayOfTables) {
@@ -336,10 +336,10 @@ color = "yellow"
 
     const auto& fruits = r2.value.as_table().at("fruits").as_array();
     ASSERT_EQ(fruits.size(), 2u);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(fruits.at(0).as_table(), "name", "apple"));
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(fruits.at(0).as_table(), "color", "red"));
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(fruits.at(1).as_table(), "name", "banana"));
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(fruits.at(1).as_table(), "color", "yellow"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(fruits.at(0).as_table(), "name", "apple"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(fruits.at(0).as_table(), "color", "red"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(fruits.at(1).as_table(), "name", "banana"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(fruits.at(1).as_table(), "color", "yellow"));
 }
 
 TEST(Writer, RoundTripCompound) {
@@ -372,10 +372,10 @@ value = "second"
     ASSERT_TRUE(r2.ok()) << "Round-trip parse failed: " << r2.error.to_string();
 
     const auto& tbl = r2.value.as_table();
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(tbl, "title", "Test"));
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(tbl, "count", 42));
-    ASSERT_TRUE(testutil::CheckTableHasFloatValue(tbl, "ratio", 2.5));
-    ASSERT_TRUE(testutil::CheckTableHasBoolValue(tbl, "enabled", true));
+    ASSERT_TRUE(test::CheckTableHasStringValue(tbl, "title", "Test"));
+    ASSERT_TRUE(test::CheckTableHasIntValue(tbl, "count", 42));
+    ASSERT_TRUE(test::CheckTableHasFloatValue(tbl, "ratio", 2.5));
+    ASSERT_TRUE(test::CheckTableHasBoolValue(tbl, "enabled", true));
 
     const auto& tags = tbl.at("tags").as_array();
     ASSERT_EQ(tags.size(), 3u);
@@ -384,14 +384,14 @@ value = "second"
     ASSERT_EQ(tags.at(2).as_string(), "c");
 
     const auto& owner = tbl.at("owner").as_table();
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(owner, "name", "Admin"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(owner, "name", "Admin"));
 
     const auto& items = tbl.at("items").as_array();
     ASSERT_EQ(items.size(), 2u);
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(items.at(0).as_table(), "id", 1));
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(items.at(0).as_table(), "value", "first"));
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(items.at(1).as_table(), "id", 2));
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(items.at(1).as_table(), "value", "second"));
+    ASSERT_TRUE(test::CheckTableHasIntValue(items.at(0).as_table(), "id", 1));
+    ASSERT_TRUE(test::CheckTableHasStringValue(items.at(0).as_table(), "value", "first"));
+    ASSERT_TRUE(test::CheckTableHasIntValue(items.at(1).as_table(), "id", 2));
+    ASSERT_TRUE(test::CheckTableHasStringValue(items.at(1).as_table(), "value", "second"));
 }
 
 RUN_ALL_TESTS()

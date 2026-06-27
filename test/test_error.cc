@@ -20,7 +20,7 @@
 
 TEST(Error, DuplicateKey) {
     std::string input = "\nkey = 1\nkey = 2\n";
-    auto error = testutil::ParseExpectFail(input);
+    auto error = test::ParseExpectFail(input);
     ASSERT_FALSE(error.ok());
     ASSERT_EQ(error.location.line, 3u);
     ASSERT_EQ(error.location.column, 8u);
@@ -35,7 +35,7 @@ TEST(Error, DuplicateKey) {
 
 TEST(Error, SyntaxError) {
     std::string input = "name = \"valid\"\nbroken !!! syntax\n";
-    auto error = testutil::ParseExpectFail(input);
+    auto error = test::ParseExpectFail(input);
     ASSERT_FALSE(error.ok());
     ASSERT_EQ(error.location.line, 2u);
     ASSERT_EQ(error.location.column, 8u);
@@ -46,7 +46,7 @@ TEST(Error, SyntaxError) {
 
 TEST(Error, MissingValue) {
     std::string input = "key = ";
-    auto error = testutil::ParseExpectFail(input);
+    auto error = test::ParseExpectFail(input);
     ASSERT_FALSE(error.ok());
     ASSERT_EQ(error.location.line, 1u);
     ASSERT_EQ(error.location.column, 7u);
@@ -56,7 +56,7 @@ TEST(Error, MissingValue) {
 
 TEST(Error, UnclosedBracket) {
     std::string input = "arr = [1, 2, 3";
-    auto error = testutil::ParseExpectFail(input);
+    auto error = test::ParseExpectFail(input);
     ASSERT_FALSE(error.ok());
     ASSERT_EQ(error.location.line, 1u);
     ASSERT_EQ(error.location.column, 15u);
@@ -66,7 +66,7 @@ TEST(Error, UnclosedBracket) {
 
 TEST(Error, InvalidValue) {
     std::string input = "key = !!!";
-    auto error = testutil::ParseExpectFail(input);
+    auto error = test::ParseExpectFail(input);
     ASSERT_FALSE(error.ok());
     ASSERT_EQ(error.location.line, 1u);
     ASSERT_EQ(error.location.column, 7u);
@@ -75,7 +75,7 @@ TEST(Error, InvalidValue) {
 
 TEST(Error, EmptyKey) {
     std::string input = "= 42";
-    auto error = testutil::ParseExpectFail(input);
+    auto error = test::ParseExpectFail(input);
     ASSERT_FALSE(error.ok());
     ASSERT_EQ(error.location.line, 1u);
     ASSERT_EQ(error.location.column, 2u);
@@ -97,7 +97,7 @@ TEST(Error, SuccessState) {
 TEST(Error, ToStringFormat) {
     // to_string should produce "line N, column M: message" format
     std::string input = "key = !!!";
-    auto error = testutil::ParseExpectFail(input);
+    auto error = test::ParseExpectFail(input);
     std::string str = error.to_string();
     ASSERT_TRUE(str.find("line 1") != std::string::npos);
     ASSERT_TRUE(str.find("column 7") != std::string::npos);

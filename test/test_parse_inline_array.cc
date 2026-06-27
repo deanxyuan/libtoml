@@ -33,11 +33,11 @@ TEST(InlineTable, array_of_tables) {
     ASSERT_EQ(x.as_array().size(), 2);
     const auto& N1 = x.as_array().at(0);
     ASSERT_TRUE(N1.is_table());
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(N1.as_table(), "a", 1));
+    ASSERT_TRUE(test::CheckTableHasIntValue(N1.as_table(), "a", 1));
 
     const auto& N2 = x.as_array().at(1);
     ASSERT_TRUE(N2.is_table());
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(N2.as_table(), "a", 2));
+    ASSERT_TRUE(test::CheckTableHasIntValue(N2.as_table(), "a", 2));
 }
 
 TEST(InlineTable, inline_array) {
@@ -48,9 +48,9 @@ TEST(InlineTable, inline_array) {
     const auto& x = node.as_table().at("x");
     ASSERT_TRUE(x.is_array());
     ASSERT_EQ(x.as_array().size(), 3);
-    ASSERT_TRUE(testutil::CheckArrayHasIntValue(x.as_array(), 0, 1));
-    ASSERT_TRUE(testutil::CheckArrayHasIntValue(x.as_array(), 1, 2));
-    ASSERT_TRUE(testutil::CheckArrayHasIntValue(x.as_array(), 2, 3));
+    ASSERT_TRUE(test::CheckArrayHasIntValue(x.as_array(), 0, 1));
+    ASSERT_TRUE(test::CheckArrayHasIntValue(x.as_array(), 1, 2));
+    ASSERT_TRUE(test::CheckArrayHasIntValue(x.as_array(), 2, 3));
 }
 
 

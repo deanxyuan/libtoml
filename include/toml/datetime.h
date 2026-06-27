@@ -29,9 +29,9 @@ struct DateTime {
     uint8_t month = 0, day = 0;
     uint8_t hour = 0, minute = 0, second = 0;
     uint32_t microsecond = 0;
-    uint8_t microsecond_digits = 0; // 原始小数位数（用于 to_string 保留精度）
-    char time_separator = 'T';      // 原始分隔符：'T' 或 ' '
-    int32_t utc_offset = 0; // 秒数，0 表示未设置
+    uint8_t microsecond_digits = 0; // original decimal digits (preserves precision in to_string)
+    char time_separator = 'T';      // original separator: 'T' or ' '
+    int32_t utc_offset = 0; // seconds, 0 means not set
 
     enum Fields : uint16_t {
         kNone        = 0,

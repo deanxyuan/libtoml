@@ -72,9 +72,9 @@ std::string DateTime::to_string() const {
     if (has_microsecond() && microsecond > 0) {
         char buf[16];
         int digits = microsecond_digits > 0 && microsecond_digits <= 6 ? microsecond_digits : 6;
-        // 去掉尾部的零，但保留至少 digits 位
+        // Strip trailing zeros but keep at least 'digits' places
         uint32_t us = microsecond;
-        // 根据原始位数截取
+        // Truncate to original digit count
         for (int i = 6; i > digits; i--)
             us /= 10;
         std::snprintf(buf, sizeof(buf), ".%0*u", digits, us);
@@ -90,7 +90,7 @@ std::string DateTime::to_string() const {
 }
 
 std::string DateTime::to_toml() const {
-    // Same format as to_string() — TOML datetime literals are ISO 8601
+    // Same format as to_string() -- TOML datetime literals are ISO 8601
     return to_string();
 }
 

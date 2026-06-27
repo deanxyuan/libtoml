@@ -26,12 +26,12 @@ namespace utf8 {
 // ---- helpers ----
 
 bool is_valid_codepoint(uint32_t codepoint) {
-    // Unicode 最大有效码点是 U+10FFFF
+    // Maximum valid Unicode codepoint is U+10FFFF
     return codepoint <= 0x10FFFF;
 }
 
 bool is_scalar(uint32_t codepoint) {
-    // 代理对范围 U+D800..U+DFFF 不是标量值
+    // Surrogate range U+D800..U+DFFF are not scalar values
     return codepoint <= 0x10FFFF && (codepoint < 0xD800 || codepoint > 0xDFFF);
 }
 
@@ -45,21 +45,21 @@ size_t sequence_length(char first_byte) {
         return 3; // 1110xxxx
     if ((b & 0xF8) == 0xF0)
         return 4; // 11110xxx
-    return 0;     // 无效的首字节
+    return 0;     // invalid first byte
 }
 
 // ---- encode ----
 
 size_t encode(uint32_t codepoint, char* buf) {
     if (codepoint <= 0x7F) {
-        // 1 字节: 0xxxxxxx
+        // 1 byte: 0xxxxxxx
         if (buf) {
             buf[0] = static_cast<char>(codepoint);
         }
         return 1;
     }
     if (codepoint <= 0x7FF) {
-        // 2 字节: 110xxxxx 10xxxxxx
+        // 2 bytes: 110xxxxx 10xxxxxx
         if (buf) {
             buf[0] = static_cast<char>(0xC0 | (codepoint >> 6));
             buf[1] = static_cast<char>(0x80 | (codepoint & 0x3F));
@@ -67,7 +67,7 @@ size_t encode(uint32_t codepoint, char* buf) {
         return 2;
     }
     if (codepoint <= 0xFFFF) {
-        // 3 字节: 1110xxxx 10xxxxxx 10xxxxxx
+        // 3 bytes: 1110xxxx 10xxxxxx 10xxxxxx
         if (buf) {
             buf[0] = static_cast<char>(0xE0 | (codepoint >> 12));
             buf[1] = static_cast<char>(0x80 | ((codepoint >> 6) & 0x3F));
@@ -76,7 +76,7 @@ size_t encode(uint32_t codepoint, char* buf) {
         return 3;
     }
     if (codepoint <= 0x10FFFF) {
-        // 4 字节: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+        // 4 bytes: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
         if (buf) {
             buf[0] = static_cast<char>(0xF0 | (codepoint >> 18));
             buf[1] = static_cast<char>(0x80 | ((codepoint >> 12) & 0x3F));
@@ -85,7 +85,7 @@ size_t encode(uint32_t codepoint, char* buf) {
         }
         return 4;
     }
-    // 无效码点
+    // Invalid codepoint
     return 0;
 }
 
@@ -102,13 +102,13 @@ DecodeResult decode(const char* data, size_t len) {
     size_t seq_len = sequence_length(data[0]);
 
     if (seq_len == 0) {
-        return result; // 无效的首字节
+        return result; // invalid first byte
     }
     if (seq_len > len) {
-        return result; // 数据不足
+        return result; // not enough data
     }
 
-    // 验证后续字节格式: 每个必须是 10xxxxxx
+    // Validate continuation bytes: each must be 10xxxxxx
     for (size_t i = 1; i < seq_len; ++i) {
         if ((static_cast<uint8_t>(data[i]) & 0xC0) != 0x80) {
             return result;
@@ -136,11 +136,11 @@ DecodeResult decode(const char* data, size_t len) {
         codepoint = (codepoint << 6) | (static_cast<uint8_t>(data[i]) & 0x3F);
     }
 
-    // 检查过长编码 (overlong encoding)
-    // 1 字节: U+0000..U+007F
-    // 2 字节: U+0080..U+07FF
-    // 3 字节: U+0800..U+FFFF
-    // 4 字节: U+10000..U+10FFFF
+    // Check for overlong encoding
+    // 1 byte:  U+0000..U+007F
+    // 2 bytes: U+0080..U+07FF
+    // 3 bytes: U+0800..U+FFFF
+    // 4 bytes: U+10000..U+10FFFF
     switch (seq_len) {
     case 2:
         if (codepoint < 0x80)
@@ -156,7 +156,7 @@ DecodeResult decode(const char* data, size_t len) {
         break;
     }
 
-    // 检查代理对 (U+D800..U+DFFF)
+    // Check for surrogate pairs (U+D800..U+DFFF)
     if (!is_scalar(codepoint)) {
         return result;
     }

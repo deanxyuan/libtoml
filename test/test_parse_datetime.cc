@@ -169,7 +169,7 @@ TEST(DateTime, Time) {
 
 // ===== Negative tests: invalid datetime ranges =====
 // NOTE: Current parser does not validate datetime ranges.
-// These tests document actual behavior — invalid values are accepted.
+// These tests document actual behavior -- invalid values are accepted.
 
 TEST(DateTime, InvalidMonthZero) {
     // Month 0 is invalid per RFC 3339, but current parser accepts it

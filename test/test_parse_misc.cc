@@ -45,14 +45,14 @@ TEST(Misc, CommentOnlyDocument) {
 
 TEST(Misc, Utf8BOM) {
     // UTF-8 BOM (0xEF 0xBB 0xBF) at start of file should be handled.
-    // Current parser rejects it — documents actual behavior.
+    // Current parser rejects it -- documents actual behavior.
     std::string input = std::string("\xef\xbb\xbf") + "key = 42";
     auto r = TOML::parse_string(input);
     ASSERT_FALSE(r.ok()) << "UTF-8 BOM should be rejected";
 }
 
 TEST(Misc, TrailingContentAfterValue) {
-    // "key = 42 extra" should fail — extra tokens after value
+    // "key = 42 extra" should fail -- extra tokens after value
     auto r = TOML::parse_string("key = 42 extra");
     ASSERT_FALSE(r.ok());
 }

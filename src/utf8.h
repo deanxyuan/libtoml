@@ -26,34 +26,34 @@
 namespace TOML {
 namespace utf8 {
 
-// 将 Unicode 码点编码为 UTF-8，返回编码后的字节数
-// 如果 buf 为 nullptr，只计算所需字节数
+// Encode a Unicode codepoint to UTF-8, returns the number of bytes written.
+// If buf is nullptr, only calculates the required byte count.
 size_t encode(uint32_t codepoint, char* buf);
 
-// 解码 UTF-8 序列，返回码点和消耗的字节数
-// 如果无效，codepoint 为 0，consumed 为 0
+// Decode a UTF-8 sequence, returns the codepoint and number of bytes consumed.
+// On failure, codepoint is 0 and consumed is 0.
 struct DecodeResult {
     uint32_t codepoint;
     size_t consumed;
 };
 DecodeResult decode(const char* data, size_t len);
 
-// 验证 UTF-8 字符串
+// Validate a UTF-8 string.
 bool validate(const char* data, size_t len);
 bool validate(const std::string& str);
 
-// 检查码点是否是有效的 Unicode 码点
+// Check if a codepoint is a valid Unicode codepoint.
 bool is_valid_codepoint(uint32_t codepoint);
 
-// 检查码点是否是标量值（非代理对）
+// Check if a codepoint is a scalar value (not a surrogate pair).
 bool is_scalar(uint32_t codepoint);
 
-// 获取 UTF-8 序列长度（根据首字节）
+// Get the UTF-8 sequence length from the first byte.
 size_t sequence_length(char first_byte);
 
-// 将 \uXXXX 或 \UXXXXXXXX 转义序列转换为 UTF-8 字符串
-// 返回 true 表示成功，result 包含 UTF-8 字节
-// 返回 false 表示无效的码点
+// Convert a \uXXXX or \UXXXXXXXX escape sequence to a UTF-8 string.
+// Returns true on success, result contains the UTF-8 bytes.
+// Returns false if the codepoint is invalid.
 bool escape_to_utf8(uint32_t codepoint, std::string& result);
 
 } // namespace utf8

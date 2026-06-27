@@ -156,8 +156,8 @@ TEST(Value, TableValue) {
     ASSERT_EQ(v.type(), TOML::kTable);
     const auto& result = v.as_table();
     ASSERT_EQ(result.size(), 2u);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(result, "name", "Alice"));
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(result, "age", 30));
+    ASSERT_TRUE(test::CheckTableHasStringValue(result, "name", "Alice"));
+    ASSERT_TRUE(test::CheckTableHasIntValue(result, "age", 30));
 }
 
 TEST(Value, TypeMismatchThrows) {

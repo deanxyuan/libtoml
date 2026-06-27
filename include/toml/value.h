@@ -31,12 +31,12 @@ namespace TOML {
 
 class Value {
 public:
-    // 构造函数
+    // Constructors
     Value();                          // null
     Value(bool v);
-    Value(int v);                     // kInteger (消除 int 到 int64_t 的歧义)
+    Value(int v);                     // kInteger (resolves ambiguity from int to int64_t)
     Value(int64_t v);                 // kInteger
-    Value(unsigned int v);            // kUInteger (消除 unsigned int 到 uint64_t 的歧义)
+    Value(unsigned int v);            // kUInteger (resolves ambiguity from unsigned int to uint64_t)
     Value(uint64_t v);                // kUInteger
     Value(double v);
     Value(const char* v);
@@ -45,7 +45,7 @@ public:
     Value(Array v);
     Value(Table v);
 
-    // 拷贝和移动
+    // Copy and move
     Value(const Value& other);
     Value(Value&& other) noexcept;
     Value& operator=(const Value& other);
@@ -53,7 +53,7 @@ public:
 
     ~Value();
 
-    // 类型查询
+    // Type queries
     Type type() const { return type_; }
     bool is_null() const { return type_ == kNull; }
     bool is_boolean() const { return type_ == kBoolean; }
@@ -65,7 +65,7 @@ public:
     bool is_table() const { return type_ == kTable; }
     bool is_array() const { return type_ == kArray; }
 
-    // 类型安全访问（抛 bad_value_access on mismatch）
+    // Type-safe access (throws bad_value_access on mismatch)
     bool as_bool() const;
     int64_t as_integer() const;
     uint64_t as_uinteger() const;
@@ -75,15 +75,15 @@ public:
     const Table& as_table() const;
     const Array& as_array() const;
 
-    // 可变访问
+    // Mutable access
     Table& as_table_mut();
     Array& as_array_mut();
 
-    // 序列化
+    // Serialization
     std::string to_toml() const;
     std::string to_json() const;
 
-    // 显式布尔转换（用于条件判断）
+    // Explicit bool conversion (for conditional checks)
     explicit operator bool() const { return !is_null(); }
 
 private:
@@ -107,7 +107,7 @@ private:
     } storage_;
 };
 
-// 类型检查异常
+// Type-checking exception
 class bad_value_access : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;

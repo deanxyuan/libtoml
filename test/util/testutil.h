@@ -268,18 +268,4 @@ inline TOML::Error ParseExpectFail(const std::string& str) {
 
 } // namespace test
 
-// 兼容旧代码中的 testutil:: 命名空间
-namespace testutil {
-    using test::CheckTableHasStringValue;
-    using test::CheckTableString;
-    using test::CheckTableHasIntValue;
-    using test::CheckTableHasBoolValue;
-    using test::CheckTableHasFloatValue;
-    using test::CheckArrayHasStringValue;
-    using test::CheckArrayHasIntValue;
-    using test::ParseOrFail;
-    using test::ParseFileOrFail;
-    using test::ParseExpectFail;
-} // namespace testutil
-
 #endif // TOML_TESTUTIL_H_

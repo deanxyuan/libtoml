@@ -82,8 +82,8 @@ TEST(Keys, keys04) {
     // physical.shape = "round"
     const auto& physical = node.as_table().at("physical");
     ASSERT_EQ(physical.as_table().size(), 2);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(physical.as_table(), "color", "orange"));
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(physical.as_table(), "shape", "round"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(physical.as_table(), "color", "orange"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(physical.as_table(), "shape", "round"));
 
     // site."google.com" = true
     const auto& site = node.as_table().at("site");
@@ -101,9 +101,9 @@ TEST(Keys, keys05) {
 
     const auto& fruit = node.as_table().at("fruit");
     ASSERT_EQ(fruit.as_table().size(), 3);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(fruit.as_table(), "color", "yellow"));
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(fruit.as_table(), "name", "banana"));
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(fruit.as_table(), "flavor", "banana"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(fruit.as_table(), "color", "yellow"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(fruit.as_table(), "name", "banana"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(fruit.as_table(), "flavor", "banana"));
 }
 
 TEST(Keys, keys06) {
@@ -126,7 +126,7 @@ TEST(Keys, keys08) {
 
     const auto& fruit = node.as_table().at("fruit");
     ASSERT_EQ(fruit.as_table().size(), 2);
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(fruit.as_table(), "orange", 2));
+    ASSERT_TRUE(test::CheckTableHasIntValue(fruit.as_table(), "orange", 2));
     const auto& apple  = fruit.as_table().at("apple");
     const auto& smooth = apple.as_table().at("smooth");
     ASSERT_TRUE(smooth.is_boolean());
@@ -147,15 +147,15 @@ TEST(Keys, keys10) {
 
     const auto& apple = node.as_table().at("apple");
     ASSERT_EQ(apple.as_table().size(), 3);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(apple.as_table(), "type", "fruit"));
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(apple.as_table(), "skin", "thin"));
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(apple.as_table(), "color", "red"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(apple.as_table(), "type", "fruit"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(apple.as_table(), "skin", "thin"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(apple.as_table(), "color", "red"));
 
     const auto& orange = node.as_table().at("orange");
     ASSERT_EQ(orange.as_table().size(), 3);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(orange.as_table(), "type", "fruit"));
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(orange.as_table(), "skin", "thick"));
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(orange.as_table(), "color", "orange"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(orange.as_table(), "type", "fruit"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(orange.as_table(), "skin", "thick"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(orange.as_table(), "color", "orange"));
 }
 
 TEST(Keys, keys11) {
@@ -166,15 +166,15 @@ TEST(Keys, keys11) {
 
     const auto& apple = node.as_table().at("apple");
     ASSERT_EQ(apple.as_table().size(), 3);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(apple.as_table(), "type", "fruit"));
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(apple.as_table(), "skin", "thin"));
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(apple.as_table(), "color", "red"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(apple.as_table(), "type", "fruit"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(apple.as_table(), "skin", "thin"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(apple.as_table(), "color", "red"));
 
     const auto& orange = node.as_table().at("orange");
     ASSERT_EQ(orange.as_table().size(), 3);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(orange.as_table(), "type", "fruit"));
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(orange.as_table(), "skin", "thick"));
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(orange.as_table(), "color", "orange"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(orange.as_table(), "type", "fruit"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(orange.as_table(), "skin", "thick"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(orange.as_table(), "color", "orange"));
 }
 
 TEST(Keys, keys12) {
@@ -185,7 +185,7 @@ TEST(Keys, keys12) {
 
     const auto& n1 = node.as_table().at("3");
     ASSERT_EQ(n1.as_table().size(), 1);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(n1.as_table(), "14159", "pi"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(n1.as_table(), "14159", "pi"));
 }
 
 

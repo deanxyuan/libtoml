@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(LIBTOML_BUILD_TESTS "Build libtoml's unit tests" ON)
-option(LIBTOML_BUILD_EXAMPLE "Build libtoml's example" ON)
+option(LIBTOML_BUILD_EXAMPLES "Build libtoml's examples" ON)
 
 # 显式源文件列表
 set(TOML_SOURCES
@@ -118,11 +118,18 @@ if(LIBTOML_BUILD_TESTS)
 endif()
 
 # 示例
-if(LIBTOML_BUILD_EXAMPLE)
-    add_executable(sample example/sample.cc)
-    target_include_directories(sample PRIVATE ${PROJECT_SOURCE_DIR}/include)
-    target_compile_options(sample PRIVATE
+if(LIBTOML_BUILD_EXAMPLES)
+    add_executable(reader examples/reader.cc)
+    target_include_directories(reader PRIVATE ${PROJECT_SOURCE_DIR}/include)
+    target_compile_options(reader PRIVATE
         $<$<CXX_COMPILER_ID:MSVC>:/utf-8>
     )
-    target_link_libraries(sample PRIVATE toml)
+    target_link_libraries(reader PRIVATE toml)
+
+    add_executable(writer examples/writer.cc)
+    target_include_directories(writer PRIVATE ${PROJECT_SOURCE_DIR}/include)
+    target_compile_options(writer PRIVATE
+        $<$<CXX_COMPILER_ID:MSVC>:/utf-8>
+    )
+    target_link_libraries(writer PRIVATE toml)
 endif()

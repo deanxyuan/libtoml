@@ -109,7 +109,7 @@ ParseResult Parser::parse(const char* data, size_t len) {
                 if (!error_.ok())
                     return ParseResult{Value(), error_};
 
-                // Navigate again to re-acquire parent pointer —
+                // Navigate again to re-acquire parent pointer --
                 // parse_key_value_pairs may have modified root via
                 // navigate_to_subtable calls that caused rehash.
                 parent = navigate_to_subtable(&root, keys, true);
@@ -163,7 +163,7 @@ ParseResult Parser::parse(const char* data, size_t len) {
                         // cannot be redefined by a [table] header.
                         if (v.as_table().is_from_dotted_key()) {
                             error("cannot redefine table [" + header_path +
-                                  "] — it was implicitly created by a dotted key");
+                                  "] -- it was implicitly created by a dotted key");
                             return ParseResult{Value(), error_};
                         }
                         parse_key_value_pairs(v.as_table_mut());

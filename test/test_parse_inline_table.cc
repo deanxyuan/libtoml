@@ -30,8 +30,8 @@ TEST(InlineTable, inline_table) {
     const auto& node = result.value;
     const auto& x = node.as_table().at("x");
     ASSERT_EQ(x.as_table().size(), 2);
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(x.as_table(), "a", 1));
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(x.as_table(), "b", 2));
+    ASSERT_TRUE(test::CheckTableHasIntValue(x.as_table(), "a", 1));
+    ASSERT_TRUE(test::CheckTableHasIntValue(x.as_table(), "b", 2));
 }
 
 TEST(InlineTable, inlinetab1) {
@@ -41,20 +41,20 @@ TEST(InlineTable, inlinetab1) {
     const auto& node = result.value;
     const auto& name = node.as_table().at("name");
     ASSERT_EQ(name.as_table().size(), 2);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(name.as_table(), "first", "Tom"));
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(name.as_table(), "last", "Preston-Werner"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(name.as_table(), "first", "Tom"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(name.as_table(), "last", "Preston-Werner"));
 
     const auto& point = node.as_table().at("point");
     ASSERT_EQ(point.as_table().size(), 2);
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(point.as_table(), "x", 1));
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(point.as_table(), "y", 2));
+    ASSERT_TRUE(test::CheckTableHasIntValue(point.as_table(), "x", 1));
+    ASSERT_TRUE(test::CheckTableHasIntValue(point.as_table(), "y", 2));
 
     // animal = { type.name = "pug" }
     const auto& animal = node.as_table().at("animal");
     ASSERT_EQ(animal.as_table().size(), 1);
     const auto& sub = animal.as_table().at("type");
     ASSERT_EQ(sub.as_table().size(), 1);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(sub.as_table(), "name", "pug"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(sub.as_table(), "name", "pug"));
 }
 
 TEST(InlineTable, inlinetab2) {

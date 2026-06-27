@@ -34,8 +34,8 @@ TEST(Array, arrtab1) {
 
     const auto& n1 = products.as_array().at(0);
     ASSERT_EQ(n1.as_table().size(), 2);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(n1.as_table(), "name", "Hammer"));
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(n1.as_table(), "sku", 738594937));
+    ASSERT_TRUE(test::CheckTableHasStringValue(n1.as_table(), "name", "Hammer"));
+    ASSERT_TRUE(test::CheckTableHasIntValue(n1.as_table(), "sku", 738594937));
 
     const auto& n2 = products.as_array().at(1);
     ASSERT_TRUE(n2.is_table());
@@ -43,9 +43,9 @@ TEST(Array, arrtab1) {
 
     const auto& n3 = products.as_array().at(2);
     ASSERT_EQ(n3.as_table().size(), 3);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(n3.as_table(), "name", "Nail"));
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(n3.as_table(), "sku", 284758393));
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(n3.as_table(), "color", "gray"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(n3.as_table(), "name", "Nail"));
+    ASSERT_TRUE(test::CheckTableHasIntValue(n3.as_table(), "sku", 284758393));
+    ASSERT_TRUE(test::CheckTableHasStringValue(n3.as_table(), "color", "gray"));
 }
 
 TEST(Array, arrtab2) {
@@ -59,28 +59,28 @@ TEST(Array, arrtab2) {
 
     const auto& n1 = fruits.as_array().at(0);
     ASSERT_EQ(n1.as_table().size(), 3);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(n1.as_table(), "name", "apple"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(n1.as_table(), "name", "apple"));
     const auto& physical = n1.as_table().at("physical");
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(physical.as_table(), "color", "red"));
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(physical.as_table(), "shape", "round"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(physical.as_table(), "color", "red"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(physical.as_table(), "shape", "round"));
     const auto& varieties = n1.as_table().at("varieties");
     ASSERT_TRUE(varieties.is_array());
     ASSERT_EQ(varieties.as_array().size(), 2);
     const auto& e1 = varieties.as_array().at(0);
     const auto& e2 = varieties.as_array().at(1);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(e1.as_table(), "name", "red delicious"));
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(e2.as_table(), "name", "granny smith"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(e1.as_table(), "name", "red delicious"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(e2.as_table(), "name", "granny smith"));
 
     const auto& n2 = fruits.as_array().at(1);
     ASSERT_TRUE(n2.is_table());
     ASSERT_EQ(n2.as_table().size(), 2);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(n2.as_table(), "name", "banana"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(n2.as_table(), "name", "banana"));
 
     const auto& varieties2 = n2.as_table().at("varieties");
     ASSERT_TRUE(varieties2.is_array());
     ASSERT_EQ(varieties2.as_array().size(), 1);
     const auto& e3 = varieties2.as_array().at(0);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(e3.as_table(), "name", "plantain"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(e3.as_table(), "name", "plantain"));
 }
 
 TEST(Array, arrtab3) {
@@ -118,23 +118,23 @@ TEST(Array, arrtab7) {
     const auto& n1 = points.as_array().at(0);
     ASSERT_TRUE(n1.is_table());
     ASSERT_EQ(n1.as_table().size(), 3);
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(n1.as_table(), "x", 1));
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(n1.as_table(), "y", 2));
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(n1.as_table(), "z", 3));
+    ASSERT_TRUE(test::CheckTableHasIntValue(n1.as_table(), "x", 1));
+    ASSERT_TRUE(test::CheckTableHasIntValue(n1.as_table(), "y", 2));
+    ASSERT_TRUE(test::CheckTableHasIntValue(n1.as_table(), "z", 3));
 
     const auto& n2 = points.as_array().at(1);
     ASSERT_TRUE(n2.is_table());
     ASSERT_EQ(n2.as_table().size(), 3);
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(n2.as_table(), "x", 7));
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(n2.as_table(), "y", 8));
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(n2.as_table(), "z", 9));
+    ASSERT_TRUE(test::CheckTableHasIntValue(n2.as_table(), "x", 7));
+    ASSERT_TRUE(test::CheckTableHasIntValue(n2.as_table(), "y", 8));
+    ASSERT_TRUE(test::CheckTableHasIntValue(n2.as_table(), "z", 9));
 
     const auto& n3 = points.as_array().at(2);
     ASSERT_TRUE(n3.is_table());
     ASSERT_EQ(n3.as_table().size(), 3);
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(n3.as_table(), "x", 2));
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(n3.as_table(), "y", 4));
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(n3.as_table(), "z", 8));
+    ASSERT_TRUE(test::CheckTableHasIntValue(n3.as_table(), "x", 2));
+    ASSERT_TRUE(test::CheckTableHasIntValue(n3.as_table(), "y", 4));
+    ASSERT_TRUE(test::CheckTableHasIntValue(n3.as_table(), "z", 8));
 }
 
 

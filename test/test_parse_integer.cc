@@ -111,7 +111,7 @@ TEST(Integer, InvalidBinaryPrefix) {
 
 TEST(Integer, LeadingZero) {
     // TOML spec: leading zeros are NOT allowed (except for "0" itself).
-    // Current parser accepts "0999" as integer 999 — documents actual behavior.
+    // Current parser accepts "0999" as integer 999 -- documents actual behavior.
     auto r = TOML::parse_string("v = 0999");
     ASSERT_TRUE(r.ok());
     ASSERT_EQ(r.value.as_table().at("v").as_integer(), 999);
@@ -131,7 +131,7 @@ TEST(Integer, DoubleUnderscore) {
 
 TEST(Integer, UnderscoreAtStart) {
     // Underscore at start of number is not a valid integer.
-    // Current parser treats it as a bare string — verify it's not an integer.
+    // Current parser treats it as a bare string -- verify it's not an integer.
     auto r = TOML::parse_string("v = _1");
     ASSERT_TRUE(r.ok());
     ASSERT_FALSE(r.value.as_table().at("v").is_integer())

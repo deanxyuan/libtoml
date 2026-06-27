@@ -32,7 +32,7 @@ public:
     ParseResult parse(const std::string& str);
 
 private:
-    // 核心解析方法
+    // Core parsing methods
     Value parse_value();
     Value parse_inline_table();
     Value parse_array();
@@ -41,20 +41,20 @@ private:
     Value parse_datetime(const std::string& text);
     Value parse_boolean();
 
-    // 辅助方法
+    // Helper methods
     Lexer::Token expect(Lexer::TokenType type);
     bool match(Lexer::TokenType type);
     Lexer::Token advance();
     Lexer::Token peek();
     void skip_newlines_and_comments();
 
-    // 错误处理
+    // Error handling
     Value error(const char* message);
     Value error(const std::string& message);
     Value error_at(const Lexer::Token& token, const char* message);
     SourceLocation current_location() const;
 
-    // 表构建辅助
+    // Table construction helpers
     void parse_key_value_pairs(Table& table);
     std::vector<std::string> parse_key();
     Table* navigate_to_subtable(Table* root, const std::vector<std::string>& keys, bool create,

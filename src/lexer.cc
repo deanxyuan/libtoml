@@ -867,7 +867,7 @@ Lexer::Token Lexer::lex_number(size_t start_line, size_t start_col) {
                             while (p < len_ && is_digit(data_[p]))
                                 p++;
                         }
-                        // Success — emit the full time token
+                        // Success -- emit the full time token
                         std::string text(data_ + raw_start, p - raw_start);
                         pos_ = p;
                         column_ += (p - saved_pos);
@@ -875,7 +875,7 @@ Lexer::Token Lexer::lex_number(size_t start_line, size_t start_col) {
                     }
                 }
             }
-            // Failed — restore
+            // Failed -- restore
             pos_    = saved_pos;
             line_   = saved_line;
             column_ = saved_col;

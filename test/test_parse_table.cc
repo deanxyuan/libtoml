@@ -30,13 +30,13 @@ TEST(Table, tab01) {
     const auto& node = result.value;
     const auto& table = node.as_table().at("table-1");
     ASSERT_EQ(table.as_table().size(), 2);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(table.as_table(), "key1", "some string"));
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(table.as_table(), "key2", 123));
+    ASSERT_TRUE(test::CheckTableHasStringValue(table.as_table(), "key1", "some string"));
+    ASSERT_TRUE(test::CheckTableHasIntValue(table.as_table(), "key2", 123));
 
     const auto& n2 = node.as_table().at("table-2");
     ASSERT_EQ(n2.as_table().size(), 2);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(n2.as_table(), "key1", "another string"));
-    ASSERT_TRUE(testutil::CheckTableHasIntValue(n2.as_table(), "key2", 456));
+    ASSERT_TRUE(test::CheckTableHasStringValue(n2.as_table(), "key1", "another string"));
+    ASSERT_TRUE(test::CheckTableHasIntValue(n2.as_table(), "key2", 456));
 }
 
 TEST(Table, tab02) {
@@ -55,7 +55,7 @@ TEST(Table, tab02) {
     ASSERT_EQ(man.as_table().size(), 1);
     const auto& type = man.as_table().at("type");
     ASSERT_EQ(type.as_table().size(), 1);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(type.as_table(), "name", "pug"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(type.as_table(), "name", "pug"));
 }
 
 TEST(Table, tab03) {
@@ -153,7 +153,7 @@ TEST(Table, tab08) {
 
     const auto& owner = node.as_table().at("owner");
     ASSERT_EQ(owner.as_table().size(), 2);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(owner.as_table(), "name", "Regina Dogman"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(owner.as_table(), "name", "Regina Dogman"));
     const auto& dt = owner.as_table().at("member_since");
     ASSERT_TRUE(dt.is_datetime());
     ASSERT_EQ(dt.as_datetime().to_string(), "1999-08-04");
@@ -173,10 +173,10 @@ TEST(Table, tab09) {
     ASSERT_EQ(fruit.as_table().size(), 1);
     const auto& y = fruit.as_table().at("apple");
     ASSERT_EQ(y.as_table().size(), 2);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(y.as_table(), "color", "red"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(y.as_table(), "color", "red"));
     const auto& taste = y.as_table().at("taste");
     ASSERT_EQ(taste.as_table().size(), 1);
-    ASSERT_TRUE(testutil::CheckTableHasBoolValue(taste.as_table(), "sweet", true));
+    ASSERT_TRUE(test::CheckTableHasBoolValue(taste.as_table(), "sweet", true));
 }
 
 TEST(Table, tab10) {
@@ -195,14 +195,14 @@ TEST(Table, tab11) {
     ASSERT_EQ(fruit.as_table().size(), 1);
     const auto& y = fruit.as_table().at("apple");
     ASSERT_EQ(y.as_table().size(), 3);
-    ASSERT_TRUE(testutil::CheckTableHasStringValue(y.as_table(), "color", "red"));
+    ASSERT_TRUE(test::CheckTableHasStringValue(y.as_table(), "color", "red"));
     const auto& taste = y.as_table().at("taste");
     ASSERT_EQ(taste.as_table().size(), 1);
-    ASSERT_TRUE(testutil::CheckTableHasBoolValue(taste.as_table(), "sweet", true));
+    ASSERT_TRUE(test::CheckTableHasBoolValue(taste.as_table(), "sweet", true));
 
     const auto& texture = y.as_table().at("texture");
     ASSERT_EQ(texture.as_table().size(), 1);
-    ASSERT_TRUE(testutil::CheckTableHasBoolValue(texture.as_table(), "smooth", true));
+    ASSERT_TRUE(test::CheckTableHasBoolValue(texture.as_table(), "smooth", true));
 }
 
 
