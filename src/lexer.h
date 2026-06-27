@@ -23,7 +23,7 @@
 #include <cstdint>
 #include <string>
 
-namespace TOML {
+namespace toml {
 
 class Lexer {
 public:
@@ -116,6 +116,6 @@ private:
     bool has_peeked_;
 };
 
-} // namespace TOML
+} // namespace toml
 
 #endif // TOML_LEXER_H_

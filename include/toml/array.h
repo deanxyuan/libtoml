@@ -23,7 +23,7 @@
 #include <string>
 #include <stdexcept>
 
-namespace TOML {
+namespace toml {
 
 class Value;
 
@@ -75,6 +75,6 @@ private:
     std::vector<Value> data_;
 };
 
-} // namespace TOML
+} // namespace toml
 
 #endif // TOML_ARRAY_H_

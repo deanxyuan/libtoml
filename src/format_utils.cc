@@ -22,7 +22,7 @@
 #include <limits>
 #include <sstream>
 
-namespace TOML {
+namespace toml {
 
 std::string escape_toml_string(const std::string& s) {
     std::string result;
@@ -127,4 +127,4 @@ std::string format_float_json(double v) {
     return ss.str();
 }
 
-} // namespace TOML
+} // namespace toml

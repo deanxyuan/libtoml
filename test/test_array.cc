@@ -19,17 +19,17 @@
 #include "util/testutil.h"
 
 TEST(Array, EmptyArray) {
-    TOML::Array arr;
+    toml::Array arr;
     ASSERT_TRUE(arr.empty());
     ASSERT_EQ(arr.size(), 0u);
     ASSERT_EQ(arr.begin(), arr.end());
 }
 
 TEST(Array, PushBackAndAccess) {
-    TOML::Array arr;
-    arr.push_back(TOML::Value(1));
-    arr.push_back(TOML::Value(std::string("hello")));
-    arr.push_back(TOML::Value(true));
+    toml::Array arr;
+    arr.push_back(toml::Value(1));
+    arr.push_back(toml::Value(std::string("hello")));
+    arr.push_back(toml::Value(true));
 
     ASSERT_FALSE(arr.empty());
     ASSERT_EQ(arr.size(), 3u);
@@ -58,8 +58,8 @@ TEST(Array, PushBackAndAccess) {
 }
 
 TEST(Array, AtThrows) {
-    TOML::Array arr;
-    arr.push_back(TOML::Value(1));
+    toml::Array arr;
+    arr.push_back(toml::Value(1));
 
     ASSERT_THROW(arr.at(1), std::out_of_range);
     ASSERT_THROW(arr.at(100), std::out_of_range);
@@ -69,10 +69,10 @@ TEST(Array, AtThrows) {
 }
 
 TEST(Array, OperatorBracket) {
-    TOML::Array arr;
-    arr.push_back(TOML::Value(10));
-    arr.push_back(TOML::Value(20));
-    arr.push_back(TOML::Value(30));
+    toml::Array arr;
+    arr.push_back(toml::Value(10));
+    arr.push_back(toml::Value(20));
+    arr.push_back(toml::Value(30));
 
     // Non-const access
     ASSERT_EQ(arr[0].as_integer(), 10);
@@ -87,10 +87,10 @@ TEST(Array, OperatorBracket) {
 }
 
 TEST(Array, Iterate) {
-    TOML::Array arr;
-    arr.push_back(TOML::Value(1));
-    arr.push_back(TOML::Value(2));
-    arr.push_back(TOML::Value(3));
+    toml::Array arr;
+    arr.push_back(toml::Value(1));
+    arr.push_back(toml::Value(2));
+    arr.push_back(toml::Value(3));
 
     int count = 0;
     int64_t sum = 0;
@@ -112,18 +112,18 @@ TEST(Array, Iterate) {
 }
 
 TEST(Array, NestedArrays) {
-    TOML::Array outer;
-    TOML::Array inner1;
-    inner1.push_back(TOML::Value(1));
-    inner1.push_back(TOML::Value(2));
+    toml::Array outer;
+    toml::Array inner1;
+    inner1.push_back(toml::Value(1));
+    inner1.push_back(toml::Value(2));
 
-    TOML::Array inner2;
-    inner2.push_back(TOML::Value(3));
-    inner2.push_back(TOML::Value(4));
-    inner2.push_back(TOML::Value(5));
+    toml::Array inner2;
+    inner2.push_back(toml::Value(3));
+    inner2.push_back(toml::Value(4));
+    inner2.push_back(toml::Value(5));
 
-    outer.push_back(TOML::Value(std::move(inner1)));
-    outer.push_back(TOML::Value(std::move(inner2)));
+    outer.push_back(toml::Value(std::move(inner1)));
+    outer.push_back(toml::Value(std::move(inner2)));
 
     ASSERT_EQ(outer.size(), 2u);
 
@@ -140,12 +140,12 @@ TEST(Array, NestedArrays) {
 }
 
 TEST(Array, InsertAndErase) {
-    TOML::Array arr;
-    arr.push_back(TOML::Value(1));
-    arr.push_back(TOML::Value(3));
+    toml::Array arr;
+    arr.push_back(toml::Value(1));
+    arr.push_back(toml::Value(3));
 
     // Insert at index 1
-    arr.insert(1, TOML::Value(2));
+    arr.insert(1, toml::Value(2));
     ASSERT_EQ(arr.size(), 3u);
     ASSERT_EQ(arr[0].as_integer(), 1);
     ASSERT_EQ(arr[1].as_integer(), 2);

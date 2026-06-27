@@ -23,12 +23,12 @@
 #include "toml/error.h"
 #include <string>
 
-namespace TOML {
+namespace toml {
 
 ParseResult parse_file(const std::string& path);
 ParseResult parse_string(const char* data, size_t len);
 ParseResult parse_string(const std::string& str);
 
-} // namespace TOML
+} // namespace toml
 
 #endif // TOML_READER_H_

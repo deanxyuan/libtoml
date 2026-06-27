@@ -25,7 +25,7 @@
 
 TEST(InlineTable, inline_table) {
     std::string path = TEST_CASE_DIR "/inline_table.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
     const auto& x = node.as_table().at("x");
@@ -36,7 +36,7 @@ TEST(InlineTable, inline_table) {
 
 TEST(InlineTable, inlinetab1) {
     std::string path = TEST_CASE_DIR "/inlinetab1.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
     const auto& name = node.as_table().at("name");
@@ -59,13 +59,13 @@ TEST(InlineTable, inlinetab1) {
 
 TEST(InlineTable, inlinetab2) {
     std::string path = TEST_CASE_DIR "/inlinetab2.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_FALSE(result.ok());
 }
 
 TEST(InlineTable, inlinetab3) {
     std::string path = TEST_CASE_DIR "/inlinetab3.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_FALSE(result.ok());
 }
 

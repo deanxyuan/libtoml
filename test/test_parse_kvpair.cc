@@ -25,7 +25,7 @@
 
 TEST(KVPair, Basic) {
     std::string path = TEST_CASE_DIR "/kvpair0.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
     const auto& n1 = node.as_table().at("key");
@@ -34,14 +34,14 @@ TEST(KVPair, Basic) {
 
 TEST(KVPair, Invalid1) {
     std::string path = TEST_CASE_DIR "/kvpair1.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_FALSE(result.ok());
     ASSERT_FALSE(result.error.message.empty());
 }
 
 TEST(KVPair, Invalid2) {
     std::string path = TEST_CASE_DIR "/kvpair2.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_FALSE(result.ok());
     ASSERT_FALSE(result.error.message.empty());
 }

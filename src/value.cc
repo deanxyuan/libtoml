@@ -23,7 +23,7 @@
 #include <limits>
 #include <sstream>
 
-namespace TOML {
+namespace toml {
 
 const char* type_name(Type type) {
     switch (type) {
@@ -345,4 +345,4 @@ std::string Value::to_json() const {
     return "null";
 }
 
-} // namespace TOML
+} // namespace toml

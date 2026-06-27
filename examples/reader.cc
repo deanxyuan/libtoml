@@ -24,7 +24,7 @@ name = "beta"
 cpu = 8
 )";
 
-    auto result = TOML::parse_string(text, strlen(text));
+    auto result = toml::parse_string(text, strlen(text));
     if (!result.ok()) {
         std::cerr << "parse error: " << result.error.to_string() << std::endl;
         return 1;
@@ -56,9 +56,9 @@ cpu = 8
 
     // 5. Type checking
     std::cout << "\n--- type info ---" << std::endl;
-    std::cout << "host type:    " << TOML::type_name(server.at("host").type()) << std::endl;
-    std::cout << "port type:    " << TOML::type_name(server.at("port").type()) << std::endl;
-    std::cout << "enabled type: " << TOML::type_name(server.at("enabled").type()) << std::endl;
+    std::cout << "host type:    " << toml::type_name(server.at("host").type()) << std::endl;
+    std::cout << "port type:    " << toml::type_name(server.at("port").type()) << std::endl;
+    std::cout << "enabled type: " << toml::type_name(server.at("enabled").type()) << std::endl;
 
     return 0;
 }

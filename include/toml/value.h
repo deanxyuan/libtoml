@@ -27,7 +27,7 @@
 #include <stdexcept>
 #include <type_traits>
 
-namespace TOML {
+namespace toml {
 
 class Value {
 public:
@@ -113,6 +113,6 @@ public:
     using std::runtime_error::runtime_error;
 };
 
-} // namespace TOML
+} // namespace toml
 
 #endif // TOML_VALUE_H_

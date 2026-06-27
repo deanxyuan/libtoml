@@ -159,7 +159,7 @@ bool RegisterTest(const char* base, const char* name, void (*func)());
 // ============= Helper functions =============
 
 // Check if Table contains a string value at key (returns bool)
-inline bool CheckTableHasStringValue(const TOML::Table& table,
+inline bool CheckTableHasStringValue(const toml::Table& table,
                                      const std::string& key,
                                      const std::string& expected) {
     if (!table.contains(key)) return false;
@@ -168,7 +168,7 @@ inline bool CheckTableHasStringValue(const TOML::Table& table,
 }
 
 // Check if Table contains a string value at key (void, with diagnostics)
-inline void CheckTableString(const TOML::Table& table,
+inline void CheckTableString(const toml::Table& table,
                              const std::string& key,
                              const std::string& expected) {
     if (!table.contains(key)) {
@@ -179,7 +179,7 @@ inline void CheckTableString(const TOML::Table& table,
     const auto& val = table.at(key);
     if (!val.is_string()) {
         fprintf(stderr, "  key '%s': expected string, got %s\n",
-                key.c_str(), TOML::type_name(val.type()));
+                key.c_str(), toml::type_name(val.type()));
         RegisterFailure();
         return;
     }
@@ -192,7 +192,7 @@ inline void CheckTableString(const TOML::Table& table,
 }
 
 // Check if Table contains an integer value at key
-inline bool CheckTableHasIntValue(const TOML::Table& table,
+inline bool CheckTableHasIntValue(const toml::Table& table,
                                   const std::string& key,
                                   int64_t expected) {
     if (!table.contains(key)) return false;
@@ -201,7 +201,7 @@ inline bool CheckTableHasIntValue(const TOML::Table& table,
 }
 
 // Check if Table contains a boolean value at key
-inline bool CheckTableHasBoolValue(const TOML::Table& table,
+inline bool CheckTableHasBoolValue(const toml::Table& table,
                                    const std::string& key,
                                    bool expected) {
     if (!table.contains(key)) return false;
@@ -210,7 +210,7 @@ inline bool CheckTableHasBoolValue(const TOML::Table& table,
 }
 
 // Check if Table contains a float value at key
-inline bool CheckTableHasFloatValue(const TOML::Table& table,
+inline bool CheckTableHasFloatValue(const toml::Table& table,
                                     const std::string& key,
                                     double expected) {
     if (!table.contains(key)) return false;
@@ -219,7 +219,7 @@ inline bool CheckTableHasFloatValue(const TOML::Table& table,
 }
 
 // Check if Array contains a string value at index
-inline bool CheckArrayHasStringValue(const TOML::Array& arr,
+inline bool CheckArrayHasStringValue(const toml::Array& arr,
                                      size_t index,
                                      const std::string& expected) {
     if (index >= arr.size()) return false;
@@ -228,7 +228,7 @@ inline bool CheckArrayHasStringValue(const TOML::Array& arr,
 }
 
 // Check if Array contains an integer value at index
-inline bool CheckArrayHasIntValue(const TOML::Array& arr,
+inline bool CheckArrayHasIntValue(const toml::Array& arr,
                                   size_t index,
                                   int64_t expected) {
     if (index >= arr.size()) return false;
@@ -237,8 +237,8 @@ inline bool CheckArrayHasIntValue(const TOML::Array& arr,
 }
 
 // Parse string and abort on failure
-inline TOML::Value ParseOrFail(const std::string& str) {
-    auto result = TOML::parse_string(str);
+inline toml::Value ParseOrFail(const std::string& str) {
+    auto result = toml::parse_string(str);
     if (!result.ok()) {
         fprintf(stderr, "Parse failed: %s\n", result.error.to_string().c_str());
         exit(1);
@@ -247,8 +247,8 @@ inline TOML::Value ParseOrFail(const std::string& str) {
 }
 
 // Parse file and abort on failure
-inline TOML::Value ParseFileOrFail(const std::string& path) {
-    auto result = TOML::parse_file(path);
+inline toml::Value ParseFileOrFail(const std::string& path) {
+    auto result = toml::parse_file(path);
     if (!result.ok()) {
         fprintf(stderr, "Parse file failed: %s\n", result.error.to_string().c_str());
         exit(1);
@@ -257,8 +257,8 @@ inline TOML::Value ParseFileOrFail(const std::string& path) {
 }
 
 // Parse string and expect failure
-inline TOML::Error ParseExpectFail(const std::string& str) {
-    auto result = TOML::parse_string(str);
+inline toml::Error ParseExpectFail(const std::string& str) {
+    auto result = toml::parse_string(str);
     if (result.ok()) {
         fprintf(stderr, "Expected parse to fail but it succeeded\n");
         exit(1);

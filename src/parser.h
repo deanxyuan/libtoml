@@ -24,7 +24,7 @@
 #include "src/lexer.h"
 #include <set>
 
-namespace TOML {
+namespace toml {
 
 class Parser {
 public:
@@ -72,6 +72,6 @@ private:
     std::set<std::string> defined_table_headers_;
 };
 
-} // namespace TOML
+} // namespace toml
 
 #endif // TOML_PARSER_H_

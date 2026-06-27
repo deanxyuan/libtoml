@@ -22,20 +22,21 @@
 #include "toml/value.h"
 #include <string>
 
-namespace TOML {
+namespace toml {
 
 std::string to_toml(const Value& value);
 std::string to_toml(const Table& table);
 
 struct FormatOptions {
-    size_t indent = 4;
-    char indent_char = ' ';
-    bool sorted_keys = false;
+    size_t indent;
+    char indent_char;
+    bool sorted_keys;
+    FormatOptions() : indent(4), indent_char(' '), sorted_keys(false) {}
 };
 
 std::string to_toml(const Value& value, const FormatOptions& opts);
 std::string to_json(const Value& value);
 
-} // namespace TOML
+} // namespace toml
 
 #endif // TOML_WRITER_H_

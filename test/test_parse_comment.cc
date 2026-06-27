@@ -25,7 +25,7 @@
 
 TEST(Comment, CommentWithString) {
     std::string path = TEST_CASE_DIR "/comment.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
     const auto& n1 = node.as_table().at("key");

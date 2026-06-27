@@ -18,7 +18,7 @@
 
 #include "src/lexer.h"
 
-namespace TOML {
+namespace toml {
 
 // ---------------------------------------------------------------------------
 // Construction
@@ -1028,4 +1028,4 @@ Lexer::Token Lexer::lex_datetime(size_t start_line, size_t start_col) {
     return error_token("unexpected datetime token", start_line, start_col);
 }
 
-} // namespace TOML
+} // namespace toml

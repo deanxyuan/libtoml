@@ -25,7 +25,7 @@
 
 TEST(Float, float1) {
     std::string path = TEST_CASE_DIR "/float1.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
     const auto& n1 = node.as_table().at("flt1");
@@ -46,25 +46,25 @@ TEST(Float, float1) {
 
 TEST(Float, float2) {
     std::string path = TEST_CASE_DIR "/float2.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_FALSE(result.ok());
 }
 
 TEST(Float, float3) {
     std::string path = TEST_CASE_DIR "/float3.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_FALSE(result.ok());
 }
 
 TEST(Float, float4) {
     std::string path = TEST_CASE_DIR "/float4.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_FALSE(result.ok());
 }
 
 TEST(Float, float5) {
     std::string path = TEST_CASE_DIR "/float5.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
     const auto& n1 = node.as_table().at("flt8");
@@ -73,7 +73,7 @@ TEST(Float, float5) {
 
 TEST(Float, float6) {
     std::string path = TEST_CASE_DIR "/float6.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
     const auto& n1 = node.as_table().at("sf1");

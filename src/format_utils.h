@@ -21,7 +21,7 @@
 
 #include <string>
 
-namespace TOML {
+namespace toml {
 
 // Escape a string for TOML output (adds surrounding double quotes).
 std::string escape_toml_string(const std::string& s);
@@ -40,6 +40,6 @@ std::string format_float_toml(double v);
 // Format a double for JSON output (inf/nan become "null").
 std::string format_float_json(double v);
 
-} // namespace TOML
+} // namespace toml
 
 #endif // TOML_FORMAT_UTILS_H

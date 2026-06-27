@@ -25,7 +25,7 @@
 
 TEST(Table, tab01) {
     std::string path = TEST_CASE_DIR "/tab01.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
     const auto& table = node.as_table().at("table-1");
@@ -41,7 +41,7 @@ TEST(Table, tab01) {
 
 TEST(Table, tab02) {
     std::string path = TEST_CASE_DIR "/tab02.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
 
@@ -60,7 +60,7 @@ TEST(Table, tab02) {
 
 TEST(Table, tab03) {
     std::string path = TEST_CASE_DIR "/tab03.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
 
@@ -98,7 +98,7 @@ TEST(Table, tab03) {
 
 TEST(Table, tab04) {
     std::string path = TEST_CASE_DIR "/tab04.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
 
@@ -114,19 +114,19 @@ TEST(Table, tab04) {
 
 TEST(Table, tab05) {
     std::string path = TEST_CASE_DIR "/tab05.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_FALSE(result.ok());
 }
 
 TEST(Table, tab06) {
     std::string path = TEST_CASE_DIR "/tab06.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_FALSE(result.ok());
 }
 
 TEST(Table, tab07) {
     std::string path = TEST_CASE_DIR "/tab07.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
 
@@ -142,7 +142,7 @@ TEST(Table, tab07) {
 
 TEST(Table, tab08) {
     std::string path = TEST_CASE_DIR "/tab08.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
 
@@ -165,7 +165,7 @@ TEST(Table, tab08) {
 
 TEST(Table, tab09) {
     std::string path = TEST_CASE_DIR "/tab09.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
 
@@ -181,13 +181,13 @@ TEST(Table, tab09) {
 
 TEST(Table, tab10) {
     std::string path = TEST_CASE_DIR "/tab10.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_FALSE(result.ok());
 }
 
 TEST(Table, tab11) {
     std::string path = TEST_CASE_DIR "/tab11.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
 

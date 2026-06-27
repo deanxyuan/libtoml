@@ -22,7 +22,7 @@
 #include <cstdint>
 #include <string>
 
-namespace TOML {
+namespace toml {
 
 enum Type : uint8_t {
     kNull = 0,
@@ -38,6 +38,6 @@ enum Type : uint8_t {
 
 const char* type_name(Type type);
 
-} // namespace TOML
+} // namespace toml
 
 #endif // TOML_TYPES_H_

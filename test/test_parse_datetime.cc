@@ -23,24 +23,24 @@
 #error "Missing Macro Definition: TEST_CASE_DIR, please check the CMakeLists.txt"
 #endif
 
-bool CheckDateYear(const TOML::DateTime &dt, int year) { return dt.year == year; }
-bool CheckDateMonth(const TOML::DateTime &dt, int month) { return dt.month == month; }
-bool CheckDateDay(const TOML::DateTime &dt, int day) { return dt.day == day; }
+bool CheckDateYear(const toml::DateTime &dt, int year) { return dt.year == year; }
+bool CheckDateMonth(const toml::DateTime &dt, int month) { return dt.month == month; }
+bool CheckDateDay(const toml::DateTime &dt, int day) { return dt.day == day; }
 
-bool CheckTimeHour(const TOML::DateTime &dt, int hour) { return dt.hour == hour; }
-bool CheckTimeMinute(const TOML::DateTime &dt, int minute) { return dt.minute == minute; }
-bool CheckTimeSecond(const TOML::DateTime &dt, int second) { return dt.second == second; }
-bool CheckTimeMicroSecond(const TOML::DateTime &dt, int usecond) {
+bool CheckTimeHour(const toml::DateTime &dt, int hour) { return dt.hour == hour; }
+bool CheckTimeMinute(const toml::DateTime &dt, int minute) { return dt.minute == minute; }
+bool CheckTimeSecond(const toml::DateTime &dt, int second) { return dt.second == second; }
+bool CheckTimeMicroSecond(const toml::DateTime &dt, int usecond) {
     return dt.microsecond == static_cast<uint32_t>(usecond);
 }
 
-bool CheckGMTOffsetSecond(const TOML::DateTime &dt, int second) {
+bool CheckGMTOffsetSecond(const toml::DateTime &dt, int second) {
     return dt.utc_offset == second;
 }
 
 TEST(DateTime, RFC3339Format) {
     std::string path = TEST_CASE_DIR "/ts1.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
     const auto& n1 = node.as_table().at("odt1");
@@ -92,7 +92,7 @@ TEST(DateTime, RFC3339Format) {
 
 TEST(DateTime, RFC3339FormatEx) {
     std::string path = TEST_CASE_DIR "/ts2.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
     const auto& n1 = node.as_table().at("odt4");
@@ -108,7 +108,7 @@ TEST(DateTime, RFC3339FormatEx) {
 
 TEST(DateTime, NoTimeZone) {
     std::string path = TEST_CASE_DIR "/ts3.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
     const auto& n1 = node.as_table().at("ldt1");
@@ -135,7 +135,7 @@ TEST(DateTime, NoTimeZone) {
 
 TEST(DateTime, Date) {
     std::string path = TEST_CASE_DIR "/ts4.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
     const auto& n1 = node.as_table().at("ld1");
@@ -148,7 +148,7 @@ TEST(DateTime, Date) {
 
 TEST(DateTime, Time) {
     std::string path = TEST_CASE_DIR "/ts5.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
     const auto& n1 = node.as_table().at("lt1");
@@ -173,49 +173,49 @@ TEST(DateTime, Time) {
 
 TEST(DateTime, InvalidMonthZero) {
     // Month 0 is invalid per RFC 3339, but current parser accepts it
-    auto r = TOML::parse_string("v = 2023-00-15T14:30:45");
+    auto r = toml::parse_string("v = 2023-00-15T14:30:45");
     ASSERT_TRUE(r.ok()) << r.error.to_string();
     ASSERT_EQ(r.value.as_table().at("v").as_datetime().month, 0);
 }
 
 TEST(DateTime, InvalidMonth13) {
     // Month 13 is invalid per RFC 3339, but current parser accepts it
-    auto r = TOML::parse_string("v = 2023-13-15T14:30:45");
+    auto r = toml::parse_string("v = 2023-13-15T14:30:45");
     ASSERT_TRUE(r.ok()) << r.error.to_string();
     ASSERT_EQ(r.value.as_table().at("v").as_datetime().month, 13);
 }
 
 TEST(DateTime, InvalidDayZero) {
     // Day 0 is invalid per RFC 3339, but current parser accepts it
-    auto r = TOML::parse_string("v = 2023-06-00T14:30:45");
+    auto r = toml::parse_string("v = 2023-06-00T14:30:45");
     ASSERT_TRUE(r.ok()) << r.error.to_string();
     ASSERT_EQ(r.value.as_table().at("v").as_datetime().day, 0);
 }
 
 TEST(DateTime, InvalidDay32) {
     // Day 32 is invalid per RFC 3339, but current parser accepts it
-    auto r = TOML::parse_string("v = 2023-06-32T14:30:45");
+    auto r = toml::parse_string("v = 2023-06-32T14:30:45");
     ASSERT_TRUE(r.ok()) << r.error.to_string();
     ASSERT_EQ(r.value.as_table().at("v").as_datetime().day, 32);
 }
 
 TEST(DateTime, InvalidHour25) {
     // Hour 25 is invalid per RFC 3339, but current parser accepts it
-    auto r = TOML::parse_string("v = 2023-06-15T25:30:45");
+    auto r = toml::parse_string("v = 2023-06-15T25:30:45");
     ASSERT_TRUE(r.ok()) << r.error.to_string();
     ASSERT_EQ(r.value.as_table().at("v").as_datetime().hour, 25);
 }
 
 TEST(DateTime, InvalidMinute60) {
     // Minute 60 is invalid per RFC 3339, but current parser accepts it
-    auto r = TOML::parse_string("v = 2023-06-15T14:60:45");
+    auto r = toml::parse_string("v = 2023-06-15T14:60:45");
     ASSERT_TRUE(r.ok()) << r.error.to_string();
     ASSERT_EQ(r.value.as_table().at("v").as_datetime().minute, 60);
 }
 
 TEST(DateTime, InvalidSecond60) {
     // Second 60 is invalid per RFC 3339, but current parser accepts it
-    auto r = TOML::parse_string("v = 2023-06-15T14:30:60");
+    auto r = toml::parse_string("v = 2023-06-15T14:30:60");
     ASSERT_TRUE(r.ok()) << r.error.to_string();
     ASSERT_EQ(r.value.as_table().at("v").as_datetime().second, 60);
 }

@@ -25,7 +25,7 @@
 #include <fstream>
 #include <sstream>
 
-namespace TOML {
+namespace toml {
 
 // ---------------------------------------------------------------------------
 // Public interface
@@ -986,4 +986,4 @@ ParseResult parse_file(const std::string& path) {
     return parser.parse(content.data(), content.size());
 }
 
-} // namespace TOML
+} // namespace toml

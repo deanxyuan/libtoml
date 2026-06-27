@@ -19,7 +19,7 @@
 #include "toml/array.h"
 #include "toml/value.h"
 
-namespace TOML {
+namespace toml {
 
 void Array::push_back(Value value) {
     data_.push_back(std::move(value));
@@ -109,4 +109,4 @@ std::string Array::to_json() const {
     return result;
 }
 
-} // namespace TOML
+} // namespace toml

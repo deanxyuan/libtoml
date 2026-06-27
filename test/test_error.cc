@@ -86,7 +86,7 @@ TEST(Error, EmptyKey) {
 TEST(Error, SuccessState) {
     // Successful parse should have ok() == true and empty message
     std::string valid = "key = 42";
-    auto result = TOML::parse_string(valid);
+    auto result = toml::parse_string(valid);
     ASSERT_TRUE(result.ok());
     ASSERT_TRUE(result.error.message.empty());
     ASSERT_EQ(result.error.location.line, 0u);

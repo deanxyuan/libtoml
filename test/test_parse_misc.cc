@@ -21,7 +21,7 @@
 
 TEST(Misc, EmptyDocument) {
     // An empty document is valid TOML (empty table)
-    auto r = TOML::parse_string("");
+    auto r = toml::parse_string("");
     ASSERT_TRUE(r.ok()) << r.error.to_string();
     ASSERT_TRUE(r.value.is_table());
     ASSERT_EQ(r.value.as_table().size(), 0u);
@@ -29,7 +29,7 @@ TEST(Misc, EmptyDocument) {
 
 TEST(Misc, WhitespaceOnlyDocument) {
     // Whitespace-only document is valid (empty table)
-    auto r = TOML::parse_string("   \n  \n  ");
+    auto r = toml::parse_string("   \n  \n  ");
     ASSERT_TRUE(r.ok()) << r.error.to_string();
     ASSERT_TRUE(r.value.is_table());
     ASSERT_EQ(r.value.as_table().size(), 0u);
@@ -37,7 +37,7 @@ TEST(Misc, WhitespaceOnlyDocument) {
 
 TEST(Misc, CommentOnlyDocument) {
     // Comment-only document is valid (empty table)
-    auto r = TOML::parse_string("# just a comment\n");
+    auto r = toml::parse_string("# just a comment\n");
     ASSERT_TRUE(r.ok()) << r.error.to_string();
     ASSERT_TRUE(r.value.is_table());
     ASSERT_EQ(r.value.as_table().size(), 0u);
@@ -47,19 +47,19 @@ TEST(Misc, Utf8BOM) {
     // UTF-8 BOM (0xEF 0xBB 0xBF) at start of file should be handled.
     // Current parser rejects it -- documents actual behavior.
     std::string input = std::string("\xef\xbb\xbf") + "key = 42";
-    auto r = TOML::parse_string(input);
+    auto r = toml::parse_string(input);
     ASSERT_FALSE(r.ok()) << "UTF-8 BOM should be rejected";
 }
 
 TEST(Misc, TrailingContentAfterValue) {
     // "key = 42 extra" should fail -- extra tokens after value
-    auto r = TOML::parse_string("key = 42 extra");
+    auto r = toml::parse_string("key = 42 extra");
     ASSERT_FALSE(r.ok());
 }
 
 TEST(Misc, MultipleKeyValuePairs) {
     // Multiple key-value pairs separated by newlines is valid
-    auto r = TOML::parse_string("key1 = 1\nkey2 = 2\nkey3 = 3");
+    auto r = toml::parse_string("key1 = 1\nkey2 = 2\nkey3 = 3");
     ASSERT_TRUE(r.ok()) << r.error.to_string();
     const auto& tbl = r.value.as_table();
     ASSERT_EQ(tbl.size(), 3u);
@@ -70,7 +70,7 @@ TEST(Misc, MultipleKeyValuePairs) {
 
 TEST(Misc, DeepNestingDottedKeys) {
     // Deeply nested dotted keys
-    auto r = TOML::parse_string("a.b.c.d.e = 42");
+    auto r = toml::parse_string("a.b.c.d.e = 42");
     ASSERT_TRUE(r.ok()) << r.error.to_string();
     const auto& a = r.value.as_table().at("a").as_table();
     const auto& b = a.at("b").as_table();
@@ -81,7 +81,7 @@ TEST(Misc, DeepNestingDottedKeys) {
 
 TEST(Misc, DeepNestingSections) {
     // Deeply nested sections
-    auto r = TOML::parse_string("[a.b.c.d.e]\nv = 42");
+    auto r = toml::parse_string("[a.b.c.d.e]\nv = 42");
     ASSERT_TRUE(r.ok()) << r.error.to_string();
     const auto& a = r.value.as_table().at("a").as_table();
     const auto& b = a.at("b").as_table();

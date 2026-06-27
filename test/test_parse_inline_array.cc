@@ -25,7 +25,7 @@
 
 TEST(InlineTable, array_of_tables) {
     std::string path = TEST_CASE_DIR "/array_of_tables.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
     const auto& x = node.as_table().at("x");
@@ -42,7 +42,7 @@ TEST(InlineTable, array_of_tables) {
 
 TEST(InlineTable, inline_array) {
     std::string path = TEST_CASE_DIR "/inline_array.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
     const auto& x = node.as_table().at("x");

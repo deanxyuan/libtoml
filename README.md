@@ -1,6 +1,6 @@
 # LIBTOML v2.0.0
 
-A TOML v0.5.0 reader and writer in C++14.
+A TOML v0.5.0 reader and writer in C++11.
 
 ## Features
 
@@ -15,11 +15,11 @@ A TOML v0.5.0 reader and writer in C++14.
 - TOML and JSON serialization output
 - Configurable formatting (indent size, sorted keys)
 - Zero external dependencies
-- Static library, C++14
+- Static library, C++11
 
 ## Requirements
 
-- C++14 compatible compiler (GCC, Clang, MSVC)
+- C++11 compatible compiler (GCC, Clang, MSVC)
 - CMake 3.14+
 
 ## Building
@@ -62,7 +62,7 @@ target_link_libraries(my_app PRIVATE toml)
 #include <toml/toml.h>
 #include <iostream>
 
-auto result = TOML::parse_file("config.toml");
+auto result = toml::parse_file("config.toml");
 if (!result.ok()) {
     // error location (line, column) for debugging
     std::cerr << result.error.to_string() << std::endl;
@@ -84,7 +84,7 @@ host = "localhost"
 port = 5432
 )";
 
-auto result = TOML::parse_string(text, strlen(text));
+auto result = toml::parse_string(text, strlen(text));
 ```
 
 ### Access Nested Values
@@ -105,26 +105,26 @@ for (size_t i = 0; i < items.size(); i++) {
 #include <iostream>
 
 // build a Value tree programmatically
-TOML::Table server;
+toml::Table server;
 server.insert("host", "example.com");
 server.insert("port", static_cast<int64_t>(8080));
 
-TOML::Table opts;
+toml::Table opts;
 opts.insert("timeout", 30.5);
 opts.insert("retry", static_cast<int64_t>(3));
 server.insert("options", std::move(opts));
 
-TOML::Table root;
+toml::Table root;
 root.insert("server", std::move(server));
 
 // serialize to TOML (default)
 std::cout << root.to_toml() << std::endl;
 
 // serialize with format options
-TOML::FormatOptions fmt;
+toml::FormatOptions fmt;
 fmt.indent = 2;
 fmt.sorted_keys = true;
-std::cout << TOML::to_toml(TOML::Value(root), fmt) << std::endl;
+std::cout << toml::to_toml(toml::Value(root), fmt) << std::endl;
 
 // serialize to JSON
 std::cout << root.to_json() << std::endl;
@@ -136,9 +136,9 @@ std::cout << root.to_json() << std::endl;
 
 | Function | Description |
 |----------|-------------|
-| `TOML::parse_file(path)` | Parse a TOML file, returns `ParseResult` |
-| `TOML::parse_string(data, len)` | Parse a TOML string with length |
-| `TOML::parse_string(str)` | Parse a `std::string` |
+| `toml::parse_file(path)` | Parse a TOML file, returns `ParseResult` |
+| `toml::parse_string(data, len)` | Parse a TOML string with length |
+| `toml::parse_string(str)` | Parse a `std::string` |
 
 ### ParseResult
 
@@ -161,7 +161,7 @@ std::cout << root.to_json() << std::endl;
 
 | Method | Description |
 |--------|-------------|
-| `type()` | Returns `TOML::Type` enum |
+| `type()` | Returns `toml::Type` enum |
 | `is_null()` / `is_boolean()` / `is_integer()` / `is_uinteger()` / `is_float()` / `is_string()` / `is_datetime()` / `is_table()` / `is_array()` | Type checks |
 | `as_bool()` / `as_integer()` / `as_uinteger()` / `as_float()` / `as_string()` / `as_datetime()` / `as_table()` / `as_array()` | Type-safe access (throws `bad_value_access` on mismatch) |
 | `as_table_mut()` / `as_array_mut()` | Mutable access |
@@ -211,10 +211,10 @@ std::cout << root.to_json() << std::endl;
 | `sorted_keys` | `bool` | `false` | Sort keys alphabetically |
 
 ```cpp
-TOML::FormatOptions fmt;
+toml::FormatOptions fmt;
 fmt.indent = 2;
 fmt.sorted_keys = true;
-std::string s = TOML::to_toml(TOML::Value(table), fmt);
+std::string s = toml::to_toml(toml::Value(table), fmt);
 ```
 
 ### Serialization Functions
@@ -225,19 +225,19 @@ std::string s = TOML::to_toml(TOML::Value(table), fmt);
 | `value.to_json()` | Serialize Value to JSON string |
 | `table.to_toml()` | Serialize Table to TOML string |
 | `table.to_json()` | Serialize Table to JSON string |
-| `TOML::to_toml(value)` | Free function, same as `value.to_toml()` |
-| `TOML::to_toml(value, opts)` | Serialize with format options |
-| `TOML::to_json(value)` | Free function, same as `value.to_json()` |
+| `toml::to_toml(value)` | Free function, same as `value.to_toml()` |
+| `toml::to_toml(value, opts)` | Serialize with format options |
+| `toml::to_json(value)` | Free function, same as `value.to_json()` |
 
 ### Types Enum
 
-`TOML::Type` values: `kNull`, `kBoolean`, `kInteger`, `kUInteger`, `kFloat`, `kString`, `kDateTime`, `kTable`, `kArray`.
+`toml::Type` values: `kNull`, `kBoolean`, `kInteger`, `kUInteger`, `kFloat`, `kString`, `kDateTime`, `kTable`, `kArray`.
 
 ### Utility
 
 | Function | Description |
 |----------|-------------|
-| `TOML::type_name(type)` | Get type name as string |
+| `toml::type_name(type)` | Get type name as string |
 
 ## Examples
 

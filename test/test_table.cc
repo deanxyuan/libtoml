@@ -19,17 +19,17 @@
 #include "util/testutil.h"
 
 TEST(Table, EmptyTable) {
-    TOML::Table tbl;
+    toml::Table tbl;
     ASSERT_TRUE(tbl.empty());
     ASSERT_EQ(tbl.size(), 0u);
     ASSERT_EQ(tbl.begin(), tbl.end());
 }
 
 TEST(Table, InsertAndAccess) {
-    TOML::Table tbl;
-    tbl.insert("key1", TOML::Value(std::string("value1")));
-    tbl.insert("key2", TOML::Value(42));
-    tbl.insert("key3", TOML::Value(true));
+    toml::Table tbl;
+    tbl.insert("key1", toml::Value(std::string("value1")));
+    tbl.insert("key2", toml::Value(42));
+    tbl.insert("key3", toml::Value(true));
 
     ASSERT_FALSE(tbl.empty());
     ASSERT_EQ(tbl.size(), 3u);
@@ -43,13 +43,13 @@ TEST(Table, InsertAndAccess) {
     ASSERT_TRUE(tbl.at("key3").as_bool());
 
     // insert_or_assign
-    tbl.insert_or_assign("key2", TOML::Value(100));
+    tbl.insert_or_assign("key2", toml::Value(100));
     ASSERT_EQ(tbl.at("key2").as_integer(), 100);
 }
 
 TEST(Table, Contains) {
-    TOML::Table tbl;
-    tbl.insert("existing", TOML::Value(1));
+    toml::Table tbl;
+    tbl.insert("existing", toml::Value(1));
 
     ASSERT_TRUE(tbl.contains("existing"));
     ASSERT_FALSE(tbl.contains("nonexistent"));
@@ -66,8 +66,8 @@ TEST(Table, Contains) {
 }
 
 TEST(Table, AtThrows) {
-    TOML::Table tbl;
-    tbl.insert("key", TOML::Value(1));
+    toml::Table tbl;
+    tbl.insert("key", toml::Value(1));
 
     ASSERT_THROW(tbl.at("nonexistent"), std::out_of_range);
 
@@ -76,7 +76,7 @@ TEST(Table, AtThrows) {
 }
 
 TEST(Table, OperatorBracket) {
-    TOML::Table tbl;
+    toml::Table tbl;
 
     // operator[] creates a null value for missing keys
     auto& v = tbl["new_key"];
@@ -84,7 +84,7 @@ TEST(Table, OperatorBracket) {
     ASSERT_EQ(tbl.size(), 1u);
 
     // operator[] on existing key
-    tbl.insert("existing", TOML::Value(std::string("hello")));
+    tbl.insert("existing", toml::Value(std::string("hello")));
     auto& v2 = tbl["existing"];
     ASSERT_TRUE(v2.is_string());
     ASSERT_EQ(v2.as_string(), "hello");
@@ -97,10 +97,10 @@ TEST(Table, OperatorBracket) {
 }
 
 TEST(Table, Iterate) {
-    TOML::Table tbl;
-    tbl.insert("a", TOML::Value(1));
-    tbl.insert("b", TOML::Value(2));
-    tbl.insert("c", TOML::Value(3));
+    toml::Table tbl;
+    tbl.insert("a", toml::Value(1));
+    tbl.insert("b", toml::Value(2));
+    tbl.insert("c", toml::Value(3));
 
     int count = 0;
     for (auto it = tbl.begin(); it != tbl.end(); ++it) {
@@ -119,21 +119,21 @@ TEST(Table, Iterate) {
 }
 
 TEST(Table, CopyAndMove) {
-    TOML::Table tbl;
-    tbl.insert("key", TOML::Value(std::string("value")));
+    toml::Table tbl;
+    tbl.insert("key", toml::Value(std::string("value")));
 
     // Copy
-    TOML::Table copy(tbl);
+    toml::Table copy(tbl);
     ASSERT_EQ(copy.size(), 1u);
     ASSERT_EQ(copy.at("key").as_string(), "value");
 
     // Modify original, copy should be unaffected
-    tbl.insert("key2", TOML::Value(42));
+    tbl.insert("key2", toml::Value(42));
     ASSERT_EQ(tbl.size(), 2u);
     ASSERT_EQ(copy.size(), 1u);
 
     // Move
-    TOML::Table moved(std::move(copy));
+    toml::Table moved(std::move(copy));
     ASSERT_EQ(moved.size(), 1u);
     ASSERT_EQ(moved.at("key").as_string(), "value");
 

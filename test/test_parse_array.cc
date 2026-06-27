@@ -25,7 +25,7 @@
 
 TEST(Array, BasicTest) {
     std::string path = TEST_CASE_DIR "/arr1.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
     const auto& n1 = node.as_table().at("integers");
@@ -98,7 +98,7 @@ TEST(Array, BasicTest) {
 
 TEST(Array, MultiLineTest) {
     std::string path = TEST_CASE_DIR "/arr2.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
     const auto& integers2 = node.as_table().at("integers2");

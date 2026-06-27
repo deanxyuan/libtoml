@@ -19,7 +19,7 @@
 #include "toml/datetime.h"
 #include <cstdio>
 
-namespace TOML {
+namespace toml {
 
 static void append_utc_offset(std::string& out, int32_t offset_seconds) {
     if (offset_seconds == 0) {
@@ -94,4 +94,4 @@ std::string DateTime::to_toml() const {
     return to_string();
 }
 
-} // namespace TOML
+} // namespace toml

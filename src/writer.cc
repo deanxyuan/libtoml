@@ -25,7 +25,7 @@
 #include <sstream>
 #include <vector>
 
-namespace TOML {
+namespace toml {
 
 // ---------------------------------------------------------------------------
 // Simple delegation to Value/Table member functions
@@ -362,4 +362,4 @@ std::string to_toml(const Value& value, const FormatOptions& opts) {
     return result;
 }
 
-} // namespace TOML
+} // namespace toml

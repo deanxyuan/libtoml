@@ -20,7 +20,7 @@
 #include "toml/value.h"
 #include "src/format_utils.h"
 
-namespace TOML {
+namespace toml {
 
 Value& Table::operator[](const std::string& key) {
     return data_[key];
@@ -63,7 +63,12 @@ std::pair<Table::iterator, bool> Table::insert(const std::string& key, Value val
 }
 
 std::pair<Table::iterator, bool> Table::insert_or_assign(const std::string& key, Value value) {
-    return data_.insert_or_assign(key, std::move(value));
+    auto it = data_.find(key);
+    if (it != data_.end()) {
+        it->second = std::move(value);
+        return {it, false};
+    }
+    return data_.insert({key, std::move(value)});
 }
 
 size_t Table::erase(const std::string& key) {
@@ -112,4 +117,4 @@ std::string Table::to_json() const {
     return result;
 }
 
-} // namespace TOML
+} // namespace toml

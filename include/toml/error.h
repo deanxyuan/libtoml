@@ -22,13 +22,15 @@
 #include <cstddef>
 #include <string>
 
-namespace TOML {
+namespace toml {
 
 class Value;
 
 struct SourceLocation {
-    size_t line = 0;
-    size_t column = 0;
+    size_t line;
+    size_t column;
+    SourceLocation() : line(0), column(0) {}
+    SourceLocation(size_t l, size_t c) : line(l), column(c) {}
 };
 
 struct Error {
@@ -46,6 +48,6 @@ struct ParseResult {
     bool ok() const { return error.ok(); }
 };
 
-} // namespace TOML
+} // namespace toml
 
 #endif // TOML_ERROR_H_

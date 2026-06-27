@@ -23,7 +23,7 @@
 #include <unordered_map>
 #include <stdexcept>
 
-namespace TOML {
+namespace toml {
 
 class Value;
 
@@ -82,6 +82,6 @@ private:
     bool from_dotted_key_ = false;
 };
 
-} // namespace TOML
+} // namespace toml
 
 #endif // TOML_TABLE_H_

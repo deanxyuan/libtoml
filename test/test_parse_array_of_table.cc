@@ -25,7 +25,7 @@
 
 TEST(Array, arrtab1) {
     std::string path = TEST_CASE_DIR "/arrtab1.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
     const auto& products = node.as_table().at("products");
@@ -50,7 +50,7 @@ TEST(Array, arrtab1) {
 
 TEST(Array, arrtab2) {
     std::string path = TEST_CASE_DIR "/arrtab2.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
     const auto& fruits = node.as_table().at("fruits");
@@ -85,31 +85,31 @@ TEST(Array, arrtab2) {
 
 TEST(Array, arrtab3) {
     std::string path = TEST_CASE_DIR "/arrtab3.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_FALSE(result.ok());
 }
 
 TEST(Array, arrtab4) {
     std::string path = TEST_CASE_DIR "/arrtab4.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_FALSE(result.ok());
 }
 
 TEST(Array, arrtab5) {
     std::string path = TEST_CASE_DIR "/arrtab5.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_FALSE(result.ok());
 }
 
 TEST(Array, arrtab6) {
     std::string path = TEST_CASE_DIR "/arrtab6.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_FALSE(result.ok());
 }
 
 TEST(Array, arrtab7) {
     std::string path = TEST_CASE_DIR "/arrtab7.toml";
-    auto result = TOML::parse_file(path);
+    auto result = toml::parse_file(path);
     ASSERT_TRUE(result.ok()) << result.error.to_string();
     const auto& node = result.value;
     const auto& points = node.as_table().at("points");

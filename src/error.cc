@@ -19,7 +19,7 @@
 #include "toml/value.h"
 #include "toml/error.h"
 
-namespace TOML {
+namespace toml {
 
 std::string Error::to_string() const {
     if (ok()) {
@@ -33,4 +33,4 @@ std::string Error::to_string() const {
     return message;
 }
 
-} // namespace TOML
+} // namespace toml

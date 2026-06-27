@@ -23,7 +23,7 @@
 #include <cstdint>
 #include <string>
 
-namespace TOML {
+namespace toml {
 namespace utf8 {
 
 // Encode a Unicode codepoint to UTF-8, returns the number of bytes written.
@@ -57,6 +57,6 @@ size_t sequence_length(char first_byte);
 bool escape_to_utf8(uint32_t codepoint, std::string& result);
 
 } // namespace utf8
-} // namespace TOML
+} // namespace toml
 
 #endif // TOML_UTF8_H_

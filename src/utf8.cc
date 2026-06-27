@@ -20,7 +20,7 @@
 
 #include <cstring>
 
-namespace TOML {
+namespace toml {
 namespace utf8 {
 
 // ---- helpers ----
@@ -200,4 +200,4 @@ bool escape_to_utf8(uint32_t codepoint, std::string& result) {
 }
 
 } // namespace utf8
-} // namespace TOML
+} // namespace toml

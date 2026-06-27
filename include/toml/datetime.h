@@ -22,16 +22,16 @@
 #include <cstdint>
 #include <string>
 
-namespace TOML {
+namespace toml {
 
 struct DateTime {
-    uint16_t year = 0;
-    uint8_t month = 0, day = 0;
-    uint8_t hour = 0, minute = 0, second = 0;
-    uint32_t microsecond = 0;
-    uint8_t microsecond_digits = 0; // original decimal digits (preserves precision in to_string)
-    char time_separator = 'T';      // original separator: 'T' or ' '
-    int32_t utc_offset = 0; // seconds, 0 means not set
+    uint16_t year;
+    uint8_t month, day;
+    uint8_t hour, minute, second;
+    uint32_t microsecond;
+    uint8_t microsecond_digits; // original decimal digits (preserves precision in to_string)
+    char time_separator;        // original separator: 'T' or ' '
+    int32_t utc_offset;         // seconds, 0 means not set
 
     enum Fields : uint16_t {
         kNone        = 0,
@@ -45,7 +45,12 @@ struct DateTime {
         kUtcOffset   = 1 << 7,
         kSpecific    = 1 << 8,
     };
-    uint16_t present = kNone;
+    uint16_t present;
+
+    DateTime()
+        : year(0), month(0), day(0), hour(0), minute(0), second(0),
+          microsecond(0), microsecond_digits(0), time_separator('T'),
+          utc_offset(0), present(kNone) {}
 
     bool has_year() const { return present & kYear; }
     bool has_month() const { return present & kMonth; }
@@ -66,6 +71,6 @@ struct DateTime {
     std::string to_toml() const;
 };
 
-} // namespace TOML
+} // namespace toml
 
 #endif // TOML_DATETIME_H_
