@@ -16,23 +16,36 @@
  *
  */
 
-#include "toml/toml.h"
-#include "util/testutil.h"
+#ifndef TOML_ERROR_H_
+#define TOML_ERROR_H_
 
-#ifndef TEST_CASE_DIR
-#error "Missing Macro Definition: TEST_CASE_DIR, please check the CMakeLists.txt"
-#endif
+#include <cstddef>
+#include <string>
 
-TEST(Boolean, BasicTest) {
-    std::string path = TEST_CASE_DIR "/bool1.toml";
-    auto result = TOML::parse_file(path);
-    ASSERT_TRUE(result.ok()) << result.error.to_string();
-    const auto& node = result.value;
-    const auto& n1 = node.as_table().at("bool1");
-    ASSERT_TRUE(n1.as_bool());
-    const auto& n2 = node.as_table().at("bool2");
-    ASSERT_FALSE(n2.as_bool());
-}
+namespace TOML {
 
+class Value;
 
-RUN_ALL_TESTS()
+struct SourceLocation {
+    size_t line = 0;
+    size_t column = 0;
+};
+
+struct Error {
+    SourceLocation location;
+    std::string message;
+
+    bool ok() const { return message.empty(); }
+    std::string to_string() const;
+};
+
+struct ParseResult {
+    Value value;
+    Error error;
+
+    bool ok() const { return error.ok(); }
+};
+
+} // namespace TOML
+
+#endif // TOML_ERROR_H_

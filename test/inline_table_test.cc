@@ -1,79 +1,73 @@
+/*
+ *
+ * Copyright 2022-2023 libtoml authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 #include "toml/toml.h"
-#include "gtest/gtest.h"
+#include "util/testutil.h"
 
 #ifndef TEST_CASE_DIR
 #error "Missing Macro Definition: TEST_CASE_DIR, please check the CMakeLists.txt"
 #endif
 
-bool CheckTableHasStringValue(TOML::Node node, const std::string &key, const std::string &value) {
-    TOML::Node v = node.As<TOML::kTable>()->Get(key);
-    if (v.Type() != TOML::kString) {
-        return false;
-    }
-    return v.As<TOML::kString>()->Value() == value;
-}
-
-bool CheckTableHasIntValue(TOML::Node node, const std::string &key, int64_t value) {
-    TOML::Node v = node.As<TOML::kTable>()->Get(key);
-    if (v.Type() != TOML::kInteger) {
-        return false;
-    }
-    return v.As<TOML::kInteger>()->Value() == value;
-}
-
 TEST(InlineTable, inline_table) {
     std::string path = TEST_CASE_DIR "/inline_table.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(node);
-    TOML::Node x = node.As<TOML::kTable>()->Get("x");
-    ASSERT_EQ(x.As<TOML::kTable>()->size(), 2);
-    ASSERT_TRUE(CheckTableHasIntValue(x, "a", 1));
-    ASSERT_TRUE(CheckTableHasIntValue(x, "b", 2));
+    auto result = TOML::parse_file(path);
+    ASSERT_TRUE(result.ok()) << result.error.to_string();
+    const auto& node = result.value;
+    const auto& x = node.as_table().at("x");
+    ASSERT_EQ(x.as_table().size(), 2);
+    ASSERT_TRUE(testutil::CheckTableHasIntValue(x.as_table(), "a", 1));
+    ASSERT_TRUE(testutil::CheckTableHasIntValue(x.as_table(), "b", 2));
 }
 
 TEST(InlineTable, inlinetab1) {
     std::string path = TEST_CASE_DIR "/inlinetab1.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(node);
-    TOML::Node name = node.As<TOML::kTable>()->Get("name");
-    ASSERT_EQ(name.As<TOML::kTable>()->size(), 2);
-    ASSERT_TRUE(CheckTableHasStringValue(name, "first", "Tom"));
-    ASSERT_TRUE(CheckTableHasStringValue(name, "last", "Preston-Werner"));
+    auto result = TOML::parse_file(path);
+    ASSERT_TRUE(result.ok()) << result.error.to_string();
+    const auto& node = result.value;
+    const auto& name = node.as_table().at("name");
+    ASSERT_EQ(name.as_table().size(), 2);
+    ASSERT_TRUE(testutil::CheckTableHasStringValue(name.as_table(), "first", "Tom"));
+    ASSERT_TRUE(testutil::CheckTableHasStringValue(name.as_table(), "last", "Preston-Werner"));
 
-    TOML::Node point = node.As<TOML::kTable>()->Get("point");
-    ASSERT_EQ(point.As<TOML::kTable>()->size(), 2);
-    ASSERT_TRUE(CheckTableHasIntValue(point, "x", 1));
-    ASSERT_TRUE(CheckTableHasIntValue(point, "y", 2));
+    const auto& point = node.as_table().at("point");
+    ASSERT_EQ(point.as_table().size(), 2);
+    ASSERT_TRUE(testutil::CheckTableHasIntValue(point.as_table(), "x", 1));
+    ASSERT_TRUE(testutil::CheckTableHasIntValue(point.as_table(), "y", 2));
 
     // animal = { type.name = "pug" }
-    TOML::Node animal = node.As<TOML::kTable>()->Get("animal");
-    ASSERT_EQ(animal.As<TOML::kTable>()->size(), 1);
-    TOML::Node sub = animal.As<TOML::kTable>()->Get("type");
-    ASSERT_EQ(sub.As<TOML::kTable>()->size(), 1);
-    ASSERT_TRUE(CheckTableHasStringValue(sub, "name", "pug"));
+    const auto& animal = node.as_table().at("animal");
+    ASSERT_EQ(animal.as_table().size(), 1);
+    const auto& sub = animal.as_table().at("type");
+    ASSERT_EQ(sub.as_table().size(), 1);
+    ASSERT_TRUE(testutil::CheckTableHasStringValue(sub.as_table(), "name", "pug"));
 }
 
 TEST(InlineTable, inlinetab2) {
     std::string path = TEST_CASE_DIR "/inlinetab2.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_FALSE(error.empty());
-    ASSERT_FALSE(node);
+    auto result = TOML::parse_file(path);
+    ASSERT_FALSE(result.ok());
 }
 
 TEST(InlineTable, inlinetab3) {
     std::string path = TEST_CASE_DIR "/inlinetab3.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_FALSE(error.empty());
-    ASSERT_FALSE(node);
+    auto result = TOML::parse_file(path);
+    ASSERT_FALSE(result.ok());
 }
 
-int main(int argc, char *argv[]) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
+
+RUN_ALL_TESTS()

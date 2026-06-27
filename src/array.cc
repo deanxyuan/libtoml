@@ -16,228 +16,97 @@
  *
  */
 
-#include "src/reader.h"
-#include <assert.h>
-#include <math.h>
-#include <string.h>
-#include <vector>
-#include "src/common.h"
+#include "toml/array.h"
+#include "toml/value.h"
 
 namespace TOML {
-namespace internal {
 
-bool Reader::GetArrayImpl() {
-
-    const int depth = StackDepth();
-
-    uint32_t c = 0;
-    Node node;
-
-    bool find_a_separator = true;
-
-    while (remaining_input_ > 0) {
-        c = *input_;
-        switch (c) {
-        case '\r':
-        case '\n':
-            break;
-        case '#':
-            if (!SkipComment()) {
-                goto __exit;
-            }
-            break;
-        case ',':
-            input_++;
-            remaining_input_--;
-            find_a_separator = true;
-            break;
-        case '\'':
-        case '\"':
-            // string
-            if (!find_a_separator || !GetStringValue()) {
-                goto __exit;
-            }
-            find_a_separator = false;
-            break;
-        case '+':
-        case '-':
-            if (!find_a_separator || !GetNumberWithPrefix()) {
-                goto __exit;
-            }
-            find_a_separator = false;
-            break;
-        case '0':
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
-            // integer float datetime
-            if (!find_a_separator || !GetNumberNoPrefix()) {
-                goto __exit;
-            }
-            find_a_separator = false;
-            break;
-        case 'n': // nan
-            if (find_a_separator && StartsWith("nan")) {
-                node = Node::CreateFloat(NAN);
-                UpdateNode(node);
-                state_ = PARSE_STATUS_SUCCESS;
-                input_ += 3;
-                remaining_input_ -= 3;
-                find_a_separator = false;
-                break;
-            }
-            goto __exit;
-        case 'i': // inf
-            if (find_a_separator && StartsWith("inf")) {
-                node = Node::CreateFloat(INFINITY);
-                UpdateNode(node);
-                state_ = PARSE_STATUS_SUCCESS;
-                input_ += 3;
-                remaining_input_ -= 3;
-                find_a_separator = false;
-                break;
-            }
-            goto __exit;
-        case 't': // true
-            if (find_a_separator && StartsWith("true")) {
-                node = Node::CreateBoolean(true);
-                UpdateNode(node);
-                state_ = PARSE_STATUS_SUCCESS;
-                input_ += 4;
-                remaining_input_ -= 4;
-                find_a_separator = false;
-                break;
-            }
-            goto __exit;
-        case 'f': // false
-            if (find_a_separator && StartsWith("false")) {
-                node = Node::CreateBoolean(false);
-                UpdateNode(node);
-                state_ = PARSE_STATUS_SUCCESS;
-                input_ += 5;
-                remaining_input_ -= 5;
-                find_a_separator = false;
-                break;
-            }
-            goto __exit;
-        case '[':
-            // array
-            if (!find_a_separator) {
-                goto __exit;
-            }
-            PushEmptyArray();
-            input_++;
-            remaining_input_--;
-            break;
-        case '{':
-            // inlined table
-            if (!find_a_separator || !GetInlineTableImpl()) {
-                goto __exit;
-            }
-            find_a_separator = false;
-            break;
-        case ']':
-            if (!StaticArrayPop()) {
-                goto __exit;
-            }
-            input_++;
-            remaining_input_--;
-            if (StackDepth() == depth) {
-                state_ = PARSE_STATUS_SUCCESS;
-                goto __exit;
-            }
-            break;
-        default:
-            goto __exit;
-            break;
-        }
-        c = SkipFrontSpace();
-        if (c == READ_CHAR_EOF) {
-            break;
-        }
-        state_ = PARSE_STATUS_ERROR;
-    } // end while
-__exit:
-    return state_ == PARSE_STATUS_SUCCESS;
-}
-bool Reader::UsingArrayOfTableTitleImpl() {
-
-    if (current_.title_path.size() == 1) {
-        // 表数组元素定义
-        std::string key = current_.title_path[0];
-        Node sub_array, parent = stack_.top();
-        assert(parent.Type() == Types::TOML_TABLE);
-        if (!parent.As<kTable>()->Exists(key)) {
-            // 首次出现，即第一个元素
-            sub_array = Node::CreateArray();
-            parent.As<kTable>()->Insert(key, sub_array);
-        } else {
-            // 非首次出现，表示插入新的元素
-            sub_array = parent.As<kTable>()->Get(key);
-            if (sub_array.Type() != Types::TOML_ARRAY) {
-                desc_ = "\"" + key + "\" already exists and it is not an array";
-                return false;
-            }
-            // 判断是否为静态数组
-            if (sub_array.As<kArray>()->Static()) {
-                desc_ = "\"" + key + "\" is an static array";
-                return false;
-            }
-        }
-        // 创建一个空对象，入栈
-        Node obj = Node::CreateTable();
-        PushStack(obj);
-        sub_array.As<kArray>()->PushBack(obj);
-        // 保存父节点(ARRAY)的最新元素
-        array_of_table_map_[key] = obj;
-        // 更新栈高度
-        table_depth_ = 1;
-        return true;
-    }
-    // 嵌套表数组，判断路径是否有效
-    // [[A.B.C]] 判断前缀 A.B 是否存在
-    auto prefix = ComplexPathPrefix(current_.title_path);
-    auto iter   = array_of_table_map_.find(prefix);
-    if (iter == array_of_table_map_.end()) {
-        desc_ = "Missing definition of parent node \"" + prefix + "\"";
-        return false;
-    }
-
-    // 获取最新的节点名, 如 [[A.B.C]] 中的 C
-    auto key = GetVectorLastElement(current_.title_path);
-
-    // 获取路径前缀的最后一次更新的 TABLE
-    Node sub_array, last_node = iter->second;
-
-    // 判断 C 数组是否存在
-    if (last_node.As<kTable>()->Exists(key)) {
-        sub_array = last_node.As<kTable>()->Get(key);
-        if (sub_array.Type() != Types::TOML_ARRAY) {
-            desc_ = "\"" + key + "\" must be array";
-            return false;
-        }
-
-    } else {
-        sub_array = Node::CreateArray();
-        // 更新父节点，最后一次的 TABLE
-        last_node.As<kTable>()->Insert(key, sub_array);
-    }
-    // 创建一个空对象，入栈
-    Node obj = Node::CreateTable();
-    PushStack(obj);
-    sub_array.As<kArray>()->PushBack(obj);
-    array_of_table_map_[current_.title] = obj;
-
-    // 更新栈高度
-    table_depth_ = 1;
-    return true;
+void Array::push_back(Value value) {
+    data_.push_back(std::move(value));
 }
 
-} // namespace internal
+void Array::insert(size_t index, Value value) {
+    if (index > data_.size()) {
+        throw std::out_of_range("Array insert index out of range");
+    }
+    data_.insert(data_.begin() + index, std::move(value));
+}
+
+Value& Array::at(size_t index) {
+    if (index >= data_.size()) {
+        throw std::out_of_range("Array index out of range");
+    }
+    return data_[index];
+}
+
+const Value& Array::at(size_t index) const {
+    if (index >= data_.size()) {
+        throw std::out_of_range("Array index out of range");
+    }
+    return data_[index];
+}
+
+Value& Array::operator[](size_t index) {
+    return data_[index];
+}
+
+const Value& Array::operator[](size_t index) const {
+    return data_[index];
+}
+
+Value& Array::front() {
+    return data_.front();
+}
+
+const Value& Array::front() const {
+    return data_.front();
+}
+
+Value& Array::back() {
+    return data_.back();
+}
+
+const Value& Array::back() const {
+    return data_.back();
+}
+
+void Array::clear() {
+    data_.clear();
+}
+
+void Array::erase(size_t index) {
+    if (index >= data_.size()) {
+        throw std::out_of_range("Array erase index out of range");
+    }
+    data_.erase(data_.begin() + index);
+}
+
+void Array::pop_back() {
+    data_.pop_back();
+}
+
+std::string Array::to_toml() const {
+    std::string result = "[";
+    for (size_t i = 0; i < data_.size(); ++i) {
+        if (i > 0) {
+            result += ", ";
+        }
+        result += data_[i].to_toml();
+    }
+    result += "]";
+    return result;
+}
+
+std::string Array::to_json() const {
+    std::string result = "[";
+    for (size_t i = 0; i < data_.size(); ++i) {
+        if (i > 0) {
+            result += ", ";
+        }
+        result += data_[i].to_json();
+    }
+    result += "]";
+    return result;
+}
+
 } // namespace TOML

@@ -16,173 +16,82 @@
  *
  */
 
-#include "src/reader.h"
-#include <string.h>
-#include "src/common.h"
+#include "toml/datetime.h"
+#include <cstdio>
 
 namespace TOML {
-namespace internal {
-bool Reader::GetDateTime() {
-    // YYYY-MM-DD or HH:MM:SS
-    if (remaining_input_ < 8) return false;
-    DateTime::InitDetail(&dt_);
-    if (input_[2] == ':') {
-        return GetTimeImpl();
-    } else if (input_[4] == '-') {
-        return GetDateImpl();
+
+static void append_utc_offset(std::string& out, int32_t offset_seconds) {
+    if (offset_seconds == 0) {
+        out += 'Z';
+        return;
     }
-    return false;
+    char sign = '+';
+    if (offset_seconds < 0) {
+        sign = '-';
+        offset_seconds = -offset_seconds;
+    }
+    int32_t hours = offset_seconds / 3600;
+    int32_t minutes = (offset_seconds % 3600) / 60;
+    char buf[8];
+    std::snprintf(buf, sizeof(buf), "%c%02d:%02d", sign, hours, minutes);
+    out += buf;
 }
 
-bool Reader::GetTimeImpl() {
-    // HH:MM:SS
-    // HH:MM:SS[Z]
-    // HH:MM:SS[+/-HH:MM]
-    // HH:MM:SS[.microsecs]
-    // HH:MM:SS[.microsecs][+/-HH:MM]
+std::string DateTime::to_string() const {
+    std::string result;
 
-    if (!ReadTimeString()) {
-        return false;
+    // Date part
+    if (has_year()) {
+        char buf[16];
+        std::snprintf(buf, sizeof(buf), "%04d", year);
+        result += buf;
     }
-    if (IsReachTheEnd() || IsSpaceOrNextLine(*input_) || *input_ == '#') {
-        return true;
+    if (has_month()) {
+        char buf[8];
+        std::snprintf(buf, sizeof(buf), "-%02d", month);
+        result += buf;
     }
-
-    uint8_t c = *input_++;
-    remaining_input_--;
-
-    if (c == 'Z') {
-        StringAddChar(c);
-        dt_.SetSpecific(true);
-        return true;
+    if (has_day()) {
+        char buf[8];
+        std::snprintf(buf, sizeof(buf), "-%02d", day);
+        result += buf;
     }
 
-    if (c == '.') {
-        // read microseconds
-        StringAddChar(c);
-
-        char buff[12];
-        memset(buff, '0', sizeof(buff));
-
-        size_t i = 0;
-        for (; i < remaining_input_ && i < 9; i++) {
-            uint8_t ch = input_[i];
-            if (isdigit(ch)) {
-                buff[i] = ch;
-                continue;
-            }
-            if (IsSpaceOrNextLine(ch) || ch == '#' || ch == '+' || ch == '-') {
-                break;
-            }
-            return false;
+    // Time part
+    if (has_hour()) {
+        if (has_year()) {
+            result += time_separator;
         }
-        if (i <= 3) {
-            // milliseconds
-            dt_.SetMicroSecond(BufferToInt(buff, 3) * 1000);
-        } else if (i <= 6) {
-            // microseconds
-            dt_.SetMicroSecond(BufferToInt(buff, 6));
-        } else {
-            // nanoseconds
-            dt_.SetMicroSecond(BufferToInt(buff, 9) / 1000);
-        }
-
-        StringAddCString(buff, i);
-        input_ += i;
-        remaining_input_ -= i;
-
-        if (IsReachTheEnd()) {
-            return true;
-        }
-        c = *input_++;
-        remaining_input_--;
+        char buf[16];
+        std::snprintf(buf, sizeof(buf), "%02d:%02d:%02d", hour, minute, second);
+        result += buf;
     }
 
-    if (c == '+' || c == '-') {
-        StringAddChar(c);
-        return ReadUTCOffsetString();
+    // Microseconds
+    if (has_microsecond() && microsecond > 0) {
+        char buf[16];
+        int digits = microsecond_digits > 0 && microsecond_digits <= 6 ? microsecond_digits : 6;
+        // 去掉尾部的零，但保留至少 digits 位
+        uint32_t us = microsecond;
+        // 根据原始位数截取
+        for (int i = 6; i > digits; i--)
+            us /= 10;
+        std::snprintf(buf, sizeof(buf), ".%0*u", digits, us);
+        result += buf;
     }
-    return true;
-}
-bool Reader::GetDateImpl() {
-    if (ReadDateString()) {
-        if (IsReachTheEnd()) {
-            return true;
-        }
 
-        if (*input_ == 'T') {
-            StringAddChar(*input_);
-            input_++;
-            remaining_input_--;
-            return GetTimeImpl();
-        }
-        if (*input_ == ' ') {
-            // try to read time string
-            if (remaining_input_ > 1 && input_[1] >= '0' && input_[1] <= '9') {
-                StringAddChar(*input_);
-                input_++;
-                remaining_input_--;
-                return GetTimeImpl();
-            }
-        }
-        return true;
+    // UTC offset
+    if (has_utc_offset()) {
+        append_utc_offset(result, utc_offset);
     }
-    return false;
+
+    return result;
 }
 
-bool Reader::ReadUTCOffsetString() {
-    // HH:MM
-    if (remaining_input_ < 5) return false;
-    if (input_[2] == ':') {
-        if (isdigit(input_[0]) && isdigit(input_[1]) && isdigit(input_[3]) && isdigit(input_[4])) {
-            StringAddCString(reinterpret_cast<const char *>(input_), 5);
-            int hh = BufferToInt(&input_[0], 2);
-            int mm = BufferToInt(&input_[3], 2);
-            dt_.SetGMTOffset(hh, mm);
-            dt_.SetSpecific(true);
-            input_ += 5;
-            remaining_input_ -= 5;
-            return true;
-        }
-    }
-    return false;
+std::string DateTime::to_toml() const {
+    // Same format as to_string() — TOML datetime literals are ISO 8601
+    return to_string();
 }
 
-bool Reader::ReadTimeString() {
-    // HH:MM:SS
-    if (remaining_input_ < 8) return false;
-    if (input_[2] == ':' && input_[5] == ':') {
-        if (isdigit(input_[0]) && isdigit(input_[1]) && isdigit(input_[3]) && isdigit(input_[4]) &&
-            isdigit(input_[6]) && isdigit(input_[7])) {
-            StringAddCString(reinterpret_cast<const char *>(input_), 8);
-            dt_.SetHour(BufferToInt(&input_[0], 2));
-            dt_.SetMinute(BufferToInt(&input_[3], 2));
-            dt_.SetSecond(BufferToInt(&input_[6], 2));
-            input_ += 8;
-            remaining_input_ -= 8;
-            return true;
-        }
-    }
-    return false;
-}
-
-bool Reader::ReadDateString() {
-    // YYYY-MM-DD
-    if (remaining_input_ < 10) return false;
-    if (input_[4] == '-' && input_[7] == '-') {
-        if (isdigit(input_[0]) && isdigit(input_[1]) && isdigit(input_[2]) && isdigit(input_[3]) &&
-            isdigit(input_[5]) && isdigit(input_[6]) && isdigit(input_[8]) && isdigit(input_[9])) {
-            StringAddCString(reinterpret_cast<const char *>(input_), 10);
-            dt_.SetYear(BufferToInt(&input_[0], 4));
-            dt_.SetMonth(BufferToInt(&input_[5], 2));
-            dt_.SetDay(BufferToInt(&input_[8], 2));
-            input_ += 10;
-            remaining_input_ -= 10;
-            return true;
-        }
-    }
-    return false;
-}
-
-} // namespace internal
 } // namespace TOML

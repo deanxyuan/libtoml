@@ -1,6 +1,23 @@
-#include <iostream>
+/*
+ *
+ * Copyright 2022-2023 libtoml authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 #include "toml/toml.h"
-#include "gtest/gtest.h"
+#include "util/testutil.h"
 
 #ifndef TEST_CASE_DIR
 #error "Missing Macro Definition: TEST_CASE_DIR, please check the CMakeLists.txt"
@@ -8,140 +25,130 @@
 
 TEST(String, string0) {
     std::string path = TEST_CASE_DIR "/string0.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kTable>()->Get("str");
-    // "I'm a string. \"You can quote me\". Name\tJos\u00E9\nLocation\tSF."
-    std::string value = "I'm a string. \"You can quote me\". Name\tJos\u00E9\nLocation\tSF.";
-    ASSERT_EQ(n1.As<TOML::kString>()->Value(), value);
+    auto result = TOML::parse_file(path);
+    ASSERT_TRUE(result.ok()) << result.error.to_string();
+    const auto& node = result.value;
+    const auto& n1 = node.as_table().at("str");
+    // "I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF."
+    std::string value = "I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF.";
+    ASSERT_EQ(n1.as_string(), value);
 
     unsigned char buff[] = {0xC3, 0xA9, 0x00, 0x00};
     std::string s1       = "I'm a string. \"You can quote me\". Name\tJos";
     s1.append((char *)buff, 2);
     s1.append("\nLocation\tSF.");
-    EXPECT_EQ(value, s1);
+    ASSERT_EQ(value, s1);
 }
 
 TEST(String, string1) {
     std::string path = TEST_CASE_DIR "/string1.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(node);
+    auto result = TOML::parse_file(path);
+    ASSERT_TRUE(result.ok()) << result.error.to_string();
+    const auto& node = result.value;
 
     std::string value("Roses are red\nViolets are blue");
-    TOML::Node n1 = node.As<TOML::kTable>()->Get("str1");
-    ASSERT_EQ(n1.As<TOML::kString>()->Value(), value);
+    const auto& n1 = node.as_table().at("str1");
+    ASSERT_EQ(n1.as_string(), value);
 
 #ifdef _WIN32
     value         = std::string("Roses are red\r\nViolets are blue");
-    TOML::Node n2 = node.As<TOML::kTable>()->Get("str3");
-    ASSERT_EQ(n2.As<TOML::kString>()->Value(), value);
+    const auto& n2 = node.as_table().at("str3");
+    ASSERT_EQ(n2.as_string(), value);
 #else
     value         = std::string("Roses are red\nViolets are blue");
-    TOML::Node n2 = node.As<TOML::kTable>()->Get("str2");
-    ASSERT_EQ(n2.As<TOML::kString>()->Value(), value);
+    const auto& n2 = node.as_table().at("str2");
+    ASSERT_EQ(n2.as_string(), value);
 #endif
 }
 
 TEST(String, string3) {
     std::string path = TEST_CASE_DIR "/string3.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(node);
+    auto result = TOML::parse_file(path);
+    ASSERT_TRUE(result.ok()) << result.error.to_string();
+    const auto& node = result.value;
 
     std::string value("The quick brown fox jumps over the lazy dog.");
-    TOML::Node n1 = node.As<TOML::kTable>()->Get("str1");
-    ASSERT_EQ(n1.As<TOML::kString>()->Value(), value);
-    TOML::Node n2 = node.As<TOML::kTable>()->Get("str2");
-    ASSERT_EQ(n2.As<TOML::kString>()->Value(), value);
-    TOML::Node n3 = node.As<TOML::kTable>()->Get("str3");
-    ASSERT_EQ(n3.As<TOML::kString>()->Value(), value);
+    const auto& n1 = node.as_table().at("str1");
+    ASSERT_EQ(n1.as_string(), value);
+    const auto& n2 = node.as_table().at("str2");
+    ASSERT_EQ(n2.as_string(), value);
+    const auto& n3 = node.as_table().at("str3");
+    ASSERT_EQ(n3.as_string(), value);
 }
 
 TEST(String, string4) {
     std::string path = TEST_CASE_DIR "/string4.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(node);
+    auto result = TOML::parse_file(path);
+    ASSERT_TRUE(result.ok()) << result.error.to_string();
+    const auto& node = result.value;
 
     std::string str4("Here are two quotation marks: \"\". Simple enough.");
-    TOML::Node n1 = node.As<TOML::kTable>()->Get("str4");
-    ASSERT_EQ(n1.As<TOML::kString>()->Value(), str4);
+    const auto& n1 = node.as_table().at("str4");
+    ASSERT_EQ(n1.as_string(), str4);
 
     std::string str5("Here are three quotation marks: \"\"\".");
-    TOML::Node n2 = node.As<TOML::kTable>()->Get("str5");
-    ASSERT_EQ(n2.As<TOML::kString>()->Value(), str5);
+    const auto& n2 = node.as_table().at("str5");
+    ASSERT_EQ(n2.as_string(), str5);
 
     std::string str6("Here are fifteen quotation marks: \"\"\"\"\"\"\"\"\"\"\"\"\"\"\".");
-    TOML::Node n3 = node.As<TOML::kTable>()->Get("str6");
-    ASSERT_EQ(n3.As<TOML::kString>()->Value(), str6);
+    const auto& n3 = node.as_table().at("str6");
+    ASSERT_EQ(n3.as_string(), str6);
 
     std::string str7("\"This,\" she said, \"is just a pointless statement.\"");
-    TOML::Node n4 = node.As<TOML::kTable>()->Get("str7");
-    ASSERT_EQ(n4.As<TOML::kString>()->Value(), str7);
+    const auto& n4 = node.as_table().at("str7");
+    ASSERT_EQ(n4.as_string(), str7);
 }
 
 TEST(String, string5) {
     std::string path = TEST_CASE_DIR "/string5.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kTable>()->Get("winpath");
-    ASSERT_EQ(n1.As<TOML::kString>()->Value(), std::string(R"(C:\Users\nodejs\templates)"));
-    TOML::Node n2 = node.As<TOML::kTable>()->Get("winpath2");
-    ASSERT_EQ(n2.As<TOML::kString>()->Value(), std::string(R"(\\ServerX\admin$\system32\)"));
-    TOML::Node n3 = node.As<TOML::kTable>()->Get("quoted");
-    ASSERT_EQ(n3.As<TOML::kString>()->Value(), std::string(R"(Tom "Dubs" Preston-Werner)"));
-    TOML::Node n4 = node.As<TOML::kTable>()->Get("regex");
-    ASSERT_EQ(n4.As<TOML::kString>()->Value(), std::string(R"(<\i\c*\s*>)"));
+    auto result = TOML::parse_file(path);
+    ASSERT_TRUE(result.ok()) << result.error.to_string();
+    const auto& node = result.value;
+    const auto& n1 = node.as_table().at("winpath");
+    ASSERT_EQ(n1.as_string(), std::string(R"(C:\Users\nodejs\templates)"));
+    const auto& n2 = node.as_table().at("winpath2");
+    ASSERT_EQ(n2.as_string(), std::string(R"(\\ServerX\admin$\system32\)"));
+    const auto& n3 = node.as_table().at("quoted");
+    ASSERT_EQ(n3.as_string(), std::string(R"(Tom "Dubs" Preston-Werner)"));
+    const auto& n4 = node.as_table().at("regex");
+    ASSERT_EQ(n4.as_string(), std::string(R"(<\i\c*\s*>)"));
 }
 
 TEST(String, string6) {
     std::string path = TEST_CASE_DIR "/string6.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kTable>()->Get("regex2");
-    ASSERT_EQ(n1.As<TOML::kString>()->Value(), std::string(R"(I [dw]on't need \d{2} apples)"));
-    TOML::Node n2 = node.As<TOML::kTable>()->Get("lines");
-    ASSERT_EQ(n2.As<TOML::kString>()->Value(),
+    auto result = TOML::parse_file(path);
+    ASSERT_TRUE(result.ok()) << result.error.to_string();
+    const auto& node = result.value;
+    const auto& n1 = node.as_table().at("regex2");
+    ASSERT_EQ(n1.as_string(), std::string(R"(I [dw]on't need \d{2} apples)"));
+    const auto& n2 = node.as_table().at("lines");
+    ASSERT_EQ(n2.as_string(),
               std::string("The first newline is\ntrimmed in raw strings.\n   All other "
                           "whitespace\n   is preserved.\n"));
 }
 
 TEST(String, string7) {
     std::string path = TEST_CASE_DIR "/string7.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kTable>()->Get("quot15");
-    ASSERT_EQ(n1.As<TOML::kString>()->Value(),
+    auto result = TOML::parse_file(path);
+    ASSERT_TRUE(result.ok()) << result.error.to_string();
+    const auto& node = result.value;
+    const auto& n1 = node.as_table().at("quot15");
+    ASSERT_EQ(n1.as_string(),
               std::string(R"(Here are fifteen quotation marks: """"""""""""""")"));
-    TOML::Node n2 = node.As<TOML::kTable>()->Get("str");
-    ASSERT_EQ(n2.As<TOML::kString>()->Value(),
+    const auto& n2 = node.as_table().at("str");
+    ASSERT_EQ(n2.as_string(),
               std::string(R"('That,' she said, 'is still pointless.')"));
 }
 
 TEST(String, string8) {
     std::string path = TEST_CASE_DIR "/string8.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kTable>()->Get("apos15");
-    ASSERT_EQ(n1.As<TOML::kString>()->Value(),
+    auto result = TOML::parse_file(path);
+    ASSERT_TRUE(result.ok()) << result.error.to_string();
+    const auto& node = result.value;
+    const auto& n1 = node.as_table().at("apos15");
+    ASSERT_EQ(n1.as_string(),
               std::string(R"(Here are fifteen apostrophes: ''''''''''''''')"));
 }
 
-int main(int argc, char *argv[]) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
+
+RUN_ALL_TESTS()

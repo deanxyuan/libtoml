@@ -1,5 +1,23 @@
+/*
+ *
+ * Copyright 2022-2023 libtoml authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 #include "toml/toml.h"
-#include "gtest/gtest.h"
+#include "util/testutil.h"
 
 #ifndef TEST_CASE_DIR
 #error "Missing Macro Definition: TEST_CASE_DIR, please check the CMakeLists.txt"
@@ -7,63 +25,59 @@
 
 TEST(Integer, DecimalInteger) {
     std::string path = TEST_CASE_DIR "/int0.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(node);
+    auto result = TOML::parse_file(path);
+    ASSERT_TRUE(result.ok()) << result.error.to_string();
+    const auto& node = result.value;
 
-    TOML::Node n1 = node.As<TOML::kTable>()->Get("int1");
-    ASSERT_EQ(n1.As<TOML::kInteger>()->Value(), 99);
+    const auto& n1 = node.as_table().at("int1");
+    ASSERT_EQ(n1.as_integer(), 99);
 
-    TOML::Node n2 = node.As<TOML::kTable>()->Get("int2");
-    ASSERT_EQ(n2.As<TOML::kInteger>()->Value(), 42);
+    const auto& n2 = node.as_table().at("int2");
+    ASSERT_EQ(n2.as_integer(), 42);
 
-    TOML::Node n3 = node.As<TOML::kTable>()->Get("int3");
-    ASSERT_EQ(n3.As<TOML::kInteger>()->Value(), 0);
+    const auto& n3 = node.as_table().at("int3");
+    ASSERT_EQ(n3.as_integer(), 0);
 
-    TOML::Node n4 = node.As<TOML::kTable>()->Get("int4");
-    ASSERT_EQ(n4.As<TOML::kInteger>()->Value(), -17);
+    const auto& n4 = node.as_table().at("int4");
+    ASSERT_EQ(n4.as_integer(), -17);
 
-    TOML::Node n5 = node.As<TOML::kTable>()->Get("int5");
-    ASSERT_EQ(n5.As<TOML::kInteger>()->Value(), 1000);
+    const auto& n5 = node.as_table().at("int5");
+    ASSERT_EQ(n5.as_integer(), 1000);
 
-    TOML::Node n6 = node.As<TOML::kTable>()->Get("int6");
-    ASSERT_EQ(n6.As<TOML::kInteger>()->Value(), 5349221);
+    const auto& n6 = node.as_table().at("int6");
+    ASSERT_EQ(n6.as_integer(), 5349221);
 
-    TOML::Node n7 = node.As<TOML::kTable>()->Get("int7");
-    ASSERT_EQ(n7.As<TOML::kInteger>()->Value(), 5349221);
+    const auto& n7 = node.as_table().at("int7");
+    ASSERT_EQ(n7.as_integer(), 5349221);
 
-    TOML::Node n8 = node.As<TOML::kTable>()->Get("int8");
-    ASSERT_EQ(n8.As<TOML::kInteger>()->Value(), 12345);
+    const auto& n8 = node.as_table().at("int8");
+    ASSERT_EQ(n8.as_integer(), 12345);
 }
 
 TEST(Integer, OtherDecimalInteger) {
     std::string path = TEST_CASE_DIR "/int1.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(node);
+    auto result = TOML::parse_file(path);
+    ASSERT_TRUE(result.ok()) << result.error.to_string();
+    const auto& node = result.value;
 
-    TOML::Node n1 = node.As<TOML::kTable>()->Get("hex1");
-    ASSERT_EQ(n1.As<TOML::kInteger>()->Value<false>(), 0xDEADBEEF);
+    const auto& n1 = node.as_table().at("hex1");
+    ASSERT_EQ(n1.as_uinteger(), 0xDEADBEEF);
 
-    TOML::Node n2 = node.As<TOML::kTable>()->Get("hex2");
-    ASSERT_EQ(n2.As<TOML::kInteger>()->Value<false>(), 0xdeadbeef);
+    const auto& n2 = node.as_table().at("hex2");
+    ASSERT_EQ(n2.as_uinteger(), 0xdeadbeef);
 
-    TOML::Node n3 = node.As<TOML::kTable>()->Get("hex3");
-    ASSERT_EQ(n3.As<TOML::kInteger>()->Value<false>(), 0xdeadbeef);
+    const auto& n3 = node.as_table().at("hex3");
+    ASSERT_EQ(n3.as_uinteger(), 0xdeadbeef);
 
-    TOML::Node n4 = node.As<TOML::kTable>()->Get("oct1");
-    ASSERT_EQ(n4.As<TOML::kInteger>()->Value(), 01234567);
+    const auto& n4 = node.as_table().at("oct1");
+    ASSERT_EQ(n4.as_integer(), 01234567);
 
-    TOML::Node n5 = node.As<TOML::kTable>()->Get("oct2");
-    ASSERT_EQ(n5.As<TOML::kInteger>()->Value(), 0755);
+    const auto& n5 = node.as_table().at("oct2");
+    ASSERT_EQ(n5.as_integer(), 0755);
 
-    TOML::Node n6 = node.As<TOML::kTable>()->Get("bin1");
-    ASSERT_EQ(n6.As<TOML::kInteger>()->Value(), 0b11010110);
+    const auto& n6 = node.as_table().at("bin1");
+    ASSERT_EQ(n6.as_integer(), 0b11010110);
 }
 
-int main(int argc, char *argv[]) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
+
+RUN_ALL_TESTS()

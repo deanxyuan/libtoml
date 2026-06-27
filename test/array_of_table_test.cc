@@ -1,152 +1,141 @@
+/*
+ *
+ * Copyright 2022-2023 libtoml authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 #include "toml/toml.h"
-#include "gtest/gtest.h"
+#include "util/testutil.h"
 
 #ifndef TEST_CASE_DIR
 #error "Missing Macro Definition: TEST_CASE_DIR, please check the CMakeLists.txt"
 #endif
 
-bool CheckTableHasStringValue(TOML::Node node, const std::string &key, const std::string &value) {
-    TOML::Node v = node.As<TOML::kTable>()->Get(key);
-    if (v.Type() != TOML::kString) {
-        return false;
-    }
-    return v.As<TOML::kString>()->Value() == value;
-}
-
-bool CheckTableHasIntValue(TOML::Node node, const std::string &key, int64_t value) {
-    TOML::Node v = node.As<TOML::kTable>()->Get(key);
-    if (v.Type() != TOML::kInteger) {
-        return false;
-    }
-    return v.As<TOML::kInteger>()->Value() == value;
-}
-
 TEST(Array, arrtab1) {
     std::string path = TEST_CASE_DIR "/arrtab1.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(node);
-    TOML::Node products = node.AsTable()->Get("products");
-    ASSERT_EQ(products.Type(), TOML::kArray);
-    ASSERT_EQ(products.As<TOML::kArray>()->size(), 3);
+    auto result = TOML::parse_file(path);
+    ASSERT_TRUE(result.ok()) << result.error.to_string();
+    const auto& node = result.value;
+    const auto& products = node.as_table().at("products");
+    ASSERT_TRUE(products.is_array());
+    ASSERT_EQ(products.as_array().size(), 3);
 
-    TOML::Node n1 = products.AsArray()->At(0);
-    ASSERT_EQ(n1.As<TOML::kTable>()->size(), 2);
-    ASSERT_TRUE(CheckTableHasStringValue(n1, "name", "Hammer"));
-    ASSERT_TRUE(CheckTableHasIntValue(n1, "sku", 738594937));
+    const auto& n1 = products.as_array().at(0);
+    ASSERT_EQ(n1.as_table().size(), 2);
+    ASSERT_TRUE(testutil::CheckTableHasStringValue(n1.as_table(), "name", "Hammer"));
+    ASSERT_TRUE(testutil::CheckTableHasIntValue(n1.as_table(), "sku", 738594937));
 
-    TOML::Node n2 = products.AsArray()->At(1);
-    ASSERT_EQ(n2.Type(), TOML::kTable);
-    ASSERT_EQ(n2.AsTable()->size(), 0);
+    const auto& n2 = products.as_array().at(1);
+    ASSERT_TRUE(n2.is_table());
+    ASSERT_EQ(n2.as_table().size(), 0);
 
-    TOML::Node n3 = products.AsArray()->At(2);
-    ASSERT_EQ(n3.As<TOML::kTable>()->size(), 3);
-    ASSERT_TRUE(CheckTableHasStringValue(n3, "name", "Nail"));
-    ASSERT_TRUE(CheckTableHasIntValue(n3, "sku", 284758393));
-    ASSERT_TRUE(CheckTableHasStringValue(n3, "color", "gray"));
+    const auto& n3 = products.as_array().at(2);
+    ASSERT_EQ(n3.as_table().size(), 3);
+    ASSERT_TRUE(testutil::CheckTableHasStringValue(n3.as_table(), "name", "Nail"));
+    ASSERT_TRUE(testutil::CheckTableHasIntValue(n3.as_table(), "sku", 284758393));
+    ASSERT_TRUE(testutil::CheckTableHasStringValue(n3.as_table(), "color", "gray"));
 }
 
 TEST(Array, arrtab2) {
     std::string path = TEST_CASE_DIR "/arrtab2.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(node);
-    TOML::Node fruits = node.AsTable()->Get("fruits");
-    ASSERT_EQ(fruits.Type(), TOML::kArray);
-    ASSERT_EQ(fruits.As<TOML::kArray>()->size(), 2);
+    auto result = TOML::parse_file(path);
+    ASSERT_TRUE(result.ok()) << result.error.to_string();
+    const auto& node = result.value;
+    const auto& fruits = node.as_table().at("fruits");
+    ASSERT_TRUE(fruits.is_array());
+    ASSERT_EQ(fruits.as_array().size(), 2);
 
-    TOML::Node n1 = fruits.AsArray()->At(0);
-    ASSERT_EQ(n1.As<TOML::kTable>()->size(), 3);
-    ASSERT_TRUE(CheckTableHasStringValue(n1, "name", "apple"));
-    TOML::Node physical = n1.AsTable()->Get("physical");
-    ASSERT_TRUE(CheckTableHasStringValue(physical, "color", "red"));
-    ASSERT_TRUE(CheckTableHasStringValue(physical, "shape", "round"));
-    TOML::Node varieties = n1.AsTable()->Get("varieties");
-    ASSERT_EQ(varieties.Type(), TOML::kArray);
-    ASSERT_EQ(varieties.As<TOML::kArray>()->size(), 2);
-    TOML::Node e1 = varieties.As<TOML::kArray>()->At(0);
-    TOML::Node e2 = varieties.As<TOML::kArray>()->At(1);
-    ASSERT_TRUE(CheckTableHasStringValue(e1, "name", "red delicious"));
-    ASSERT_TRUE(CheckTableHasStringValue(e2, "name", "granny smith"));
+    const auto& n1 = fruits.as_array().at(0);
+    ASSERT_EQ(n1.as_table().size(), 3);
+    ASSERT_TRUE(testutil::CheckTableHasStringValue(n1.as_table(), "name", "apple"));
+    const auto& physical = n1.as_table().at("physical");
+    ASSERT_TRUE(testutil::CheckTableHasStringValue(physical.as_table(), "color", "red"));
+    ASSERT_TRUE(testutil::CheckTableHasStringValue(physical.as_table(), "shape", "round"));
+    const auto& varieties = n1.as_table().at("varieties");
+    ASSERT_TRUE(varieties.is_array());
+    ASSERT_EQ(varieties.as_array().size(), 2);
+    const auto& e1 = varieties.as_array().at(0);
+    const auto& e2 = varieties.as_array().at(1);
+    ASSERT_TRUE(testutil::CheckTableHasStringValue(e1.as_table(), "name", "red delicious"));
+    ASSERT_TRUE(testutil::CheckTableHasStringValue(e2.as_table(), "name", "granny smith"));
 
-    TOML::Node n2 = fruits.AsArray()->At(1);
-    ASSERT_EQ(n2.Type(), TOML::kTable);
-    ASSERT_EQ(n2.AsTable()->size(), 2);
-    ASSERT_TRUE(CheckTableHasStringValue(n2, "name", "banana"));
+    const auto& n2 = fruits.as_array().at(1);
+    ASSERT_TRUE(n2.is_table());
+    ASSERT_EQ(n2.as_table().size(), 2);
+    ASSERT_TRUE(testutil::CheckTableHasStringValue(n2.as_table(), "name", "banana"));
 
-    varieties = n2.AsTable()->Get("varieties");
-    ASSERT_EQ(varieties.Type(), TOML::kArray);
-    ASSERT_EQ(varieties.As<TOML::kArray>()->size(), 1);
-    TOML::Node e3 = varieties.As<TOML::kArray>()->At(0);
-    ASSERT_TRUE(CheckTableHasStringValue(e3, "name", "plantain"));
+    const auto& varieties2 = n2.as_table().at("varieties");
+    ASSERT_TRUE(varieties2.is_array());
+    ASSERT_EQ(varieties2.as_array().size(), 1);
+    const auto& e3 = varieties2.as_array().at(0);
+    ASSERT_TRUE(testutil::CheckTableHasStringValue(e3.as_table(), "name", "plantain"));
 }
 
 TEST(Array, arrtab3) {
     std::string path = TEST_CASE_DIR "/arrtab3.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_FALSE(error.empty());
-    ASSERT_FALSE(node);
+    auto result = TOML::parse_file(path);
+    ASSERT_FALSE(result.ok());
 }
 
 TEST(Array, arrtab4) {
     std::string path = TEST_CASE_DIR "/arrtab4.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_FALSE(error.empty());
-    ASSERT_FALSE(node);
+    auto result = TOML::parse_file(path);
+    ASSERT_FALSE(result.ok());
 }
 
 TEST(Array, arrtab5) {
     std::string path = TEST_CASE_DIR "/arrtab5.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_FALSE(error.empty());
-    ASSERT_FALSE(node);
+    auto result = TOML::parse_file(path);
+    ASSERT_FALSE(result.ok());
 }
 
 TEST(Array, arrtab6) {
     std::string path = TEST_CASE_DIR "/arrtab6.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_FALSE(error.empty());
-    ASSERT_FALSE(node);
+    auto result = TOML::parse_file(path);
+    ASSERT_FALSE(result.ok());
 }
 
 TEST(Array, arrtab7) {
     std::string path = TEST_CASE_DIR "/arrtab7.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(node);
-    TOML::Node points = node.As<TOML::kTable>()->Get("points");
-    ASSERT_EQ(points.As<TOML::kArray>()->size(), 3);
+    auto result = TOML::parse_file(path);
+    ASSERT_TRUE(result.ok()) << result.error.to_string();
+    const auto& node = result.value;
+    const auto& points = node.as_table().at("points");
+    ASSERT_EQ(points.as_array().size(), 3);
 
-    TOML::Node n1 = points.AsArray()->At(0);
-    ASSERT_EQ(n1.Type(), TOML::kTable);
-    ASSERT_EQ(n1.As<TOML::kTable>()->size(), 3);
-    ASSERT_TRUE(CheckTableHasIntValue(n1, "x", 1));
-    ASSERT_TRUE(CheckTableHasIntValue(n1, "y", 2));
-    ASSERT_TRUE(CheckTableHasIntValue(n1, "z", 3));
+    const auto& n1 = points.as_array().at(0);
+    ASSERT_TRUE(n1.is_table());
+    ASSERT_EQ(n1.as_table().size(), 3);
+    ASSERT_TRUE(testutil::CheckTableHasIntValue(n1.as_table(), "x", 1));
+    ASSERT_TRUE(testutil::CheckTableHasIntValue(n1.as_table(), "y", 2));
+    ASSERT_TRUE(testutil::CheckTableHasIntValue(n1.as_table(), "z", 3));
 
-    TOML::Node n2 = points.AsArray()->At(1);
-    ASSERT_EQ(n2.Type(), TOML::kTable);
-    ASSERT_EQ(n2.As<TOML::kTable>()->size(), 3);
-    ASSERT_TRUE(CheckTableHasIntValue(n2, "x", 7));
-    ASSERT_TRUE(CheckTableHasIntValue(n2, "y", 8));
-    ASSERT_TRUE(CheckTableHasIntValue(n2, "z", 9));
+    const auto& n2 = points.as_array().at(1);
+    ASSERT_TRUE(n2.is_table());
+    ASSERT_EQ(n2.as_table().size(), 3);
+    ASSERT_TRUE(testutil::CheckTableHasIntValue(n2.as_table(), "x", 7));
+    ASSERT_TRUE(testutil::CheckTableHasIntValue(n2.as_table(), "y", 8));
+    ASSERT_TRUE(testutil::CheckTableHasIntValue(n2.as_table(), "z", 9));
 
-    TOML::Node n3 = points.AsArray()->At(2);
-    ASSERT_EQ(n3.Type(), TOML::kTable);
-    ASSERT_EQ(n3.As<TOML::kTable>()->size(), 3);
-    ASSERT_TRUE(CheckTableHasIntValue(n3, "x", 2));
-    ASSERT_TRUE(CheckTableHasIntValue(n3, "y", 4));
-    ASSERT_TRUE(CheckTableHasIntValue(n3, "z", 8));
+    const auto& n3 = points.as_array().at(2);
+    ASSERT_TRUE(n3.is_table());
+    ASSERT_EQ(n3.as_table().size(), 3);
+    ASSERT_TRUE(testutil::CheckTableHasIntValue(n3.as_table(), "x", 2));
+    ASSERT_TRUE(testutil::CheckTableHasIntValue(n3.as_table(), "y", 4));
+    ASSERT_TRUE(testutil::CheckTableHasIntValue(n3.as_table(), "z", 8));
 }
 
-int main(int argc, char *argv[]) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
+
+RUN_ALL_TESTS()

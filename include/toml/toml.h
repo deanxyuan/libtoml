@@ -19,9 +19,15 @@
 #ifndef TOML_TOML_H_
 #define TOML_TOML_H_
 
-#include "toml/impl/node.h"
-#include "toml/impl/node_impl.h"
-#include "toml/impl/reader.h"
+#include "toml/types.h"
+#include "toml/datetime.h"
+#include "toml/array.h"
+#include "toml/table.h"
+#include "toml/value.h"
+#include "toml/error.h"
+#include "toml/reader.h"
+#include "toml/writer.h"
 
-#define LIBTOML_VERSION "1.0.1"
+#define LIBTOML_VERSION "2.0.0"
+
 #endif // TOML_TOML_H_

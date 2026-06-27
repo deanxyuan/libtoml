@@ -16,23 +16,28 @@
  *
  */
 
-#include "toml/toml.h"
-#include "util/testutil.h"
+#ifndef TOML_TYPES_H_
+#define TOML_TYPES_H_
 
-#ifndef TEST_CASE_DIR
-#error "Missing Macro Definition: TEST_CASE_DIR, please check the CMakeLists.txt"
-#endif
+#include <cstdint>
+#include <string>
 
-TEST(Boolean, BasicTest) {
-    std::string path = TEST_CASE_DIR "/bool1.toml";
-    auto result = TOML::parse_file(path);
-    ASSERT_TRUE(result.ok()) << result.error.to_string();
-    const auto& node = result.value;
-    const auto& n1 = node.as_table().at("bool1");
-    ASSERT_TRUE(n1.as_bool());
-    const auto& n2 = node.as_table().at("bool2");
-    ASSERT_FALSE(n2.as_bool());
-}
+namespace TOML {
 
+enum Type : uint8_t {
+    kNull = 0,
+    kBoolean,
+    kInteger,
+    kUInteger,
+    kFloat,
+    kString,
+    kDateTime,
+    kTable,
+    kArray
+};
 
-RUN_ALL_TESTS()
+const char* type_name(Type type);
+
+} // namespace TOML
+
+#endif // TOML_TYPES_H_

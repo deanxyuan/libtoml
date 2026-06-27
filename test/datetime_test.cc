@@ -1,33 +1,51 @@
+/*
+ *
+ * Copyright 2022-2023 libtoml authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 #include "toml/toml.h"
-#include "gtest/gtest.h"
+#include "util/testutil.h"
 
 #ifndef TEST_CASE_DIR
 #error "Missing Macro Definition: TEST_CASE_DIR, please check the CMakeLists.txt"
 #endif
 
-bool CheckDateYear(TOML::DateTime::Detail &dt, int year) { return dt.Year() == year; }
-bool CheckDateMonth(TOML::DateTime::Detail &dt, int month) { return dt.Month() == month; }
-bool CheckDateDay(TOML::DateTime::Detail &dt, int day) { return dt.Day() == day; }
+bool CheckDateYear(const TOML::DateTime &dt, int year) { return dt.year == year; }
+bool CheckDateMonth(const TOML::DateTime &dt, int month) { return dt.month == month; }
+bool CheckDateDay(const TOML::DateTime &dt, int day) { return dt.day == day; }
 
-bool CheckTimeHour(TOML::DateTime::Detail &dt, int hour) { return dt.Hour() == hour; }
-bool CheckTimeMinute(TOML::DateTime::Detail &dt, int minute) { return dt.Minute() == minute; }
-bool CheckTimeSecond(TOML::DateTime::Detail &dt, int second) { return dt.Second() == second; }
-bool CheckTimeMicroSecond(TOML::DateTime::Detail &dt, int usecond) {
-    return dt.MicroSecond() == usecond;
+bool CheckTimeHour(const TOML::DateTime &dt, int hour) { return dt.hour == hour; }
+bool CheckTimeMinute(const TOML::DateTime &dt, int minute) { return dt.minute == minute; }
+bool CheckTimeSecond(const TOML::DateTime &dt, int second) { return dt.second == second; }
+bool CheckTimeMicroSecond(const TOML::DateTime &dt, int usecond) {
+    return dt.microsecond == static_cast<uint32_t>(usecond);
 }
 
-bool CheckGMTOffsetSecond(TOML::DateTime::Detail &dt, int second) {
-    return dt.GMTOffset() == second;
+bool CheckGMTOffsetSecond(const TOML::DateTime &dt, int second) {
+    return dt.utc_offset == second;
 }
+
 TEST(DateTime, RFC3339Format) {
     std::string path = TEST_CASE_DIR "/ts1.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kTable>()->Get("odt1");
-    ASSERT_EQ(n1.As<TOML::kDateTime>()->RawString(), std::string("1979-05-27T07:32:00Z"));
-    auto dt1 = n1.As<TOML::kDateTime>()->Value();
+    auto result = TOML::parse_file(path);
+    ASSERT_TRUE(result.ok()) << result.error.to_string();
+    const auto& node = result.value;
+    const auto& n1 = node.as_table().at("odt1");
+    ASSERT_EQ(n1.as_datetime().to_string(), std::string("1979-05-27T07:32:00Z"));
+    const auto& dt1 = n1.as_datetime();
     ASSERT_TRUE(CheckDateYear(dt1, 1979));
     ASSERT_TRUE(CheckDateMonth(dt1, 5));
     ASSERT_TRUE(CheckDateDay(dt1, 27));
@@ -35,52 +53,51 @@ TEST(DateTime, RFC3339Format) {
     ASSERT_TRUE(CheckTimeMinute(dt1, 32));
     ASSERT_TRUE(CheckTimeSecond(dt1, 0));
 
-    TOML::Node n2 = node.As<TOML::kTable>()->Get("odt2");
-    ASSERT_EQ(n2.As<TOML::kDateTime>()->RawString(), std::string("1979-05-27T00:32:00-07:00"));
-    auto dt2 = n2.As<TOML::kDateTime>()->Value();
+    const auto& n2 = node.as_table().at("odt2");
+    ASSERT_EQ(n2.as_datetime().to_string(), std::string("1979-05-27T00:32:00-07:00"));
+    const auto& dt2 = n2.as_datetime();
     ASSERT_TRUE(CheckDateYear(dt2, 1979));
     ASSERT_TRUE(CheckDateMonth(dt2, 5));
     ASSERT_TRUE(CheckDateDay(dt2, 27));
     ASSERT_TRUE(CheckTimeHour(dt2, 0));
     ASSERT_TRUE(CheckTimeMinute(dt2, 32));
     ASSERT_TRUE(CheckTimeSecond(dt2, 0));
-    ASSERT_TRUE(CheckGMTOffsetSecond(dt2, 7 * 3600));
+    ASSERT_TRUE(CheckGMTOffsetSecond(dt2, -7 * 3600));
 
-    TOML::Node n3 = node.As<TOML::kTable>()->Get("odt3");
-    ASSERT_EQ(n3.As<TOML::kDateTime>()->RawString(),
+    const auto& n3 = node.as_table().at("odt3");
+    ASSERT_EQ(n3.as_datetime().to_string(),
               std::string("1979-05-27T00:32:00.999999-07:00"));
-    auto dt3 = n3.As<TOML::kDateTime>()->Value();
+    const auto& dt3 = n3.as_datetime();
     ASSERT_TRUE(CheckDateYear(dt3, 1979));
     ASSERT_TRUE(CheckDateMonth(dt3, 5));
     ASSERT_TRUE(CheckDateDay(dt3, 27));
     ASSERT_TRUE(CheckTimeHour(dt3, 0));
     ASSERT_TRUE(CheckTimeMinute(dt3, 32));
     ASSERT_TRUE(CheckTimeSecond(dt3, 0));
-    ASSERT_TRUE(CheckGMTOffsetSecond(dt3, 7 * 3600));
+    ASSERT_TRUE(CheckGMTOffsetSecond(dt3, -7 * 3600));
     ASSERT_TRUE(CheckTimeMicroSecond(dt3, 999999));
 
-    TOML::Node n4 = node.As<TOML::kTable>()->Get("odt4");
-    ASSERT_EQ(n4.As<TOML::kDateTime>()->RawString(), std::string("1979-05-27T00:32:00.01-07:00"));
-    auto dt4 = n4.As<TOML::kDateTime>()->Value();
+    const auto& n4 = node.as_table().at("odt4");
+    ASSERT_EQ(n4.as_datetime().to_string(), std::string("1979-05-27T00:32:00.01-07:00"));
+    const auto& dt4 = n4.as_datetime();
     ASSERT_TRUE(CheckDateYear(dt4, 1979));
     ASSERT_TRUE(CheckDateMonth(dt4, 5));
     ASSERT_TRUE(CheckDateDay(dt4, 27));
     ASSERT_TRUE(CheckTimeHour(dt4, 0));
     ASSERT_TRUE(CheckTimeMinute(dt4, 32));
     ASSERT_TRUE(CheckTimeSecond(dt4, 0));
-    ASSERT_TRUE(CheckGMTOffsetSecond(dt4, 7 * 3600));
+    ASSERT_TRUE(CheckGMTOffsetSecond(dt4, -7 * 3600));
     ASSERT_TRUE(CheckTimeMicroSecond(dt4, 10 * 1000));
 }
 
 TEST(DateTime, RFC3339FormatEx) {
     std::string path = TEST_CASE_DIR "/ts2.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kTable>()->Get("odt4");
-    ASSERT_EQ(n1.As<TOML::kDateTime>()->RawString(), std::string("1979-05-27 07:32:00Z"));
-    auto dt1 = n1.As<TOML::kDateTime>()->Value();
+    auto result = TOML::parse_file(path);
+    ASSERT_TRUE(result.ok()) << result.error.to_string();
+    const auto& node = result.value;
+    const auto& n1 = node.as_table().at("odt4");
+    ASSERT_EQ(n1.as_datetime().to_string(), std::string("1979-05-27 07:32:00Z"));
+    const auto& dt1 = n1.as_datetime();
     ASSERT_TRUE(CheckDateYear(dt1, 1979));
     ASSERT_TRUE(CheckDateMonth(dt1, 5));
     ASSERT_TRUE(CheckDateDay(dt1, 27));
@@ -91,13 +108,12 @@ TEST(DateTime, RFC3339FormatEx) {
 
 TEST(DateTime, NoTimeZone) {
     std::string path = TEST_CASE_DIR "/ts3.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kTable>()->Get("ldt1");
-    ASSERT_EQ(n1.As<TOML::kDateTime>()->RawString(), std::string("1979-05-27T07:32:00"));
-    auto dt1 = n1.As<TOML::kDateTime>()->Value();
+    auto result = TOML::parse_file(path);
+    ASSERT_TRUE(result.ok()) << result.error.to_string();
+    const auto& node = result.value;
+    const auto& n1 = node.as_table().at("ldt1");
+    ASSERT_EQ(n1.as_datetime().to_string(), std::string("1979-05-27T07:32:00"));
+    const auto& dt1 = n1.as_datetime();
     ASSERT_TRUE(CheckDateYear(dt1, 1979));
     ASSERT_TRUE(CheckDateMonth(dt1, 5));
     ASSERT_TRUE(CheckDateDay(dt1, 27));
@@ -105,9 +121,9 @@ TEST(DateTime, NoTimeZone) {
     ASSERT_TRUE(CheckTimeMinute(dt1, 32));
     ASSERT_TRUE(CheckTimeSecond(dt1, 0));
 
-    TOML::Node n3 = node.As<TOML::kTable>()->Get("ldt2");
-    ASSERT_EQ(n3.As<TOML::kDateTime>()->RawString(), std::string("1979-05-27T00:32:00.999999"));
-    auto dt3 = n3.As<TOML::kDateTime>()->Value();
+    const auto& n3 = node.as_table().at("ldt2");
+    ASSERT_EQ(n3.as_datetime().to_string(), std::string("1979-05-27T00:32:00.999999"));
+    const auto& dt3 = n3.as_datetime();
     ASSERT_TRUE(CheckDateYear(dt3, 1979));
     ASSERT_TRUE(CheckDateMonth(dt3, 5));
     ASSERT_TRUE(CheckDateDay(dt3, 27));
@@ -119,13 +135,12 @@ TEST(DateTime, NoTimeZone) {
 
 TEST(DateTime, Date) {
     std::string path = TEST_CASE_DIR "/ts4.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kTable>()->Get("ld1");
-    ASSERT_EQ(n1.As<TOML::kDateTime>()->RawString(), std::string("1979-05-27"));
-    auto dt1 = n1.As<TOML::kDateTime>()->Value();
+    auto result = TOML::parse_file(path);
+    ASSERT_TRUE(result.ok()) << result.error.to_string();
+    const auto& node = result.value;
+    const auto& n1 = node.as_table().at("ld1");
+    ASSERT_EQ(n1.as_datetime().to_string(), std::string("1979-05-27"));
+    const auto& dt1 = n1.as_datetime();
     ASSERT_TRUE(CheckDateYear(dt1, 1979));
     ASSERT_TRUE(CheckDateMonth(dt1, 5));
     ASSERT_TRUE(CheckDateDay(dt1, 27));
@@ -133,27 +148,24 @@ TEST(DateTime, Date) {
 
 TEST(DateTime, Time) {
     std::string path = TEST_CASE_DIR "/ts5.toml";
-    std::string error;
-    TOML::Node node = TOML::LoadFromFile(path, &error);
-    ASSERT_TRUE(error.empty());
-    ASSERT_TRUE(node);
-    TOML::Node n1 = node.As<TOML::kTable>()->Get("lt1");
-    ASSERT_EQ(n1.As<TOML::kDateTime>()->RawString(), std::string("07:32:00"));
-    auto dt1 = n1.As<TOML::kDateTime>()->Value();
+    auto result = TOML::parse_file(path);
+    ASSERT_TRUE(result.ok()) << result.error.to_string();
+    const auto& node = result.value;
+    const auto& n1 = node.as_table().at("lt1");
+    ASSERT_EQ(n1.as_datetime().to_string(), std::string("07:32:00"));
+    const auto& dt1 = n1.as_datetime();
     ASSERT_TRUE(CheckTimeHour(dt1, 7));
     ASSERT_TRUE(CheckTimeMinute(dt1, 32));
     ASSERT_TRUE(CheckTimeSecond(dt1, 0));
 
-    TOML::Node n2 = node.As<TOML::kTable>()->Get("lt2");
-    ASSERT_EQ(n2.As<TOML::kDateTime>()->RawString(), std::string("00:32:00.999999"));
-    auto dt3 = n2.As<TOML::kDateTime>()->Value();
+    const auto& n2 = node.as_table().at("lt2");
+    ASSERT_EQ(n2.as_datetime().to_string(), std::string("00:32:00.999999"));
+    const auto& dt3 = n2.as_datetime();
     ASSERT_TRUE(CheckTimeHour(dt3, 0));
     ASSERT_TRUE(CheckTimeMinute(dt3, 32));
     ASSERT_TRUE(CheckTimeSecond(dt3, 0));
     ASSERT_TRUE(CheckTimeMicroSecond(dt3, 999999));
 }
 
-int main(int argc, char *argv[]) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
+
+RUN_ALL_TESTS()
