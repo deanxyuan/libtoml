@@ -1,55 +1,61 @@
-#include <string.h>
+#include <cstring>
 #include <iostream>
 
 #include <toml/toml.h>
 
-int main(int argc, char *argv[]) {
-    char buff[] =
+int main() {
+    const char* text =
         R"([server]
     host = "example.com"
     port = [ 8080, 8181, 8282 ]
 )";
 
-    std::string error_desc;
-    //
-    TOML::Node root = TOML::LoadFromString(buff, strlen(buff), &error_desc);
-    std::cout << "error desc:" << error_desc << std::endl;
-
-    // check key exists
-    bool r = root.AsTable()->Exists("server");
-    std::cout << "server exists result:" << r << std::endl;
-
-    // or just call 'Get'
-    TOML::Node server = root.AsTable()->Get("server");
-    if (!server) {
-        std::cout << "server does not exists" << std::endl;
-        return 0;
+    // parse TOML string
+    auto result = TOML::parse_string(text, strlen(text));
+    if (!result.ok()) {
+        std::cerr << "parse error: " << result.error.to_string() << std::endl;
+        return 1;
     }
-    std::cout << "server exists" << std::endl;
+
+    const auto& root = result.value;
+
+    // check key exists and access table
+    if (!root.is_table() || !root.as_table().contains("server")) {
+        std::cerr << "server section not found" << std::endl;
+        return 1;
+    }
+
+    const auto& server = root.as_table().at("server");
+
     // get host
-    TOML::Node host = server.As<TOML::kTable>()->Get("host");
-    std::cout << "host type: " << host.TypeString() << std::endl;
-    if (host.Type() == TOML::kString) {
-        std::string host_str = host.As<TOML::kString>()->Value();
-        std::cout << "host value: " << host_str << std::endl;
-    }
-    // get port
-    TOML::Node port = server.As<TOML::kTable>()->Get("port");
-    std::cout << "port type: " << port.TypeString() << std::endl;
-
-    if (port.Type() == TOML::kArray) {
-        int count = static_cast<int>(port.AsArray()->size());
-        for (int i = 0; i < count; i++) {
-            TOML::Node value = port.AsArray()->At(i);
-            std::cout << "value type: " << value.TypeString() << std::endl;
-            if (value.Type() == TOML::kInteger) {
-                int64_t num = value.As<TOML::kInteger>()->Value();
-                std::cout << "port[" << i << "] is " << num << std::endl;
-            }
-            // or just get string
-            std::string s = value.ToString();
-            std::cout << "port[" << i << "] is " << s << std::endl;
+    if (server.as_table().contains("host")) {
+        const auto& host = server.as_table().at("host");
+        std::cout << "host type: " << TOML::type_name(host.type()) << std::endl;
+        if (host.is_string()) {
+            std::cout << "host value: " << host.as_string() << std::endl;
         }
     }
+
+    // get port array
+    if (server.as_table().contains("port")) {
+        const auto& port = server.as_table().at("port");
+        std::cout << "port type: " << TOML::type_name(port.type()) << std::endl;
+
+        if (port.is_array()) {
+            const auto& arr = port.as_array();
+            for (size_t i = 0; i < arr.size(); i++) {
+                const auto& value = arr.at(i);
+                std::cout << "port[" << i << "] type: " << TOML::type_name(value.type()) << std::endl;
+                if (value.is_integer()) {
+                    std::cout << "port[" << i << "] = " << value.as_integer() << std::endl;
+                }
+            }
+        }
+    }
+
+    // serialize back to TOML
+    std::cout << "\n--- TOML output ---" << std::endl;
+    std::cout << root.to_toml() << std::endl;
+
     return 0;
 }
