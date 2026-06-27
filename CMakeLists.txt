@@ -114,6 +114,7 @@ if(LIBTOML_BUILD_TESTS)
     libtoml_unit_test(test/test_parse_kvpair.cc)
     libtoml_unit_test(test/test_parse_string.cc)
     libtoml_unit_test(test/test_parse_table.cc)
+    libtoml_unit_test(test/test_parse_misc.cc)
 endif()
 
 # 示例

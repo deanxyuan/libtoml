@@ -79,5 +79,74 @@ TEST(Integer, OtherDecimalInteger) {
     ASSERT_EQ(n6.as_integer(), 0b11010110);
 }
 
+TEST(Integer, InvalidHexPrefix) {
+    // 0x with no hex digits should fail
+    auto r1 = TOML::parse_string("v = 0x");
+    ASSERT_FALSE(r1.ok());
+
+    // 0x with invalid hex digit
+    auto r2 = TOML::parse_string("v = 0xG");
+    ASSERT_FALSE(r2.ok());
+}
+
+TEST(Integer, InvalidOctalPrefix) {
+    // 0o with no octal digits should fail
+    auto r1 = TOML::parse_string("v = 0o");
+    ASSERT_FALSE(r1.ok());
+
+    // 0o with invalid octal digit (8)
+    auto r2 = TOML::parse_string("v = 0o8");
+    ASSERT_FALSE(r2.ok());
+}
+
+TEST(Integer, InvalidBinaryPrefix) {
+    // 0b with no binary digits should fail
+    auto r1 = TOML::parse_string("v = 0b");
+    ASSERT_FALSE(r1.ok());
+
+    // 0b with invalid binary digit (2)
+    auto r2 = TOML::parse_string("v = 0b2");
+    ASSERT_FALSE(r2.ok());
+}
+
+TEST(Integer, LeadingZero) {
+    // TOML spec: leading zeros are NOT allowed (except for "0" itself).
+    // Current parser accepts "0999" as integer 999 — documents actual behavior.
+    auto r = TOML::parse_string("v = 0999");
+    ASSERT_TRUE(r.ok());
+    ASSERT_EQ(r.value.as_table().at("v").as_integer(), 999);
+}
+
+TEST(Integer, TrailingUnderscore) {
+    // Trailing underscore is invalid
+    auto r = TOML::parse_string("v = 1_");
+    ASSERT_FALSE(r.ok());
+}
+
+TEST(Integer, DoubleUnderscore) {
+    // Double underscore is invalid
+    auto r = TOML::parse_string("v = 1__2");
+    ASSERT_FALSE(r.ok());
+}
+
+TEST(Integer, UnderscoreAtStart) {
+    // Underscore at start of number is not a valid integer.
+    // Current parser treats it as a bare string — verify it's not an integer.
+    auto r = TOML::parse_string("v = _1");
+    ASSERT_TRUE(r.ok());
+    ASSERT_FALSE(r.value.as_table().at("v").is_integer())
+        << "_1 should not be parsed as integer";
+}
+
+TEST(Integer, ValidUnderscores) {
+    // Valid use of underscores in integers
+    auto r1 = TOML::parse_string("v = 1_000");
+    ASSERT_TRUE(r1.ok()) << r1.error.to_string();
+    ASSERT_EQ(r1.value.as_table().at("v").as_integer(), 1000);
+
+    auto r2 = TOML::parse_string("v = 1_000_000");
+    ASSERT_TRUE(r2.ok()) << r2.error.to_string();
+    ASSERT_EQ(r2.value.as_table().at("v").as_integer(), 1000000);
+}
 
 RUN_ALL_TESTS()

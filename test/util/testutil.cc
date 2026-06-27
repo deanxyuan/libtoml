@@ -27,30 +27,41 @@ struct Test {
     const char* name;
     void (*func)();
 };
-std::vector<Test>* tests;
+
+std::vector<Test>& GetTests() {
+    static std::vector<Test> tests;
+    return tests;
+}
+
+int g_failures = 0;
 } // namespace
 
+void RegisterFailure() {
+    ++g_failures;
+}
+
 bool RegisterTest(const char* base, const char* name, void (*func)()) {
-    if (tests == nullptr) {
-        tests = new std::vector<Test>;
-    }
     Test t;
     t.base = base;
     t.name = name;
     t.func = func;
-    tests->push_back(t);
+    GetTests().push_back(t);
     return true;
 }
 
 int RunAllTests() {
     int num = 0;
-    if (tests != nullptr) {
-        for (size_t i = 0; i < tests->size(); i++) {
-            const Test& t = (*tests)[i];
-            fprintf(stderr, "==== Test %s.%s\n", t.base, t.name);
-            (*t.func)();
-            ++num;
-        }
+    g_failures = 0;
+    const auto& tests = GetTests();
+    for (size_t i = 0; i < tests.size(); i++) {
+        const Test& t = tests[i];
+        fprintf(stderr, "==== Test %s.%s\n", t.base, t.name);
+        (*t.func)();
+        ++num;
+    }
+    if (g_failures > 0) {
+        fprintf(stderr, "==== FAILED %d assertions (ran %d tests)\n", g_failures, num);
+        return 1;
     }
     fprintf(stderr, "==== PASSED %d tests\n", num);
     return 0;

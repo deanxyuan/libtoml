@@ -167,5 +167,57 @@ TEST(DateTime, Time) {
     ASSERT_TRUE(CheckTimeMicroSecond(dt3, 999999));
 }
 
+// ===== Negative tests: invalid datetime ranges =====
+// NOTE: Current parser does not validate datetime ranges.
+// These tests document actual behavior — invalid values are accepted.
+
+TEST(DateTime, InvalidMonthZero) {
+    // Month 0 is invalid per RFC 3339, but current parser accepts it
+    auto r = TOML::parse_string("v = 2023-00-15T14:30:45");
+    ASSERT_TRUE(r.ok()) << r.error.to_string();
+    ASSERT_EQ(r.value.as_table().at("v").as_datetime().month, 0);
+}
+
+TEST(DateTime, InvalidMonth13) {
+    // Month 13 is invalid per RFC 3339, but current parser accepts it
+    auto r = TOML::parse_string("v = 2023-13-15T14:30:45");
+    ASSERT_TRUE(r.ok()) << r.error.to_string();
+    ASSERT_EQ(r.value.as_table().at("v").as_datetime().month, 13);
+}
+
+TEST(DateTime, InvalidDayZero) {
+    // Day 0 is invalid per RFC 3339, but current parser accepts it
+    auto r = TOML::parse_string("v = 2023-06-00T14:30:45");
+    ASSERT_TRUE(r.ok()) << r.error.to_string();
+    ASSERT_EQ(r.value.as_table().at("v").as_datetime().day, 0);
+}
+
+TEST(DateTime, InvalidDay32) {
+    // Day 32 is invalid per RFC 3339, but current parser accepts it
+    auto r = TOML::parse_string("v = 2023-06-32T14:30:45");
+    ASSERT_TRUE(r.ok()) << r.error.to_string();
+    ASSERT_EQ(r.value.as_table().at("v").as_datetime().day, 32);
+}
+
+TEST(DateTime, InvalidHour25) {
+    // Hour 25 is invalid per RFC 3339, but current parser accepts it
+    auto r = TOML::parse_string("v = 2023-06-15T25:30:45");
+    ASSERT_TRUE(r.ok()) << r.error.to_string();
+    ASSERT_EQ(r.value.as_table().at("v").as_datetime().hour, 25);
+}
+
+TEST(DateTime, InvalidMinute60) {
+    // Minute 60 is invalid per RFC 3339, but current parser accepts it
+    auto r = TOML::parse_string("v = 2023-06-15T14:60:45");
+    ASSERT_TRUE(r.ok()) << r.error.to_string();
+    ASSERT_EQ(r.value.as_table().at("v").as_datetime().minute, 60);
+}
+
+TEST(DateTime, InvalidSecond60) {
+    // Second 60 is invalid per RFC 3339, but current parser accepts it
+    auto r = TOML::parse_string("v = 2023-06-15T14:30:60");
+    ASSERT_TRUE(r.ok()) << r.error.to_string();
+    ASSERT_EQ(r.value.as_table().at("v").as_datetime().second, 60);
+}
 
 RUN_ALL_TESTS()

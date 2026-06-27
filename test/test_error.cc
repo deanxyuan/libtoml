@@ -18,73 +18,90 @@
 
 #include "util/testutil.h"
 
-TEST(Error, ErrorLocation) {
-    // Duplicate key should produce an error with location info
-    std::string input = R"(
-key = 1
-key = 2
-)";
+TEST(Error, DuplicateKey) {
+    std::string input = "\nkey = 1\nkey = 2\n";
     auto error = testutil::ParseExpectFail(input);
     ASSERT_FALSE(error.ok());
-    ASSERT_GT(error.location.line, 0u);
+    ASSERT_EQ(error.location.line, 3u);
+    ASSERT_EQ(error.location.column, 8u);
+    ASSERT_TRUE(error.message.find("duplicate key") != std::string::npos)
+        << "got: " << error.message;
 
-    // Invalid syntax on a specific line
-    std::string input2 = R"(name = "valid"
-broken !!! syntax
-)";
-    auto error2 = testutil::ParseExpectFail(input2);
-    ASSERT_FALSE(error2.ok());
-    ASSERT_GT(error2.location.line, 0u);
-
-    // Missing value
-    std::string input3 = "key = ";
-    auto error3 = testutil::ParseExpectFail(input3);
-    ASSERT_FALSE(error3.ok());
-
-    // Unclosed bracket
-    std::string input4 = "arr = [1, 2, 3";
-    auto error4 = testutil::ParseExpectFail(input4);
-    ASSERT_FALSE(error4.ok());
+    std::string str = error.to_string();
+    ASSERT_TRUE(str.find("line 3") != std::string::npos);
+    ASSERT_TRUE(str.find("column 8") != std::string::npos);
+    ASSERT_TRUE(str.find("duplicate key") != std::string::npos);
 }
 
-TEST(Error, ErrorMessage) {
-    // Error should contain a non-empty message
+TEST(Error, SyntaxError) {
+    std::string input = "name = \"valid\"\nbroken !!! syntax\n";
+    auto error = testutil::ParseExpectFail(input);
+    ASSERT_FALSE(error.ok());
+    ASSERT_EQ(error.location.line, 2u);
+    ASSERT_EQ(error.location.column, 8u);
+    ASSERT_FALSE(error.message.empty());
+    ASSERT_TRUE(error.message.find("expected '='") != std::string::npos)
+        << "got: " << error.message;
+}
+
+TEST(Error, MissingValue) {
     std::string input = "key = ";
     auto error = testutil::ParseExpectFail(input);
     ASSERT_FALSE(error.ok());
+    ASSERT_EQ(error.location.line, 1u);
+    ASSERT_EQ(error.location.column, 7u);
+    ASSERT_TRUE(error.message.find("unexpected end of file") != std::string::npos)
+        << "got: " << error.message;
+}
+
+TEST(Error, UnclosedBracket) {
+    std::string input = "arr = [1, 2, 3";
+    auto error = testutil::ParseExpectFail(input);
+    ASSERT_FALSE(error.ok());
+    ASSERT_EQ(error.location.line, 1u);
+    ASSERT_EQ(error.location.column, 15u);
+    ASSERT_TRUE(error.message.find("]") != std::string::npos)
+        << "got: " << error.message;
+}
+
+TEST(Error, InvalidValue) {
+    std::string input = "key = !!!";
+    auto error = testutil::ParseExpectFail(input);
+    ASSERT_FALSE(error.ok());
+    ASSERT_EQ(error.location.line, 1u);
+    ASSERT_EQ(error.location.column, 7u);
     ASSERT_FALSE(error.message.empty());
+}
 
-    // to_string should produce a non-empty result
-    std::string str = error.to_string();
-    ASSERT_FALSE(str.empty());
+TEST(Error, EmptyKey) {
+    std::string input = "= 42";
+    auto error = testutil::ParseExpectFail(input);
+    ASSERT_FALSE(error.ok());
+    ASSERT_EQ(error.location.line, 1u);
+    ASSERT_EQ(error.location.column, 2u);
+    ASSERT_TRUE(error.message.find("empty key") != std::string::npos)
+        << "got: " << error.message;
+}
 
-    // Duplicate key error
-    std::string input2 = R"(
-key = 1
-key = 2
-)";
-    auto error2 = testutil::ParseExpectFail(input2);
-    ASSERT_FALSE(error2.ok());
-    ASSERT_FALSE(error2.message.empty());
-
-    // Invalid value
-    std::string input3 = "key = !!!";
-    auto error3 = testutil::ParseExpectFail(input3);
-    ASSERT_FALSE(error3.ok());
-    ASSERT_FALSE(error3.message.empty());
-
-    // ParseResult::ok() consistency
-    auto result = TOML::parse_string(input);
-    ASSERT_FALSE(result.ok());
-    ASSERT_TRUE(result.error.ok() == false);
-
+TEST(Error, SuccessState) {
     // Successful parse should have ok() == true and empty message
     std::string valid = "key = 42";
-    auto result_ok = TOML::parse_string(valid);
-    ASSERT_TRUE(result_ok.ok());
-    ASSERT_TRUE(result_ok.error.message.empty());
-    ASSERT_EQ(result_ok.error.location.line, 0u);
-    ASSERT_EQ(result_ok.error.location.column, 0u);
+    auto result = TOML::parse_string(valid);
+    ASSERT_TRUE(result.ok());
+    ASSERT_TRUE(result.error.message.empty());
+    ASSERT_EQ(result.error.location.line, 0u);
+    ASSERT_EQ(result.error.location.column, 0u);
+    ASSERT_TRUE(result.error.to_string().empty());
+}
+
+TEST(Error, ToStringFormat) {
+    // to_string should produce "line N, column M: message" format
+    std::string input = "key = !!!";
+    auto error = testutil::ParseExpectFail(input);
+    std::string str = error.to_string();
+    ASSERT_TRUE(str.find("line 1") != std::string::npos);
+    ASSERT_TRUE(str.find("column 7") != std::string::npos);
+    ASSERT_FALSE(str.empty());
 }
 
 RUN_ALL_TESTS()

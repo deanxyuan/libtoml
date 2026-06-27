@@ -32,9 +32,11 @@
 namespace test {
 
 // Run all unit tests registered by the TEST macro.
-// Returns 0 if all tests pass.
-// Dies or returns a non-zero value if some test fails.
+// Returns 0 if all tests pass, non-zero if any test failed.
 int RunAllTests();
+
+// Record a test failure (called by Tester destructor).
+void RegisterFailure();
 
 // An instance of Tester is allocated to hold temporary state during
 // the execution of an assertion.
@@ -51,10 +53,13 @@ public:
         , fname_(f)
         , line_(l) {}
 
+    Tester(const Tester&) = delete;
+    Tester& operator=(const Tester&) = delete;
+
     ~Tester() {
         if (!ok_) {
             fprintf(stderr, "%s:%d:%s\n", fname_, line_, ss_.str().c_str());
-            exit(1);
+            RegisterFailure();
         }
     }
 
@@ -107,20 +112,13 @@ public:
 
 #define ASSERT_NO_THROW(expr)                                                                      \
     do {                                                                                           \
-        bool ok_ = true;                                                                           \
+        ::test::Tester _tester_(__FILE__, __LINE__);                                               \
         try {                                                                                      \
             expr;                                                                                  \
-        } catch (const std::exception& e) {                                                        \
-            ::test::Tester(__FILE__, __LINE__).Is(false,                                            \
-                "unexpected exception from " #expr);                                               \
-            ok_ = false;                                                                           \
+        } catch (const std::exception&) {                                                          \
+            _tester_.Is(false, "unexpected exception from " #expr);                                \
         } catch (...) {                                                                            \
-            ::test::Tester(__FILE__, __LINE__).Is(false,                                            \
-                "unexpected unknown exception from " #expr);                                       \
-            ok_ = false;                                                                           \
-        }                                                                                          \
-        if (ok_) {                                                                                 \
-            ::test::Tester(__FILE__, __LINE__).Is(true, #expr);                                     \
+            _tester_.Is(false, "unexpected unknown exception from " #expr);                        \
         }                                                                                          \
     } while (0)
 
@@ -160,13 +158,37 @@ bool RegisterTest(const char* base, const char* name, void (*func)());
 
 // ============= Helper functions =============
 
-// Check if Table contains a string value at key
+// Check if Table contains a string value at key (returns bool)
 inline bool CheckTableHasStringValue(const TOML::Table& table,
                                      const std::string& key,
                                      const std::string& expected) {
     if (!table.contains(key)) return false;
     const auto& val = table.at(key);
     return val.is_string() && val.as_string() == expected;
+}
+
+// Check if Table contains a string value at key (void, with diagnostics)
+inline void CheckTableString(const TOML::Table& table,
+                             const std::string& key,
+                             const std::string& expected) {
+    if (!table.contains(key)) {
+        fprintf(stderr, "  key '%s' not found in table\n", key.c_str());
+        RegisterFailure();
+        return;
+    }
+    const auto& val = table.at(key);
+    if (!val.is_string()) {
+        fprintf(stderr, "  key '%s': expected string, got %s\n",
+                key.c_str(), TOML::type_name(val.type()));
+        RegisterFailure();
+        return;
+    }
+    if (val.as_string() != expected) {
+        fprintf(stderr, "  key '%s': expected \"%s\", got \"%s\"\n",
+                key.c_str(), expected.c_str(), val.as_string().c_str());
+        RegisterFailure();
+        return;
+    }
 }
 
 // Check if Table contains an integer value at key
@@ -193,7 +215,7 @@ inline bool CheckTableHasFloatValue(const TOML::Table& table,
                                     double expected) {
     if (!table.contains(key)) return false;
     const auto& val = table.at(key);
-    return val.is_float() && std::abs(val.as_float() - expected) < 1e-10;
+    return val.is_float() && std::fabs(val.as_float() - expected) < 1e-10;
 }
 
 // Check if Array contains a string value at index
@@ -249,6 +271,7 @@ inline TOML::Error ParseExpectFail(const std::string& str) {
 // 兼容旧代码中的 testutil:: 命名空间
 namespace testutil {
     using test::CheckTableHasStringValue;
+    using test::CheckTableString;
     using test::CheckTableHasIntValue;
     using test::CheckTableHasBoolValue;
     using test::CheckTableHasFloatValue;

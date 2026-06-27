@@ -64,7 +64,7 @@ TEST(DateTime, TimeOnly) {
     ASSERT_EQ(dt.second, 0);
 }
 
-TEST(DateTime, DateTime) {
+TEST(DateTime, DateTimeFull) {
     TOML::DateTime dt;
     dt.year = 2023;
     dt.month = 6;
@@ -118,27 +118,27 @@ TEST(DateTime, DateTimeWithOffset) {
 }
 
 TEST(DateTime, ToString) {
-    // Date only
+    // Date only: YYYY-MM-DD
     TOML::DateTime dt_date;
     dt_date.year = 2023;
     dt_date.month = 6;
     dt_date.day = 15;
     dt_date.present = TOML::DateTime::kYear | TOML::DateTime::kMonth |
                       TOML::DateTime::kDay;
-    std::string s1 = dt_date.to_string();
-    ASSERT_FALSE(s1.empty());
+    ASSERT_EQ(dt_date.to_string(), "2023-06-15");
+    ASSERT_EQ(dt_date.to_toml(), "2023-06-15");
 
-    // Time only
+    // Time only: HH:MM:SS
     TOML::DateTime dt_time;
     dt_time.hour = 14;
     dt_time.minute = 30;
     dt_time.second = 45;
     dt_time.present = TOML::DateTime::kHour | TOML::DateTime::kMinute |
                       TOML::DateTime::kSecond;
-    std::string s2 = dt_time.to_string();
-    ASSERT_FALSE(s2.empty());
+    ASSERT_EQ(dt_time.to_string(), "14:30:45");
+    ASSERT_EQ(dt_time.to_toml(), "14:30:45");
 
-    // Full datetime
+    // Full datetime: YYYY-MM-DDTHH:MM:SS
     TOML::DateTime dt_full;
     dt_full.year = 2023;
     dt_full.month = 6;
@@ -149,14 +149,70 @@ TEST(DateTime, ToString) {
     dt_full.present = TOML::DateTime::kYear | TOML::DateTime::kMonth |
                       TOML::DateTime::kDay | TOML::DateTime::kHour |
                       TOML::DateTime::kMinute | TOML::DateTime::kSecond;
-    std::string s3 = dt_full.to_string();
-    ASSERT_FALSE(s3.empty());
+    ASSERT_EQ(dt_full.to_string(), "2023-06-15T14:30:45");
+    ASSERT_EQ(dt_full.to_toml(), "2023-06-15T14:30:45");
 
-    // to_toml
-    std::string t1 = dt_date.to_toml();
-    ASSERT_FALSE(t1.empty());
-    std::string t2 = dt_full.to_toml();
-    ASSERT_FALSE(t2.empty());
+    // With microseconds
+    TOML::DateTime dt_us;
+    dt_us.year = 2023;
+    dt_us.month = 1;
+    dt_us.day = 1;
+    dt_us.hour = 0;
+    dt_us.minute = 0;
+    dt_us.second = 0;
+    dt_us.microsecond = 123456;
+    dt_us.microsecond_digits = 6;
+    dt_us.present = TOML::DateTime::kYear | TOML::DateTime::kMonth |
+                    TOML::DateTime::kDay | TOML::DateTime::kHour |
+                    TOML::DateTime::kMinute | TOML::DateTime::kSecond |
+                    TOML::DateTime::kMicrosecond;
+    std::string s_us = dt_us.to_string();
+    ASSERT_TRUE(s_us.find(".123456") != std::string::npos) << "got: " << s_us;
+
+    // With UTC offset Z
+    TOML::DateTime dt_z;
+    dt_z.year = 1979;
+    dt_z.month = 5;
+    dt_z.day = 27;
+    dt_z.hour = 7;
+    dt_z.minute = 32;
+    dt_z.second = 0;
+    dt_z.utc_offset = 0;
+    dt_z.present = TOML::DateTime::kYear | TOML::DateTime::kMonth |
+                   TOML::DateTime::kDay | TOML::DateTime::kHour |
+                   TOML::DateTime::kMinute | TOML::DateTime::kSecond |
+                   TOML::DateTime::kUtcOffset;
+    ASSERT_EQ(dt_z.to_string(), "1979-05-27T07:32:00Z");
+
+    // With positive UTC offset
+    TOML::DateTime dt_plus;
+    dt_plus.year = 2023;
+    dt_plus.month = 6;
+    dt_plus.day = 15;
+    dt_plus.hour = 14;
+    dt_plus.minute = 30;
+    dt_plus.second = 0;
+    dt_plus.utc_offset = 8 * 3600;
+    dt_plus.present = TOML::DateTime::kYear | TOML::DateTime::kMonth |
+                      TOML::DateTime::kDay | TOML::DateTime::kHour |
+                      TOML::DateTime::kMinute | TOML::DateTime::kSecond |
+                      TOML::DateTime::kUtcOffset;
+    ASSERT_EQ(dt_plus.to_string(), "2023-06-15T14:30:00+08:00");
+
+    // With negative UTC offset
+    TOML::DateTime dt_minus;
+    dt_minus.year = 1979;
+    dt_minus.month = 5;
+    dt_minus.day = 27;
+    dt_minus.hour = 0;
+    dt_minus.minute = 32;
+    dt_minus.second = 0;
+    dt_minus.utc_offset = -7 * 3600;
+    dt_minus.present = TOML::DateTime::kYear | TOML::DateTime::kMonth |
+                       TOML::DateTime::kDay | TOML::DateTime::kHour |
+                       TOML::DateTime::kMinute | TOML::DateTime::kSecond |
+                       TOML::DateTime::kUtcOffset;
+    ASSERT_EQ(dt_minus.to_string(), "1979-05-27T00:32:00-07:00");
 }
 
 RUN_ALL_TESTS()

@@ -32,16 +32,18 @@ TEST(KVPair, Basic) {
     ASSERT_EQ(n1.as_string(), std::string("value"));
 }
 
-TEST(KVPair, Inlvaid1) {
+TEST(KVPair, Invalid1) {
     std::string path = TEST_CASE_DIR "/kvpair1.toml";
     auto result = TOML::parse_file(path);
     ASSERT_FALSE(result.ok());
+    ASSERT_FALSE(result.error.message.empty());
 }
 
-TEST(KVPair, Inlvaid2) {
+TEST(KVPair, Invalid2) {
     std::string path = TEST_CASE_DIR "/kvpair2.toml";
     auto result = TOML::parse_file(path);
     ASSERT_FALSE(result.ok());
+    ASSERT_FALSE(result.error.message.empty());
 }
 
 
