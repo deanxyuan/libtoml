@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 2022-2023 libtoml authors.
+ * Copyright 2022-2026 libtoml authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -437,7 +437,15 @@ Value Parser::parse_number() {
                 uval = uval * 2 + (c - '0');
             }
         } else {
-            // Decimal
+            // Decimal — check for leading zeros (TOML v0.5.0 §Integer)
+            if (text[start] == '0') {
+                for (size_t i = start + 1; i < text.size(); i++) {
+                    if (text[i] == '_') continue;
+                    if (text[i] >= '0' && text[i] <= '9')
+                        return error("leading zeros are not allowed: " + text);
+                    break;
+                }
+            }
             for (size_t i = start; i < text.size(); i++) {
                 char c = text[i];
                 if (c == '_')
@@ -450,9 +458,15 @@ Value Parser::parse_number() {
 
         if (negative) {
             // TOML integers are int64_t: range -9223372036854775808 to 9223372036854775807
-            if (uval > static_cast<uint64_t>(INT64_MAX) + 1)
+            // INT64_MIN is a special case: its absolute value cannot be represented
+            // in int64_t.  Casting it to int64_t is implementation-defined, and
+            // negating INT64_MIN is signed overflow (UB).  Handle it explicitly.
+            const uint64_t abs_int64_min = static_cast<uint64_t>(INT64_MAX) + 1;
+            if (uval > abs_int64_min)
                 return error("integer out of range: " + text);
-            return Value(static_cast<int64_t>(-static_cast<int64_t>(uval)));
+            if (uval == abs_int64_min)
+                return Value(INT64_MIN);
+            return Value(-static_cast<int64_t>(uval));
         }
 
         if (uval > INT64_MAX)
@@ -513,6 +527,12 @@ Value Parser::parse_datetime(const std::string& text) {
         dt.day = static_cast<uint8_t>(day);
         dt.present = DateTime::kYear | DateTime::kMonth | DateTime::kDay;
 
+        // Validate date field ranges
+        if (month < 1 || month > 12)
+            return error("invalid month in datetime: " + text);
+        if (day < 1 || day > 31)
+            return error("invalid day in datetime: " + text);
+
         // Check for optional time part
         if (pos < text.size() && (text[pos] == 'T' || text[pos] == ' ' || text[pos] == 't')) {
             dt.time_separator = text[pos];
@@ -528,6 +548,14 @@ Value Parser::parse_datetime(const std::string& text) {
             dt.minute = static_cast<uint8_t>(minute);
             dt.second = static_cast<uint8_t>(second);
             dt.present |= DateTime::kHour | DateTime::kMinute | DateTime::kSecond;
+
+            // Validate time field ranges
+            if (hour < 0 || hour > 23)
+                return error("invalid hour in datetime: " + text);
+            if (minute < 0 || minute > 59)
+                return error("invalid minute in datetime: " + text);
+            if (second < 0 || second > 60)  // 60 allowed for leap second (RFC 3339)
+                return error("invalid second in datetime: " + text);
 
             // Optional fractional seconds
             if (pos < text.size() && text[pos] == '.') {
@@ -576,6 +604,14 @@ Value Parser::parse_datetime(const std::string& text) {
         dt.minute = static_cast<uint8_t>(minute);
         dt.second = static_cast<uint8_t>(second);
         dt.present = DateTime::kHour | DateTime::kMinute | DateTime::kSecond;
+
+        // Validate time field ranges
+        if (hour < 0 || hour > 23)
+            return error("invalid hour in datetime: " + text);
+        if (minute < 0 || minute > 59)
+            return error("invalid minute in datetime: " + text);
+        if (second < 0 || second > 60)
+            return error("invalid second in datetime: " + text);
 
         // Optional fractional seconds
         if (pos < text.size() && text[pos] == '.') {

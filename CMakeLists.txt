@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(LIBTOML VERSION 2.0.0 LANGUAGES CXX)
+project(LIBTOML VERSION 2.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -8,6 +8,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(LIBTOML_BUILD_TESTS "Build libtoml's unit tests" ON)
 option(LIBTOML_BUILD_EXAMPLES "Build libtoml's examples" ON)
+option(LIBTOML_ENABLE_ASAN "Enable AddressSanitizer" OFF)
+option(LIBTOML_ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)
+option(LIBTOML_ENABLE_TSAN "Enable ThreadSanitizer" OFF)
 
 # 显式源文件列表
 set(TOML_SOURCES
@@ -20,6 +23,7 @@ set(TOML_SOURCES
     src/parser.cc
     src/writer.cc
     src/format_utils.cc
+    src/utf8.cc
 )
 
 add_library(toml STATIC ${TOML_SOURCES})
@@ -37,6 +41,23 @@ if(MSVC)
     target_compile_options(toml PRIVATE /W4 /WX /utf-8)
 else()
     target_compile_options(toml PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+# Sanitizer support
+if(LIBTOML_ENABLE_ASAN)
+    target_compile_options(toml PRIVATE $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fsanitize=address -fno-omit-frame-pointer>)
+    target_compile_options(toml PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/fsanitize=address>)
+    target_link_options(toml PUBLIC $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fsanitize=address>)
+endif()
+
+if(LIBTOML_ENABLE_UBSAN)
+    target_compile_options(toml PRIVATE $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fsanitize=undefined>)
+    target_link_options(toml PUBLIC $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fsanitize=undefined>)
+endif()
+
+if(LIBTOML_ENABLE_TSAN)
+    target_compile_options(toml PRIVATE $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fsanitize=thread>)
+    target_link_options(toml PUBLIC $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fsanitize=thread>)
 endif()
 
 # Install 规则
@@ -80,6 +101,22 @@ if(LIBTOML_BUILD_TESTS)
             $<$<CXX_COMPILER_ID:MSVC>:/utf-8>
             $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fno-access-control>
         )
+
+        # Apply sanitizer compile options to test targets
+        if(LIBTOML_ENABLE_ASAN)
+            target_compile_options(${test_target_name} PRIVATE
+                $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fsanitize=address -fno-omit-frame-pointer>)
+            target_compile_options(${test_target_name} PRIVATE
+                $<$<CXX_COMPILER_ID:MSVC>:/fsanitize=address>)
+        endif()
+        if(LIBTOML_ENABLE_UBSAN)
+            target_compile_options(${test_target_name} PRIVATE
+                $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fsanitize=undefined>)
+        endif()
+        if(LIBTOML_ENABLE_TSAN)
+            target_compile_options(${test_target_name} PRIVATE
+                $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fsanitize=thread>)
+        endif()
 
         target_link_libraries(${test_target_name}
             PRIVATE toml

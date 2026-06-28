@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 2022-2023 libtoml authors.
+ * Copyright 2022-2026 libtoml authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,6 @@
 #include "toml/reader.h"
 #include "toml/writer.h"
 
-#define LIBTOML_VERSION "2.0.0"
+#define LIBTOML_VERSION "2.1.0"
 
 #endif // TOML_TOML_H_

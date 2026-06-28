@@ -1,4 +1,4 @@
-# LIBTOML v2.0.0
+# LIBTOML v2.1.0
 
 A TOML v0.5.0 reader and writer in C++11.
 
@@ -13,7 +13,7 @@ A TOML v0.5.0 reader and writer in C++11.
 - Comments
 - Date, time, and datetime parsing with timezone offset
 - TOML and JSON serialization output
-- Configurable formatting (indent size, sorted keys)
+- Configurable formatting (indent size, sorted keys, inline table threshold)
 - Zero external dependencies
 - Static library, C++11
 
@@ -36,6 +36,9 @@ cmake --build . --config Release --parallel 2
 |--------|---------|-------------|
 | `LIBTOML_BUILD_TESTS` | ON | Build unit tests |
 | `LIBTOML_BUILD_EXAMPLES` | ON | Build examples |
+| `LIBTOML_ENABLE_ASAN` | OFF | Enable AddressSanitizer |
+| `LIBTOML_ENABLE_UBSAN` | OFF | Enable UndefinedBehaviorSanitizer |
+| `LIBTOML_ENABLE_TSAN` | OFF | Enable ThreadSanitizer |
 
 ### Quick Build with Tests
 
@@ -209,6 +212,7 @@ std::cout << root.to_json() << std::endl;
 | `indent` | `size_t` | `4` | Indent size |
 | `indent_char` | `char` | `' '` | Indent character |
 | `sorted_keys` | `bool` | `false` | Sort keys alphabetically |
+| `inline_table_threshold` | `size_t` | `3` | Max keys for inline table (0 = always use `[section]`) |
 
 ```cpp
 toml::FormatOptions fmt;

@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 2022-2023 libtoml authors.
+ * Copyright 2022-2026 libtoml authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,8 @@ struct FormatOptions {
     size_t indent;
     char indent_char;
     bool sorted_keys;
-    FormatOptions() : indent(4), indent_char(' '), sorted_keys(false) {}
+    size_t inline_table_threshold;  // max key count for inline format (0 = always use section)
+    FormatOptions() : indent(4), indent_char(' '), sorted_keys(false), inline_table_threshold(3) {}
 };
 
 std::string to_toml(const Value& value, const FormatOptions& opts);

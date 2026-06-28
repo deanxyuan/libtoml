@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 2022-2023 libtoml authors.
+ * Copyright 2022-2026 libtoml authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  */
 
 #include "src/lexer.h"
+#include "src/utf8.h"
 
 namespace toml {
 
@@ -159,25 +160,8 @@ static bool decode_unicode_escape(const char* data, size_t len, size_t& pos,
         else
             return false;
     }
-    // encode as UTF-8
-    if (codepoint <= 0x7F) {
-        result += static_cast<char>(codepoint);
-    } else if (codepoint <= 0x7FF) {
-        result += static_cast<char>(0xC0 | (codepoint >> 6));
-        result += static_cast<char>(0x80 | (codepoint & 0x3F));
-    } else if (codepoint <= 0xFFFF) {
-        result += static_cast<char>(0xE0 | (codepoint >> 12));
-        result += static_cast<char>(0x80 | ((codepoint >> 6) & 0x3F));
-        result += static_cast<char>(0x80 | (codepoint & 0x3F));
-    } else if (codepoint <= 0x10FFFF) {
-        result += static_cast<char>(0xF0 | (codepoint >> 18));
-        result += static_cast<char>(0x80 | ((codepoint >> 12) & 0x3F));
-        result += static_cast<char>(0x80 | ((codepoint >> 6) & 0x3F));
-        result += static_cast<char>(0x80 | (codepoint & 0x3F));
-    } else {
-        return false;
-    }
-    return true;
+    // encode as UTF-8 using the shared utf8 module
+    return utf8::escape_to_utf8(codepoint, result);
 }
 
 // ---------------------------------------------------------------------------

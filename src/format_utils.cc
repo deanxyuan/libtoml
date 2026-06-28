@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 2022-2023 libtoml authors.
+ * Copyright 2022-2026 libtoml authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 #include <cmath>
 #include <cstdio>
 #include <limits>
+#include <locale>
 #include <sstream>
 
 namespace toml {
@@ -105,6 +106,7 @@ std::string format_float_toml(double v) {
         return "-inf";
     }
     std::ostringstream ss;
+    ss.imbue(std::locale::classic());
     ss.precision(std::numeric_limits<double>::max_digits10);
     ss << v;
     std::string s = ss.str();
@@ -122,6 +124,7 @@ std::string format_float_json(double v) {
         return "null";
     }
     std::ostringstream ss;
+    ss.imbue(std::locale::classic());
     ss.precision(std::numeric_limits<double>::max_digits10);
     ss << v;
     return ss.str();

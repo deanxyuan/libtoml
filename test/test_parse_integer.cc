@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 2022-2023 libtoml authors.
+ * Copyright 2022-2026 libtoml authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,10 +111,23 @@ TEST(Integer, InvalidBinaryPrefix) {
 
 TEST(Integer, LeadingZero) {
     // TOML spec: leading zeros are NOT allowed (except for "0" itself).
-    // Current parser accepts "0999" as integer 999 -- documents actual behavior.
-    auto r = toml::parse_string("v = 0999");
-    ASSERT_TRUE(r.ok());
-    ASSERT_EQ(r.value.as_table().at("v").as_integer(), 999);
+    auto r1 = toml::parse_string("v = 0999");
+    ASSERT_FALSE(r1.ok());
+
+    // "0" itself is fine
+    auto r2 = toml::parse_string("v = 0");
+    ASSERT_TRUE(r2.ok()) << r2.error.to_string();
+    ASSERT_EQ(r2.value.as_table().at("v").as_integer(), 0);
+
+    // +0 is fine
+    auto r3 = toml::parse_string("v = +0");
+    ASSERT_TRUE(r3.ok()) << r3.error.to_string();
+    ASSERT_EQ(r3.value.as_table().at("v").as_integer(), 0);
+
+    // -0 is fine
+    auto r4 = toml::parse_string("v = -0");
+    ASSERT_TRUE(r4.ok()) << r4.error.to_string();
+    ASSERT_EQ(r4.value.as_table().at("v").as_integer(), 0);
 }
 
 TEST(Integer, TrailingUnderscore) {

@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 2022-2023 libtoml authors.
+ * Copyright 2022-2026 libtoml authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -258,8 +258,9 @@ static void write_toml_table_section(std::string& out, const Table& table,
     // Third pass: write inline tables (simple nested tables)
     for (const auto& key : keys) {
         const auto& val = table.at(key);
-        if (val.is_table() && val.as_table().size() <= 3) {
-            // Use inline format for small tables
+        if (val.is_table() && opts.inline_table_threshold > 0 &&
+            val.as_table().size() <= opts.inline_table_threshold) {
+            // Use inline format for small tables (up to threshold)
             out += indent;
             out += escape_toml_key(key);
             out += " = ";
@@ -271,7 +272,8 @@ static void write_toml_table_section(std::string& out, const Table& table,
     // Fourth pass: write complex tables with [section] syntax
     for (const auto& key : keys) {
         const auto& val = table.at(key);
-        if (val.is_table() && val.as_table().size() > 3) {
+        if (val.is_table() && (opts.inline_table_threshold == 0 ||
+                              val.as_table().size() > opts.inline_table_threshold)) {
             std::string new_prefix = prefix.empty()
                                          ? escape_toml_key(key)
                                          : prefix + "." + escape_toml_key(key);
